@@ -528,5 +528,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function handleSearch(e) {
             const searchTerm = e.target.value;
-            searchInput.value = searchTerm
+            searchInput.value = searchTerm;
+            mobileSearchInput.value = searchTerm;
+            renderRecipes(currentCategory, searchTerm);
+        }
+        
+        function handleVersionClick(e) {
+            const button = e.target.closest('.version-btn');
+            if (button && !button.classList.contains('active')) {
+                const card = button.closest('.recipe-card');
+                const recipe = JSON.parse(card.dataset.recipe);
+                const versionKey = button.dataset.version;
+                const recipeText = card.querySelector('.recipe-text');
+                recipeText.innerHTML = formatRecipeContent(recipe.versions[versionKey]);
+                card.querySelectorAll('.version-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        }
 
+        categoryNav.addEventListener('click', handleCategoryClick);
+        mobileCategoryNav.addEventListener('click', handleCategoryClick);
+        searchInput.addEventListener('input', handleSearch);
+        mobileSearchInput.addEventListener('input', handleSearch);
+        recipeGrid.addEventListener('click', handleVersionClick);
+
+        setupCategories();
+        renderRecipes();
+    }
+    
+    initializeRecipeApp();
+    showView('home-view');
+});
+</script>
+</body>
+</html>
