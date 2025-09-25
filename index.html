@@ -84,8 +84,12 @@
                         <i class="fas fa-home mr-2"></i>백억커피 매뉴얼
                     </button>
                 </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
+                <div class="hidden md:flex items-center">
+                    <div class="relative mr-4">
+                        <input type="text" id="global-search-input" placeholder="통합 검색..." class="w-48 lg:w-64 px-3 py-2 pl-10 text-sm border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                    <div class="flex items-baseline space-x-4">
                         <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="system-view">시스템</button>
                         <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="inventory-view">발주/재고</button>
                         <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="status-view">메뉴관리</button>
@@ -105,6 +109,10 @@
         <!-- Mobile menu, show/hide based on menu state. -->
         <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <div class="relative mb-2">
+                    <input type="text" id="global-search-input-mobile" placeholder="통합 검색..." class="w-full px-4 py-2 pl-10 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                </div>
                 <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="system-view">시스템 관리</button>
                 <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="inventory-view">발주 및 재고 관리</button>
                 <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="status-view">메뉴 품절/해제 관리</button>
@@ -339,6 +347,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const gnb = document.getElementById('main-gnb');
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
+    const globalSearchInput = document.getElementById('global-search-input');
+    const globalSearchInputMobile = document.getElementById('global-search-input-mobile');
+
+    let currentCategory = 'all';
+
+    function formatRecipeContent(versionData) {
+        let html = '';
+        if (versionData.ingredients) {
+            html += `<div class="mb-2"><strong class="text-[#A1887F] text-lg">재료:</strong></div><div>${versionData.ingredients.map(ing => `<span class="ingredient-block">${ing}</span>`).join('')}</div>`;
+        }
+        if (versionData.instructions) {
+            html += `<div class="mt-3"><strong class="text-[#A1887F] text-lg">조리법:</strong></div><ol class="list-decimal list-inside text-gray-600 mt-1 space-y-1 text-base">${versionData.instructions.map(inst => `<li>${inst}</li>`).join('')}</ol>`;
+        }
+        return html;
+    }
+
+    function renderRecipes(filter = 'all', searchTerm = '') {
+        const recipeGrid = document.getElementById('recipe-grid');
+        const noResults = document.getElementById('no-results');
+        if (!recipeGrid || !noResults) return;
+
+        recipeGrid.innerHTML = '';
+        const lowerCaseSearchTerm = searchTerm.toLowerCase().trim();
+        const filteredRecipes = recipeData.filter(recipe => {
+            const matchesCategory = filter === 'all' || recipe.category === filter;
+            const matchesSearch = recipe.name.toLowerCase().includes(lowerCaseSearchTerm);
+            return matchesCategory && matchesSearch;
+        });
+        noResults.classList.toggle('hidden', filteredRecipes.length > 0);
+        const gridFragment = document.createDocumentFragment();
+        filteredRecipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col';
+            card.dataset.recipe = JSON.stringify(recipe);
+            const versionKeys = Object.keys(recipe.versions);
+            const sortOrder = ['ICED', 'ICED (1L)', 'HOT'];
+            versionKeys.sort((a, b) => {
+                const indexA = sortOrder.indexOf(a);
+                const indexB = sortOrder.indexOf(b);
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                if (indexA !== -1) return -1;
+                if (indexB !== -1) return 1;
+                return a.localeCompare(b);
+            });
+            const firstVersionKey = versionKeys[0];
+            let versionButtons = '';
+            if (versionKeys.length > 1) {
+                versionButtons = versionKeys.map((key, i) => 
+                    `<button class="version-btn flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition rounded-md ${i === 0 ? 'active' : ''}" data-version="${key}">${key}</button>`
+                ).join('');
+            } else {
+                versionButtons = `<div class="flex-1 px-3 py-2 text-sm font-bold text-[#6D4C41] bg-gray-100 rounded-md text-center">${versionKeys[0]}</div>`;
+            }
+            card.innerHTML = `
+                <img src="${recipe.image}" alt="${recipe.name}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found'">
+                <div class="p-5 flex-grow">
+                    <p class="text-sm font-semibold text-[#A1887F]">${recipe.category}</p>
+                    <h3 class="text-2xl font-bold text-[#6D4C41] mt-1 truncate">${recipe.name}</h3>
+                    <div class="recipe-text mt-4 text-base leading-relaxed min-h-[8rem]">
+                        ${formatRecipeContent(recipe.versions[firstVersionKey])}
+                    </div>
+                </div>
+                <div class="bg-gray-50 border-t border-gray-200 p-2 flex flex-wrap rounded-b-lg gap-1">
+                    ${versionButtons}
+                </div>
+            `;
+            gridFragment.appendChild(card);
+        });
+        recipeGrid.appendChild(gridFragment);
+    }
 
     function showView(viewId) {
         if (viewId === 'home-view') {
@@ -358,6 +436,35 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.gnb-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll(`.gnb-btn[data-view="${viewId}"]`).forEach(btn => btn.classList.add('active'));
         mobileMenu.classList.add('hidden');
+
+        if (viewId !== 'recipe-view') {
+            if (globalSearchInput) globalSearchInput.value = '';
+            if (globalSearchInputMobile) globalSearchInputMobile.value = '';
+        }
+    }
+
+    function handleGlobalSearch(e) {
+        const searchTerm = e.target.value;
+        
+        if (globalSearchInput) globalSearchInput.value = searchTerm;
+        if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+
+        showView('recipe-view');
+
+        const recipeSearchInput = document.getElementById('search-input');
+        const mobileRecipeSearchInput = document.getElementById('mobile-search-input');
+        if(recipeSearchInput) recipeSearchInput.value = searchTerm;
+        if(mobileRecipeSearchInput) mobileRecipeSearchInput.value = searchTerm;
+
+        currentCategory = 'all';
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`.category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
+
+        renderRecipes('all', searchTerm);
+
+        if (e.target.id === 'global-search-input-mobile') {
+            mobileMenu.classList.add('hidden');
+        }
     }
 
     gnb.addEventListener('click', (e) => {
@@ -424,7 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mobileSearchInput = document.getElementById('mobile-search-input');
         const noResults = document.getElementById('no-results');
 
-        let currentCategory = 'all';
         const categories = ['all', ...new Set(recipeData.map(recipe => recipe.category))];
 
         function setupCategories() {
@@ -452,82 +558,26 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileCategoryNav.querySelector('.category-btn[data-category="all"]').classList.add('active');
         }
 
-        function formatRecipeContent(versionData) {
-            let html = '';
-            if (versionData.ingredients) {
-                html += `<div class="mb-2"><strong class="text-[#A1887F] text-lg">재료:</strong></div><div>${versionData.ingredients.map(ing => `<span class="ingredient-block">${ing}</span>`).join('')}</div>`;
-            }
-            if (versionData.instructions) {
-                html += `<div class="mt-3"><strong class="text-[#A1887F] text-lg">조리법:</strong></div><ol class="list-decimal list-inside text-gray-600 mt-1 space-y-1 text-base">${versionData.instructions.map(inst => `<li>${inst}</li>`).join('')}</ol>`;
-            }
-            return html;
-        }
-
-        function renderRecipes(filter = 'all', searchTerm = '') {
-            recipeGrid.innerHTML = '';
-            const lowerCaseSearchTerm = searchTerm.toLowerCase().trim();
-            const filteredRecipes = recipeData.filter(recipe => {
-                const matchesCategory = filter === 'all' || recipe.category === filter;
-                const matchesSearch = recipe.name.toLowerCase().includes(lowerCaseSearchTerm);
-                return matchesCategory && matchesSearch;
-            });
-            noResults.classList.toggle('hidden', filteredRecipes.length > 0);
-            const gridFragment = document.createDocumentFragment();
-            filteredRecipes.forEach(recipe => {
-                const card = document.createElement('div');
-                card.className = 'recipe-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col';
-                card.dataset.recipe = JSON.stringify(recipe);
-                const versionKeys = Object.keys(recipe.versions);
-                const sortOrder = ['ICED', 'ICED (1L)', 'HOT'];
-                versionKeys.sort((a, b) => {
-                    const indexA = sortOrder.indexOf(a);
-                    const indexB = sortOrder.indexOf(b);
-                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-                    if (indexA !== -1) return -1;
-                    if (indexB !== -1) return 1;
-                    return a.localeCompare(b);
-                });
-                const firstVersionKey = versionKeys[0];
-                let versionButtons = '';
-                if (versionKeys.length > 1) {
-                    versionButtons = versionKeys.map((key, i) => 
-                        `<button class="version-btn flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition rounded-md ${i === 0 ? 'active' : ''}" data-version="${key}">${key}</button>`
-                    ).join('');
-                } else {
-                    versionButtons = `<div class="flex-1 px-3 py-2 text-sm font-bold text-[#6D4C41] bg-gray-100 rounded-md text-center">${versionKeys[0]}</div>`;
-                }
-                card.innerHTML = `
-                    <img src="${recipe.image}" alt="${recipe.name}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found'">
-                    <div class="p-5 flex-grow">
-                        <p class="text-sm font-semibold text-[#A1887F]">${recipe.category}</p>
-                        <h3 class="text-2xl font-bold text-[#6D4C41] mt-1 truncate">${recipe.name}</h3>
-                        <div class="recipe-text mt-4 text-base leading-relaxed min-h-[8rem]">
-                            ${formatRecipeContent(recipe.versions[firstVersionKey])}
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 border-t border-gray-200 p-2 flex flex-wrap rounded-b-lg gap-1">
-                        ${versionButtons}
-                    </div>
-                `;
-                gridFragment.appendChild(card);
-            });
-            recipeGrid.appendChild(gridFragment);
-        }
-
         function handleCategoryClick(e) {
             const button = e.target.closest('.category-btn');
             if (button) {
                 currentCategory = button.dataset.category;
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
                 document.querySelectorAll(`.category-btn[data-category="${currentCategory}"]`).forEach(btn => btn.classList.add('active'));
+                
+                if (globalSearchInput) globalSearchInput.value = '';
+                if (globalSearchInputMobile) globalSearchInputMobile.value = '';
                 searchInput.value = '';
                 mobileSearchInput.value = '';
+
                 renderRecipes(currentCategory);
             }
         }
 
         function handleSearch(e) {
             const searchTerm = e.target.value;
+            if (globalSearchInput) globalSearchInput.value = searchTerm;
+            if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
             searchInput.value = searchTerm;
             mobileSearchInput.value = searchTerm;
             renderRecipes(currentCategory, searchTerm);
@@ -556,9 +606,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRecipes();
     }
     
+    if(globalSearchInput) globalSearchInput.addEventListener('input', handleGlobalSearch);
+    if(globalSearchInputMobile) globalSearchInputMobile.addEventListener('input', handleGlobalSearch);
+
     initializeRecipeApp();
     showView('home-view');
 });
 </script>
 </body>
 </html>
+
