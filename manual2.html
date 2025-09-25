@@ -522,6 +522,7 @@ const recipeData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 기본 요소 선택 ---
     const homeView = document.getElementById('home-view');
     const detailViewsContainer = document.getElementById('detail-views');
     const mainCategoryCards = document.querySelectorAll('.main-category-card');
@@ -530,9 +531,180 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobile-menu');
     const globalSearchInput = document.getElementById('global-search-input');
     const globalSearchInputMobile = document.getElementById('global-search-input-mobile');
+    const checklistContainer = document.getElementById('checklist-view');
 
     let currentCategory = 'all';
 
+    // --- 뷰(화면) 전환 함수 ---
+    function showView(viewId) {
+        if (viewId === 'home-view') {
+            homeView.style.display = 'block';
+            detailViewsContainer.classList.add('hidden');
+        } else {
+            homeView.style.display = 'none';
+            detailViewsContainer.classList.remove('hidden');
+            document.querySelectorAll('#detail-views > div').forEach(view => {
+                view.style.display = 'none';
+            });
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.style.display = 'block';
+            }
+        }
+        document.querySelectorAll('.gnb-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`.gnb-btn[data-view="${viewId}"]`).forEach(btn => btn.classList.add('active'));
+        mobileMenu.classList.add('hidden');
+
+        if (viewId !== 'recipe-view') {
+            if (globalSearchInput) globalSearchInput.value = '';
+            if (globalSearchInputMobile) globalSearchInputMobile.value = '';
+        }
+    }
+
+    // --- 글로벌 검색 처리 함수 ---
+    function handleGlobalSearch(e) {
+        const searchTerm = e.target.value;
+        
+        if (globalSearchInput) globalSearchInput.value = searchTerm;
+        if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+
+        showView('recipe-view');
+
+        const recipeSearchInput = document.getElementById('search-input');
+        const mobileRecipeSearchInput = document.getElementById('mobile-search-input');
+        if(recipeSearchInput) recipeSearchInput.value = searchTerm;
+        if(mobileRecipeSearchInput) mobileRecipeSearchInput.value = searchTerm;
+
+        currentCategory = 'all';
+        document.querySelectorAll('#recipe-view .category-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`#recipe-view .category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
+
+        renderRecipes('all', searchTerm);
+    }
+    
+    // --- 레시피 앱 초기화 함수 ---
+    function initializeRecipeApp() {
+        const recipeViewContainer = document.getElementById('recipe-view');
+        // 이미 초기화되었으면 다시 실행하지 않음
+        if (recipeViewContainer.innerHTML.trim() !== '') return;
+
+        recipeViewContainer.innerHTML = `
+            <div class="relative min-h-screen">
+                <aside id="sidebar" class="hidden md:flex sidebar bg-[#F1EBE5] text-[#6D4C41] w-64 fixed inset-y-0 left-0 transform md:translate-x-0 z-30 flex flex-col h-screen">
+                    <div class="flex-shrink-0 px-4 pt-7">
+                        <div class="relative mb-4">
+                            <input type="text" id="search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                            <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <nav id="category-nav" class="flex-grow overflow-y-auto px-4 pb-7">
+                        <button class="w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn active" data-category="all">전체 메뉴</button>
+                    </nav>
+                </aside>
+                <div class="md:ml-64">
+                    <div class="md:hidden sticky top-16 z-10 bg-white shadow-md">
+                         <div class="px-4 pt-3 pb-3">
+                            <div class="relative">
+                                <input type="text" id="mobile-search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <nav id="mobile-category-nav" class="bg-white border-t border-gray-200 px-2 overflow-x-auto whitespace-nowrap no-scrollbar flex space-x-2">
+                        </nav>
+                    </div>
+                    <main class="main-content flex-1 p-4 sm:p-6 lg:p-10">
+                        <div class="max-w-7xl mx-auto">
+                             <div id="recipe-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"></div>
+                             <div id="no-results" class="hidden text-center py-10">
+                                <p class="text-xl text-gray-500">검색 결과가 없습니다.</p>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        `;
+        
+        const categoryNav = document.getElementById('category-nav');
+        const mobileCategoryNav = document.getElementById('mobile-category-nav');
+        const recipeGrid = document.getElementById('recipe-grid');
+        const searchInput = document.getElementById('search-input');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+
+        const categories = ['all', ...new Set(recipeData.map(recipe => recipe.category))];
+
+        function setupCategories() {
+            const desktopNavFragment = document.createDocumentFragment();
+            const mobileNavFragment = document.createDocumentFragment();
+            const allMobileButton = document.createElement('button');
+            allMobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 category-btn active';
+            allMobileButton.dataset.category = 'all';
+            allMobileButton.textContent = '전체 메뉴';
+            mobileCategoryNav.appendChild(allMobileButton);
+
+            categories.slice(1).forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn';
+                button.dataset.category = category;
+                button.textContent = category;
+                desktopNavFragment.appendChild(button);
+
+                const mobileButton = document.createElement('button');
+                mobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 border-transparent category-btn';
+                mobileButton.dataset.category = category;
+                mobileButton.textContent = category;
+                mobileNavFragment.appendChild(mobileButton);
+            });
+            
+            categoryNav.appendChild(desktopNavFragment);
+            mobileCategoryNav.appendChild(mobileNavFragment);
+        }
+
+        function handleCategoryClick(e) {
+            const button = e.target.closest('.category-btn');
+            if (button) {
+                currentCategory = button.dataset.category;
+                document.querySelectorAll('#recipe-view .category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll(`#recipe-view .category-btn[data-category="${currentCategory}"]`).forEach(btn => btn.classList.add('active'));
+                
+                searchInput.value = '';
+                mobileSearchInput.value = '';
+                if(globalSearchInput) globalSearchInput.value = '';
+                if(globalSearchInputMobile) globalSearchInputMobile.value = '';
+
+                renderRecipes(currentCategory);
+            }
+        }
+
+        function handleRecipeSearch(e) {
+            const searchTerm = e.target.value;
+            if (globalSearchInput) globalSearchInput.value = searchTerm;
+            if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+            renderRecipes(currentCategory, searchTerm);
+        }
+
+        recipeGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.version-btn');
+            if (button && !button.classList.contains('active')) {
+                const card = button.closest('.recipe-card');
+                const recipe = JSON.parse(card.dataset.recipe);
+                const version = button.dataset.version;
+
+                card.querySelector('.recipe-text').innerHTML = formatRecipeContent(recipe.versions[version]);
+                card.querySelectorAll('.version-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        });
+
+        categoryNav.addEventListener('click', handleCategoryClick);
+        mobileCategoryNav.addEventListener('click', handleCategoryClick);
+        searchInput.addEventListener('input', handleRecipeSearch);
+        mobileSearchInput.addEventListener('input', handleRecipeSearch);
+
+        setupCategories();
+        renderRecipes();
+    }
+
+    // --- 레시피 카드 내용/버전 포맷 함수 ---
     function formatRecipeContent(versionData) {
         let html = '';
         if (versionData.ingredients) {
@@ -544,6 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return html;
     }
 
+    // --- 레시피 목록 렌더링 함수 ---
     function renderRecipes(filter = 'all', searchTerm = '') {
         const recipeGrid = document.getElementById('recipe-grid');
         const noResults = document.getElementById('no-results');
@@ -556,6 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesSearch = recipe.name.toLowerCase().includes(lowerCaseSearchTerm);
             return matchesCategory && matchesSearch;
         });
+
         noResults.classList.toggle('hidden', filteredRecipes.length > 0);
         const gridFragment = document.createDocumentFragment();
         filteredRecipes.forEach(recipe => {
@@ -598,150 +772,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         recipeGrid.appendChild(gridFragment);
     }
-
-    function showView(viewId) {
-        if (viewId === 'home-view') {
-            homeView.style.display = 'block';
-            detailViewsContainer.classList.add('hidden');
-        } else {
-            homeView.style.display = 'none';
-            detailViewsContainer.classList.remove('hidden');
-            document.querySelectorAll('#detail-views > div').forEach(view => {
-                view.style.display = 'none';
-            });
-            const targetView = document.getElementById(viewId);
-            if (targetView) {
-                targetView.style.display = 'block';
-            }
-        }
-        document.querySelectorAll('.gnb-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll(`.gnb-btn[data-view="${viewId}"]`).forEach(btn => btn.classList.add('active'));
-        mobileMenu.classList.add('hidden');
-
-        if (viewId !== 'recipe-view') {
-            if (globalSearchInput) globalSearchInput.value = '';
-            if (globalSearchInputMobile) globalSearchInputMobile.value = '';
-        }
-    }
-
-    function handleGlobalSearch(e) {
-        const searchTerm = e.target.value;
-        
-        if (globalSearchInput) globalSearchInput.value = searchTerm;
-        if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
-
-        showView('recipe-view');
-
-        const recipeSearchInput = document.getElementById('search-input');
-        const mobileRecipeSearchInput = document.getElementById('mobile-search-input');
-        if(recipeSearchInput) recipeSearchInput.value = searchTerm;
-        if(mobileRecipeSearchInput) mobileRecipeSearchInput.value = searchTerm;
-
-        currentCategory = 'all';
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll(`.category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
-
-        renderRecipes('all', searchTerm);
-
-        if (e.target.id === 'global-search-input-mobile') {
-            mobileMenu.classList.add('hidden');
-        }
-    }
-
-    gnb.addEventListener('click', (e) => {
-        const button = e.target.closest('.gnb-btn');
-        if (button) {
-            const viewId = button.dataset.view;
-            showView(viewId);
-        }
-    });
     
-    mainCategoryCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const viewId = card.dataset.view;
-            showView(viewId);
-        });
-    });
-
-    mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    function initializeRecipeApp() {
-        const recipeViewContainer = document.getElementById('recipe-view');
-        recipeViewContainer.innerHTML = `
-            <div class="relative min-h-screen">
-                <aside id="sidebar" class="hidden md:flex sidebar bg-[#F1EBE5] text-[#6D4C41] w-64 fixed inset-y-0 left-0 transform md:translate-x-0 z-30 flex flex-col h-screen">
-                    <div class="flex-shrink-0 px-4 pt-7">
-                        <div class="relative mb-4">
-                            <input type="text" id="search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
-                            <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                        </div>
-                    </div>
-                    <nav id="category-nav" class="flex-grow overflow-y-auto px-4 pb-7">
-                        <button class="w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn active" data-category="all">전체 메뉴</button>
-                    </nav>
-                </aside>
-                <div class="md:ml-64">
-                    <div class="md:hidden sticky top-0 z-10 bg-white shadow-md">
-                         <div class="px-4 pt-3 pb-3">
-                            <div class="relative">
-                                <input type="text" id="mobile-search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
-                                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <nav id="mobile-category-nav" class="bg-white border-t border-gray-200 px-2 overflow-x-auto whitespace-nowrap no-scrollbar flex space-x-2">
-                        </nav>
-                    </div>
-                    <main class="main-content flex-1 p-4 sm:p-6 lg:p-10">
-                        <div class="max-w-7xl mx-auto">
-                             <div id="recipe-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"></div>
-                             <div id="no-results" class="hidden text-center py-10">
-                                <p class="text-xl text-gray-500">검색 결과가 없습니다.</p>
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            </div>
-        `;
-        
-        const categoryNav = document.getElementById('category-nav');
-        const mobileCategoryNav = document.getElementById('mobile-category-nav');
-        const recipeGrid = document.getElementById('recipe-grid');
-        const searchInput = document.getElementById('search-input');
-        const mobileSearchInput = document.getElementById('mobile-search-input');
-        const noResults = document.getElementById('no-results');
-
-        const categories = ['all', ...new Set(recipeData.map(recipe => recipe.category))];
-
-        function setupCategories() {
-            const desktopNavFragment = document.createDocumentFragment();
-            const mobileNavFragment = document.createDocumentFragment();
-            categories.slice(1).forEach(category => {
-                const button = document.createElement('button');
-                button.className = 'w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn';
-                button.dataset.category = category;
-                button.textContent = category;
-                desktopNavFragment.appendChild(button);
-                const mobileButton = document.createElement('button');
-                mobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 border-transparent category-btn';
-                mobileButton.dataset.category = category;
-                mobileButton.textContent = category;
-        const checklistContainer = document.getElementById('checklist-view');
-        if (checklistContainer) {
-            checklistContainer.addEventListener('change', (e) => {
-                if (e.target.matches('input[type="checkbox"]')) {
-                    updateChecklistProgress();
-                }
-            });
-            updateChecklistProgress();
-        }
-    }
-
+    // --- 체크리스트 진행률 업데이트 함수 ---
     function updateChecklistProgress() {
-        const checklistContainer = document.getElementById('checklist-view');
         if (!checklistContainer) return;
-
         const tasks = {
             common: { total: 0, checked: 0 },
             open: { total: 0, checked: 0 },
@@ -765,7 +799,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const commonChecked = tasks.common.checked;
             const shiftTotal = tasks[shiftType].total;
             const shiftChecked = tasks[shiftType].checked;
-
             if (commonTotal + shiftTotal === 0) return 0;
             return Math.round(((commonChecked + shiftChecked) / (commonTotal + shiftTotal)) * 100);
         };
@@ -787,17 +820,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // --- 이벤트 리스너 할당 ---
+    gnb.addEventListener('click', (e) => {
+        const button = e.target.closest('.gnb-btn');
+        if (button) {
+            showView(button.dataset.view);
+        }
+    });
+    
+    mainCategoryCards.forEach(card => {
+        card.addEventListener('click', () => {
+            showView(card.dataset.view);
+        });
+    });
+
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
     if(globalSearchInput) globalSearchInput.addEventListener('input', handleGlobalSearch);
     if(globalSearchInputMobile) globalSearchInputMobile.addEventListener('input', handleGlobalSearch);
+    
+    if (checklistContainer) {
+        checklistContainer.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="checkbox"]')) {
+                updateChecklistProgress();
+            }
+        });
+    }
 
+    // --- 앱 시작 ---
     initializeRecipeApp();
     showView('home-view');
+    updateChecklistProgress();
 });
 </script>
 </body>
 </html>
-
-
-
-
 
