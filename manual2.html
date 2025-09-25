@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백억커피 통합 운영 매뉴얼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: 사용자의 요청에 따라 기존 레시피 앱을 더 큰 통합 매뉴얼의 한 부분으로 재구성했습니다. 초기 화면은 6개의 주요 운영 카테고리(시스템, 발주, 레시피 등)를 보여주는 대시보드 역할을 합니다. 각 카드를 클릭하면 해당 상세 내용 페이지로 전환됩니다. '레시피 목록'은 기존의 인터랙티브 레시피 앱으로 연결되며, 다른 카테고리는 추후 확장을 위해 더미 콘텐츠를 포함합니다. 이 구조는 정보를 계층적으로 분리하여 사용자가 필요한 매뉴얼 섹션에 직관적으로 접근할 수 있도록 합니다. -->
+    <!-- Visualization & Content Choices: 메인 네비게이션(목표: 구조화)은 아이콘과 텍스트를 포함한 카드 그리드(방법: HTML/Tailwind)로 구현하여 시각적 명확성을 높였습니다. 각 카드는 클릭 이벤트(인터랙션: JS)를 통해 해당 상세 뷰(View)로 전환하는 역할을 합니다. 기존 레시피 앱은 '레시피 목록' 뷰 내부에서 그대로 작동하며, 다른 뷰들은 텍스트 기반의 정보(목표: 정보 제공)를 담는 간단한 구조로 설계되었습니다. 이 다각화된 구조는 매장 운영의 모든 측면을 포괄하는 확장 가능한 매뉴얼 시스템을 제공합니다. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #FDFBF8;
+        }
+        .main-category-card {
+            transition: all 0.3s ease;
+            border: 1px solid #EAE2DA;
+        }
+        .main-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #8D6E63;
+            background-color: #FBF9F6;
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .recipe-card {
+            transition: all 0.3s ease;
+            border: 1px solid #EAE2DA;
+        }
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #D1C3B4;
+        }
+        .category-btn.active {
+            background-color: #8D6E63;
+            color: white;
+            font-weight: 700;
+        }
+        #mobile-category-nav .category-btn.active {
+             border-color: #8D6E63;
+             color: #8D6E63;
+             background-color: #F1EBE5;
+        }
+        .version-btn.active {
+            background-color: #A1887F;
+            color: white;
+        }
+        .ingredient-block {
+            display: inline-block;
+            background-color: #F8F5F2;
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin: 2px;
+            font-size: 1rem;
+            line-height: 1.5rem;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .gnb-btn.active {
+            background-color: #8D6E63;
+            color: white;
+        }
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .progress-bar-wrapper {
+            flex-grow: 1;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 0.8rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header id="main-gnb" class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <!-- Desktop Title -->
+                    <button class="gnb-btn font-bold text-xl text-[#6D4C41] active hidden md:flex items-center" data-view="home-view">
+                        <i class="fas fa-home mr-2"></i>백억커피 매뉴얼
+                    </button>
+                    <!-- Mobile Logo + Title -->
+                    <button class="gnb-btn flex md:hidden items-center space-x-2 active" data-view="home-view">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmgK7X5UjYipj8B0revMEDlmBiNaoJfIDfpw&s" class="h-8 w-auto" alt="백억커피 로고">
+                        <span class="font-bold text-lg text-[#6D4C41]">매뉴얼</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <div class="relative mr-4">
+                        <input type="text" id="global-search-input" placeholder="통합 검색..." class="w-48 lg:w-64 px-3 py-2 pl-10 text-sm border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                    <div class="flex items-baseline space-x-4">
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="system-view">시스템</button>
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="inventory-view">발주/재고</button>
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="status-view">메뉴관리</button>
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="cleaning-view">청소</button>
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="checklist-view">체크리스트</button>
+                        <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium" data-view="recipe-view">레시피</button>
+                    </div>
+                </div>
+                <div class="flex items-center md:hidden">
+                    <div class="relative">
+                        <input type="text" id="global-search-input-mobile" placeholder="레시피 검색..." class="w-36 sm:w-48 px-3 py-1.5 pl-8 text-sm border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                        <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                    <button type="button" id="mobile-menu-button" class="ml-2 p-2 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100 focus:outline-none">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="system-view">시스템 관리</button>
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="inventory-view">발주 및 재고 관리</button>
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="status-view">메뉴 품절/해제 관리</button>
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="cleaning-view">매장 청소 및 분리배출</button>
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="checklist-view">근무 교대 체크리스트</button>
+                <button class="gnb-btn text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium w-full text-left" data-view="recipe-view">레시피 목록</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="app-container">
+        <!-- Home View -->
+        <div id="home-view">
+            <main class="p-4 sm:p-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <!-- Category Cards -->
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="system-view">
+                        <i class="fas fa-desktop fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">시스템 관리</h2>
+                        <p class="text-gray-500 mt-1">포스, 배달앱</p>
+                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="inventory-view">
+                        <i class="fas fa-boxes fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">발주 및 재고 관리</h2>
+                         <p class="text-gray-500 mt-1">주문, 재고 확인</p>
+                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="status-view">
+                        <i class="fas fa-toggle-on fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">메뉴 품절/해제 관리</h2>
+                         <p class="text-gray-500 mt-1">메뉴 상태 변경</p>
+                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="cleaning-view">
+                        <i class="fas fa-broom fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">매장 청소 및 분리배출</h2>
+                         <p class="text-gray-500 mt-1">청결 관리</p>
+                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="checklist-view">
+                        <i class="fas fa-clipboard-list fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">근무 교대 체크리스트</h2>
+                         <p class="text-gray-500 mt-1">인수인계 항목</p>
+                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="recipe-view">
+                        <i class="fas fa-book-open fa-3x text-[#A1887F] mb-4"></i>
+                        <h2 class="text-xl font-bold text-[#6D4C41]">레시피 목록</h2>
+                         <p class="text-gray-500 mt-1">음료, 푸드 제조법</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Detail Views (Initially Hidden) -->
+        <div id="detail-views" class="hidden">
+            <div id="system-view" class="p-8">
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-4">시스템 (포스, 배달앱) 관리</h1>
+                <p class="text-gray-700">시스템 관리 더미 데이터입니다. 여기에 포스기 사용법, 배달앱 주문 처리 방법 등에 대한 내용을 추가할 수 있습니다.</p>
+            </div>
+            <div id="inventory-view" class="p-8">
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-4">발주 및 재고 관리</h1>
+                <p class="text-gray-700">발주 및 재고 관리 더미 데이터입니다. 여기에 주간 발주 목록, 재고 확인 방법, 유통기한 관리 등에 대한 내용을 추가할 수 있습니다.</p>
+            </div>
+            <div id="status-view" class="p-8">
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-4">메뉴 품절 / 품절 해제 관리</h1>
+                <p class="text-gray-700">메뉴 품절/해제 관리 더미 데이터입니다. 여기에 각 배달앱 및 포스에서 메뉴 상태를 변경하는 방법에 대한 내용을 추가할 수 있습니다.</p>
+            </div>
+             <div id="cleaning-view" class="p-8">
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-4">매장 청소 및 분리배출 관리</h1>
+                <p class="text-gray-700">매장 청소 및 분리배출 관리 더미 데이터입니다. 여기에 일간/주간 청소 체크리스트, 분리배출 요령 등에 대한 내용을 추가할 수 있습니다.</p>
+            </div>
+             <div id="checklist-view" class="p-8 max-w-7xl mx-auto">
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-6 text-center">근무 교대 시 체크리스트</h1>
+
+                <!-- Progress Bars -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <h2 class="text-xl font-bold text-[#6D4C41] md:col-span-2">업무 완료 현황</h2>
+                    <!-- 오픈 -->
+                    <div class="progress-bar-container">
+                        <label for="progress-open" class="w-28 text-center font-semibold text-gray-700">🌞 공통 + 오픈</label>
+                        <div class="progress-bar-wrapper">
+                            <div id="progress-bar-open" class="progress-bar bg-yellow-400" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text-open" class="w-10 text-right font-medium text-gray-700">0%</span>
+                    </div>
+                    <!-- 미들 -->
+                    <div class="progress-bar-container">
+                        <label for="progress-middle" class="w-28 text-center font-semibold text-gray-700">🌥️ 공통 + 미들</label>
+                        <div class="progress-bar-wrapper">
+                            <div id="progress-bar-middle" class="progress-bar bg-sky-400" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text-middle" class="w-10 text-right font-medium text-gray-700">0%</span>
+                    </div>
+                    <!-- 마감/저녁 -->
+                    <div class="progress-bar-container">
+                        <label for="progress-closing" class="w-28 text-center font-semibold text-gray-700">🌜 공통 + 마감</label>
+                        <div class="progress-bar-wrapper">
+                            <div id="progress-bar-closing" class="progress-bar bg-indigo-400" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text-closing" class="w-10 text-right font-medium text-gray-700">0%</span>
+                    </div>
+                    <!-- 심야 -->
+                    <div class="progress-bar-container">
+                        <label for="progress-late-night" class="w-28 text-center font-semibold text-gray-700">⭐ 공통 + 심야</label>
+                        <div class="progress-bar-wrapper">
+                            <div id="progress-bar-late-night" class="progress-bar bg-gray-600" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text-late-night" class="w-10 text-right font-medium text-gray-700">0%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-tasks mr-3"></i>공통 업무</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-play-circle mr-2 text-green-500"></i>출근 시</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><input type="checkbox" id="task-common-1" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-1" class="text-gray-600">조명 / 어닝 / DID 모니터 확인</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-2" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-2" class="text-gray-600">배달 어플 확인</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-3" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-3" class="text-gray-600">시재 인수인계 및 전달사항 확인</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-4" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-4" class="text-gray-600">제빙기 얼음양 확인</label></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-sync-alt mr-2 text-blue-500"></i>교체 시</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><input type="checkbox" id="task-common-5" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-5" class="text-gray-600"><span class="font-bold">원두:</span> 그라인더 호퍼 분리 후 청소</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-6" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-6" class="text-gray-600"><span class="font-bold">시럽:</span> 굳지 않도록 뜨거운 물 빼주기</label></li>
+                            </ul>
+                        </div>
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-box-open mr-2 text-yellow-500"></i>채워주기 <span class="text-sm font-normal text-red-500">(*퇴근 1시간 전 미리 확인)</span></h4>
+                            <ul class="space-y-2 mb-2">
+                                <li class="flex items-center"><input type="checkbox" id="task-common-7" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-7" class="text-gray-600">팝콘, 나쵸, 대용량 베이스, 음료용 가당딸기</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-8" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-8" class="text-gray-600">냉장해동 디저트, 오징어</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-9" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-9" class="text-gray-600">2온스 소스통, 시럽 및 파우더, 각종 부자재</label></li>
+                                <li class="text-blue-600 font-medium ml-4">Tip: 핫도그 박스, 케이크 용기 스티커, 오징어 박스 포크 등은 바쁘지 않을 때 미리 준비해두세요.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-stopwatch mr-2 text-purple-500"></i>퇴근 한 시간 전</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><input type="checkbox" id="task-common-10" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-10" class="text-gray-600">커피퍽, 쓰레기통, 싱크대, 우유곽, 배수구 확인 및 교체</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-11" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-11" class="text-gray-600">자동 탬핑기 내부 브러쉬 청소, 실링기 오염 제거</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-12" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-12" class="text-gray-600">커피 바 전체 정리 및 청소</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-13" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-13" class="text-gray-600">찐딸기용 계량스푼 물 교체</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-14" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-14" class="text-gray-600">행주, 스팀행주 세척</label></li>
+                                <li class="flex items-center"><input type="checkbox" id="task-common-15" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-15" class="text-gray-600">시재 확인 및 인수인계 사항 남기기</label></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 오픈 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-sun mr-3 text-yellow-400"></i>오픈</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center"><input type="checkbox" id="task-open-1" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-1" class="text-gray-600">픽업대 및 포스기 주변 정리 및 청소</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-open-2" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-2" class="text-gray-600">행주 세척</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-open-3" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-3" class="text-gray-600">냉장/상온/실온 정리 및 선입선출 확인</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-open-4" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-4" class="text-gray-600">재고 및 발주 확인</label></li>
+                            <li><span class="font-bold">[마감 청소]</span>
+                                <ul class="space-y-2 ml-4 mt-1">
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-5" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 상부/대용량 냉장고 물기 제거</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-6" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 파우더 선반, 시럽병 근처 바닥 청소</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-7" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 파우더 스푼 세척 및 건조</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-8" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-8" class="text-gray-600"><span class="font-semibold text-gray-800">(월,수,금)</span> 싱크대 물때 청소</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-9" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-9" class="text-gray-600"><span class="font-semibold text-gray-800">(화)</span> 오거나이저 빈, 팝콘 기계 뒤쪽 청소</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-open-10" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-10" class="text-gray-600"><span class="font-semibold text-gray-800">(목)</span> 창문틀, 키오스크 양쪽 먼지 제거</label></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 미들 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-cloud-sun mr-3 text-sky-400"></i>미들</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center"><input type="checkbox" id="task-middle-1" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-1" class="text-gray-600">매장 밖, 문 앞 청소 (명함, 쓰레기 등)</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-middle-2" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-2" class="text-gray-600">영수증 쓰레기통, 커피 퍽 비우기</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-middle-3" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-3" class="text-gray-600">전체 바닥 청소</label></li>
+                             <li><span class="font-bold">[마감 청소]</span>
+                                <ul class="space-y-2 ml-4 mt-1">
+                                    <li class="flex items-center"><input type="checkbox" id="task-middle-4" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 아이스빈 및 서랍 내부 청소</label></li>
+                                    <li class="flex items-center"><input type="checkbox" id="task-middle-5" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 빙수기계, 디퍼웰, 소도구 세척</label></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 마감/저녁 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-moon mr-3 text-indigo-400"></i>마감/저녁</h3>
+                         <ul class="space-y-2">
+                            <li class="flex items-center"><input type="checkbox" id="task-closing-1" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-1" class="text-gray-600"><span class="font-bold">[18:00-20:00]</span> 리뷰 댓글 달기</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-closing-2" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-2" class="text-gray-600"><span class="font-bold">[20:30]</span> 심야 대비 재료 채워져 있는지 확인 (볶음밥/강정 소분)</label></li>
+                            <li><span class="font-bold">[마감 청소 - 커피머신]</span>
+                                <ul class="space-y-2 ml-4 mt-1">
+                                     <li class="flex items-center"><input type="checkbox" id="task-closing-3" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-3" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 그룹헤드 솔 청소 및 물 흘리기</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-closing-4" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 포터필터 용액 세척, 트레이 분리 세척</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-closing-5" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 커피머신 전체, 그라인더, 탬핑기 청소</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-closing-6" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 온수기(홀더상자, 물 입출구, 코크 손잡이) 청소</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-closing-7" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어 망, 전자레인지용 접시 세척</label></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 심야 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-star mr-3 text-gray-600"></i>심야</h3>
+                         <ul class="space-y-2">
+                            <li class="flex items-center"><input type="checkbox" id="task-late-night-1" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-1" class="text-gray-600">어닝 접기, 시재 정리, 포스 마감 및 보고</label></li>
+                            <li class="flex items-center"><input type="checkbox" id="task-late-night-2" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-2" class="text-gray-600">물류 입고 확인 및 정리 (불량 체크)</label></li>
+                             <li class="flex items-center"><input type="checkbox" id="task-late-night-3" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-3" class="text-gray-600"><span class="font-bold">[평일]</span> 포장재 미리 준비 (핫도그박스, 오징어상자, 캔/케이크 스티커 등)</label></li>
+                             <li><span class="font-bold">[05:00 마감청소]</span>
+                                <ul class="space-y-2 ml-4 mt-1">
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-4" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어, 접시, 바스푼통, 디퍼웰 마감</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-5" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 모든 쓰레기 배출</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-6" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 창고 정리 및 청소</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-7" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 냉장고 아래 청소</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-8" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-8" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 창고 → 커피바 → 홀 전체 바닥 쓸고 닦기</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-9" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-9" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 대걸레 세척</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-10" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-10" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 스팀행주 세척 및 건조</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-11" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-11" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 영수증 통 세척 및 건조</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-12" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-12" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 일반행주 세제에 담궈두기</label></li>
+                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-13" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-13" class="text-gray-600"><span class="font-semibold text-gray-800">(월,수,금)</span> 음식물 쓰레기통, 분리수거함 세척</label></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div id="recipe-view">
+            </div>
+        </div>
+    </div>
+
+<script>
+const recipeData = [
+    // 커피
+    { category: '커피', name: '아메리카노', image: "http://imagefarm.baemin.com/smartmenuimage/upload/image/2024/2/7/TGmRpuFaXLshw1SswesF13Tc4MTJwoAhkv6hRyzaKHrhOycizY9LXYoqT8QxTy_RO_dBdoyVvTfWcj-9s9Pov2fkvIWMqYLZUKUWkvOcfG0=.jpg", versions: { 'HOT': { ingredients: ['온수 225g', '에스프레소 2샷'] }, 'ICED': { ingredients: ['정수 200g', '얼음 가득', '에스프레소 2샷'] }, 'ICED (1L)': { ingredients: ['정수 400g', '얼음 가득', '에스프레소 4샷'] } } },
+    { category: '커피', name: '꿀 아메리카노', image: "http://imagefarm.baemin.com/smartmenuimage/upload/image/2024/2/7/TGmRpuFaXLshw1SswesF13Tc4MTJwoAhkv6hRyzaKHrhOycizY9LXYoqT8QxTy_RO_dBdoyVvTfWcj-9s9Pov2fkvIWMqYLZUKUWkvOcfG0=.jpg", versions: { 'HOT': { ingredients: ['꿀시럽 30g', '슈가시럽 1P', '온수 225ml', '에스프레소 2샷'] }, 'ICED': { ingredients: ['꿀시럽 40g', '슈가시럽 1P', '정수 200g', '에스프레소 2샷', '얼음 가득'], instructions:['재료를 잘 섞어주세요.'] }, 'ICED (1L)': { ingredients: ['꿀시럽 80g', '슈가시럽 2P', '정수 400g', '에스프레소 4샷', '얼음 가득'], instructions:['재료를 잘 섞어주세요.'] } } },
+    { category: '커피', name: '헤이즐넛 아메리카노', image: "http://imagefarm.baemin.com/smartmenuimage/upload/image/2024/2/7/TGmRpuFaXLshw1SswesF13Tc4MTJwoAhkv6hRyzaKHrhOycizY9LXYoqT8QxTy_RO_dBdoyVvTfWcj-9s9Pov2fkvIWMqYLZUKUWkvOcfG0=.jpg", versions: { 'HOT': { ingredients: ['헤이즐넛 시럽 3P', '온수 225ml', '에스프레소 2샷'] }, 'ICED': { ingredients: ['헤이즐넛 시럽 3P', '정수 200g', '에스프레소 2샷', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['헤이즐넛 시럽 6P', '정수 400g', '에스프레소 4샷', '얼음 가득'] } } },
+    { category: '커피', name: '바닐라 아메리카노', image: "http://imagefarm.baemin.com/smartmenuimage/upload/image/2024/2/7/TGmRpuFaXLshw1SswesF13Tc4MTJwoAhkv6hRyzaKHrhOycizY9LXYoqT8QxTy_RO_dBdoyVvTfWcj-9s9Pov2fkvIWMqYLZUKUWkvOcfG0=.jpg", versions: { 'HOT': { ingredients: ['바닐라시럽 3P', '우유 200g (스팀)', '에스프레소 2샷'] }, 'ICED': { ingredients: ['바닐라시럽 3P', '정수 200g', '에스프레소 2샷', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['바닐라시럽 6P', '정수 400g', '에스프레소 4샷', '얼음 가득'] } } },
+    { category: '커피', name: '백억커피', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Billion+Coffee", versions: { 'HOT': { ingredients: ['백억커피파우더 60g', '카페 시럽 1P (10g)', '온수 200g'] }, 'ICED': { ingredients: ['정수 100g', '백억커피 베이스 170g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['정수 200g', '백억커피 베이스 340g', '얼음 370g (가득)'] } } },
+    { category: '커피', name: '카페라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Cafe+Latte", versions: { 'HOT': { ingredients: ['우유 200g (스팀)', '에스프레소 2샷'] }, 'ICED': { ingredients: ['우유 200g', '에스프레소 2샷', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['우유 400g', '에스프레소 4샷', '얼음 가득'] } } },
+    { category: '커피', name: '꿀 라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Honey+Latte", versions: { 'HOT': { ingredients: ["꿀시럽 40g", "슈가시럽 1P", "우유 200g (스팀)", "에스프레소 2샷"] }, 'ICED': { ingredients: ["꿀시럽 40g", "슈가시럽 1P", "우유 175g", "에스프레소 2샷", "얼음 가득"], instructions: ["꿀시럽, 슈가시럽, 에스프레소를 잘 섞어줍니다."] }, 'ICED (1L)': { ingredients: ["꿀시럽 80g", "슈가시럽 2P", "우유 350g", "에스프레소 4샷", "얼음 가득"], instructions: ["꿀시럽, 슈가시럽, 에스프레소를 잘 섞어줍니다."] } } },
+    { category: '커피', name: '백억 리치 라떼', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Billion+Rich+Latte", versions: { 'HOT': { ingredients: ['리치 파우더 2스푼', '에스프레소 2샷', '우유 200g (스팀)'] }, 'ICED': { ingredients: ['리치 파우더 2스푼', '에스프레소 2샷', '우유 190g', '얼음 가득'], instructions:['재료를 잘 섞어주세요.'] }, 'ICED (1L)': { ingredients: ['리치 파우더 4스푼', '에스프레소 4샷', '우유 380g', '얼음 가득'], instructions:['재료를 잘 섞어주세요.'] } } },
+    { category: '커피', name: '연유라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Condensed+Milk+Latte", versions: { 'HOT': { ingredients: ['연유 40g', '슈가시럽 10P', '에스프레소 2샷', '우유 200g (스팀)'] }, 'ICED': { ingredients: ['연유 40g', '슈가시럽 10P', '에스프레소 2샷', '우유 175g', '얼음 가득'], instructions: ['연유, 슈가시럽, 에스프레소를 잘 섞어줍니다.'] }, 'ICED (1L)': { ingredients: ['연유 80g', '슈가시럽 2P', '에스프레소 4샷', '우유 350g', '얼음 가득'], instructions: ['연유, 슈가시럽, 에스프레소를 잘 섞어줍니다.'] } } },
+    { category: '커피', name: '바닐라 라떼', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Vanilla+Latte", versions: { 'HOT': { ingredients: ['바닐라 P 1T', '바닐라시럽 1P', '슈가시럽 1P', '에스프레소 2샷', '우유 200g (스팀)'], instructions: ['파우더, 시럽, 에스프레소를 잘 섞어주세요.'] }, 'ICED': { ingredients: ['바닐라 P 1T', '바닐라시럽 1P', '슈가시럽 1P', '에스프레소 2샷', '우유 175g', '얼음 가득'], instructions: ['파우더, 시럽, 에스프레소를 잘 섞어주세요.'] }, 'ICED (1L)': { ingredients: ['바닐라 P 2T', '바닐라시럽 2P', '슈가시럽 2P', '에스프레소 4샷', '우유 350g', '얼음 가득'], instructions: ['파우더, 시럽, 에스프레소를 잘 섞어주세요.'] } } },
+    { category: '커피', name: '저당 바닐라 라떼', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Low+Sugar+Vanilla+Latte", versions: { 'HOT': { ingredients: ['저당바닐라 3P', '에스프레소 2샷', '우유 200g (스팀)'], instructions: ['재료를 잘 섞어주세요.'] }, 'ICED': { ingredients: ['저당바닐라 3P', '에스프레소 2샷', '우유 175g', '얼음 가득'], instructions: ['재료를 잘 섞어주세요.'] }, 'ICED (1L)': { ingredients: ['저당바닐라 6P', '에스프레소 4샷', '우유 350g', '얼음 가득'], instructions: ['재료를 잘 섞어주세요.'] } } },
+    { category: '커피', name: '카라멜 마끼야또', image: "https://placehold.co/600x400/DAA520/FFFFFF?text=Caramel+Macchiato", versions: { 'HOT': { ingredients: ['카라멜 소스 30g', '슈가시럽 1P', '에스프레소 2샷', '우유 200g (스팀)'], instructions: ['재료를 잘 섞어주세요.'] }, 'ICED': { ingredients: ['카라멜 소스 30g', '슈가시럽 1P', '에스프레소 2샷', '우유 175g', '얼음 가득'], instructions: ['재료를 잘 섞어주세요.'] }, 'ICED (1L)': { ingredients: ['카라멜 소스 60g', '슈가시럽 2P', '에스프레소 4샷', '우유 350g', '얼음 가득'], instructions: ['재료를 잘 섞어주세요.'] } } },
+    { category: '커피', name: '카페 모카', image: "https://placehold.co/600x400/8B4513/FFFFFF?text=Cafe+Mocha", versions: { 'HOT': { ingredients: ['초코 파우더 20g', '카페 시럽 20g (2P)', '우유 200g (스팀)', '에스프레소 2샷 (45g)'] }, 'ICED': { ingredients: ['초코 파우더 20g', '카페 시럽 20g (2P)', '에스프레소 2샷 (45g)', '우유 175g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['초코 파우더 40g', '카페 시럽 40g (4P)', '에스프레소 4샷 (90g)', '우유 350g', '얼음 370g (가득)'] } } },
+    { category: '커피', name: '슈크림 라떼', image: "https://placehold.co/600x400/FFFACD/333333?text=Chou+Cream+Latte", versions: { 'ICED': { ingredients: ["슈크림 파우더 40g", "우유 180g", "에스프레소 2샷", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["슈크림 파우더 80g", "우유 360g", "에스프레소 4샷", "얼음 가득"] } } },
+
+    // 콜드브루
+    { category: '콜드브루', name: '콜드브루', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Cold+Brew", versions: { 'ICED': { ingredients: ['콜드브루 1팩', '정수 200g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['콜드브루 2팩', '정수 400g', '얼음 가득'] } } },
+    { category: '콜드브루', name: '콜드브루 라떼', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Cold+Brew+Latte", versions: { 'ICED': { ingredients: ['콜드브루 1팩', '우유 200g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['콜드브루 2팩', '우유 400g', '얼음 가득'] } } },
+    { category: '콜드브루', name: '콜드브루 연유라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Cold+Brew+Condensed+Milk+Latte", versions: { 'ICED': { ingredients: ['연유 베이스 30g', '우유 200g', '콜드브루 1ea', '얼음 170g (가득)'], instructions:['별도의 컵에 연유 파우더와 온수를 섞은 후, 우유를 넣고 나머지 재료를 투입합니다.'] }, 'ICED (1L)': { ingredients: ['연유 베이스 60g', '우유 400g', '콜드브루 2ea', '얼음 370g (가득)'], instructions:['별도의 컵에 연유 파우더와 온수를 섞은 후, 우유를 넣고 나머지 재료를 투입합니다.'] } } },
+
+    // 라떼
+    { category: '라떼', name: '토피넛 라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Toffee+Nut+Latte", versions: { 'HOT': { ingredients: ['토피넛 파우더 40g', '우유 200g (스팀)'] }, 'ICED': { ingredients: ['토피넛 파우더 50g', '온수 20g', '우유 220g', '얼음 가득'], instructions: ['토피넛 파우더를 온수에 잘 녹여주기'] }, 'ICED (1L)': { ingredients: ['토피넛 파우더 100g', '온수 40g', '우유 440g', '얼음 가득'], instructions: ['토피넛 파우더를 온수에 잘 녹여주기'] } } },
+    { category: '라떼', name: '보성 홍차 밀크티', image: "https://placehold.co/600x400/B07233/FFFFFF?text=Milk+Tea", versions: { 'HOT': { ingredients: ["밀크티 베이스 50g", "우유 225g (스팀)"] }, 'ICED': { ingredients: ["밀크티 베이스 50g", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["밀크티 베이스 100g", "우유 440g", "얼음 가득"] } } },
+    { category: '라떼', name: '민트초코 라떼', image: "https://placehold.co/600x400/98FF98/FFFFFF?text=Mint+Choco+Latte", versions: { 'HOT': { ingredients: ["민트초코 파우더 40g", "우유 200g (스팀)"] }, 'ICED': { ingredients: ["민트초코 파우더 40g", "슈가시럽 1P", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["민트초코 파우더 60g", "슈가시럽 1P", "우유 440g", "얼음 가득"] } } },
+    { category: '라떼', name: '초코라떼', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Chocolate+Latte", versions: { 'HOT': { ingredients: ['초코 파우더 30g', '카페 시럽 10g (1P)', '우유 200g (스팀)'] }, 'ICED': { ingredients: ['초코 파우더 30g', '카페 시럽 10g (1P)', '온수 20g', '우유 220g', '얼음 가득'], instructions: ['초코 파우더와 시럽을 온수에 잘 녹여주기'] }, 'ICED (1L)': { ingredients: ['초코 파우더 60g', '카페 시럽 20g (2P)', '온수 40g', '우유 440g', '얼음 가득'], instructions: ['초코 파우더와 시럽을 온수에 잘 녹여주기'] } } },
+    { category: '라떼', name: '고구마 라떼', image: "https://placehold.co/600x400/FF7F50/FFFFFF?text=Sweet+Potato+Latte", versions: { 'HOT': { ingredients: ["고구마 파우더 50g", "카페 시럽 10g (1P)", "우유 200g (스팀)"] }, 'ICED': { ingredients: ["고구마 파우더 60g", "온수 20g", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["고구마 파우더 160g", "온수 40g", "우유 440g", "얼음 가득"] } } },
+    { category: '라떼', name: '미숫가루 라떼 (블렌딩)', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Misutgaru+Latte", versions: { 'HOT': { ingredients: ["메주콩차 파우더 30g", "카페 시럽 3P (30g)", "우유 225g (스팀)"] }, 'ICED': { ingredients: ["메주콩차 파우더 30g", "카페 시럽 30g (3P)", "우유 220g", "얼음 170g (가득)"], instructions: ["블랜딩 2번"] }, 'ICED (1L)': { ingredients: ["메주콩차 파우더 60g", "카페 시럽 60g (6P)", "우유 440g", "얼음 370g (가득)"], instructions: ["블랜딩 2번"] } } },
+    { category: '라떼', name: '녹차라떼', image: "https://placehold.co/600x400/6B8E23/FFFFFF?text=Green+Tea+Latte", versions: { 'HOT': { ingredients: ["녹차 파우더 50g", "우유 225g (스팀)"] }, 'ICED': { ingredients: ["녹차 파우더 50g", "온수 20g", "우유 220g", "얼음 170g (가득)"] }, 'ICED (1L)': { ingredients: ["녹차 파우더 50g", "온수 40g", "우유 440g", "얼음 370g (가득)"] } } },
+    
+    // 찐우유
+    { category: '찐우유', name: '찐 딸기우유', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Strawberry+Milk", versions: { 'ICED': { ingredients: ['카페 시럽 2P (20g)', '딸기 베이스 20g', '가당 딸기 60g (2T)', '우유 220g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['카페 시럽 4P (40g)', '딸기 베이스 40g', '가당 딸기 120g (4T)', '우유 440g', '얼음 370g (가득)'] } } },
+    { category: '찐우유', name: '찐 블루베리 우유', image: "https://placehold.co/600x400/8A2BE2/FFFFFF?text=Blueberry+Milk", versions: { 'ICED': { ingredients: ["블루베리 베이스 70g", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["블루베리 베이스 140g", "우유 440g", "얼음 가득"] } } },
+    { category: '찐우유', name: '찐 망고우유', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Mango+Milk", versions: { 'ICED': { ingredients: ["망고 베이스 60g", "카페 시럽 1P", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["망고 베이스 120g", "카페 시럽 1P", "우유 400g", "얼음 가득"] } } },
+    { category: '찐우유', name: '찐 체리우유', image: "https://placehold.co/600x400/DC143C/FFFFFF?text=Cherry+Milk", versions: { 'ICED': { ingredients: ["체리 베이스 3P (60g)", "카페 시럽 2P (20g)", "우유 220g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["체리 베이스 6P (120g)", "카페 시럽 4P (40g)", "우유 400g", "얼음 가득"] } } },
+    { category: '찐우유', name: '찐바나나 딸기우유', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Banana+Strawberry+Milk", versions: { 'ICED': { ingredients: ["바나나 파우더 30g", "온수 40g", "카페 시럽 2P (20g)", "가당 딸기 60g", "우유 150g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["바나나 파우더 60g", "온수 80g", "카페 시럽 4P (40g)", "가당 딸기 120g", "우유 300g", "얼음 가득"] } } },
+
+    // 티(tea)
+    { category: '티(tea)', name: '복숭아 아이스티', image: "https://placehold.co/600x400/FFDAB9/FFFFFF?text=Peach+Iced+Tea", versions: { 'ICED': { ingredients: ['아이스티 320g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['아이스티 640g', '얼음 가득'] } } },
+    { category: '티(tea)', name: '아샷추', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Iced+Tea+Shot", versions: { 'ICED': { ingredients: ['아이스티 260g', '에스프레소 1샷 (22g)', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['아이스티 520g', '에스프레소 2샷 (45g)', '얼음 가득'] } } },
+    { category: '티(tea)', name: '아망추', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Iced+Tea+Mango", versions: { 'ICED': { ingredients: ['냉동 망고 140g', '아이스티 가득 (얼음 X)'] }, 'ICED (1L)': { ingredients: ['냉동 망고 280g', '아이스티 가득 (얼음 X)'] } } },
+    { category: '티(tea)', name: '전통 식혜', image: "https://placehold.co/600x400/F0E68C/FFFFFF?text=Sikhye", versions: { 'ICED': { ingredients: ["식혜 베이스 90g", "카페시럽 10g (1P)", "정수 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["식혜 베이스 180g", "카페시럽 20g (1P)", "정수 400g", "얼음 가득"] } } },
+    { category: '티(tea)', name: '꿀물 (배달 리뷰전용)', image: "https://placehold.co/600x400/FFEC8B/FFFFFF?text=Honey+Water", versions: { 'ICED': { ingredients: ["꿀 베이스 40g", "정수 200g", "얼음 가득"] } } },
+    { category: '티(tea)', name: '유자 코코 아이스티', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Yuja+Coco+Iced+Tea", versions: { 'ICED': { ingredients: ["모과 유자청 60g", "카페 시럽 10g (1P)", "코코넛 젤리 30g", "정수 200g", "애플민트 1줄기", "레몬 슬라이스 1EA", "얼음 170g(가득)"] }, 'ICED (1L)': { ingredients: ["모과 유자청 120g", "카페 시럽 20g (2P)", "코코넛 젤리 60g", "정수 400g", "애플민트 2줄기", "레몬 슬라이스 2EA", "얼음 340g(가득)"] } } },
+    { category: '티(tea)', name: '오미자 코코 아이스티', image: "https://placehold.co/600x400/DB7093/FFFFFF?text=Omija+Coco+Iced+Tea", versions: { 'ICED': { ingredients: ["오미자 엑기스 30g", "카페 시럽 10g (1P)", "코코넛 젤리 30g", "정수 200g", "애플민트 1줄기", "레몬 슬라이스 1EA", "얼음 170g(가득)"] }, 'ICED (1L)': { ingredients: ["오미자 엑기스 60g", "카페 시럽 20g (2P)", "코코넛 젤리 60g", "정수 400g", "애플민트 2줄기", "레몬 슬라이스 2EA", "얼음 340g(가득)"] } } },
+    { category: '티(tea)', name: '매실 코코 아이스티', image: "https://placehold.co/600x400/32CD32/FFFFFF?text=Plum+Coco+Iced+Tea", versions: { 'ICED': { ingredients: ["매실 엑기스 30g", "카페 시럽 10g (1P)", "코코넛 젤리 30g", "정수 200g", "애플민트 1줄기", "레몬 슬라이스 1EA", "얼음 170g(가득)"] }, 'ICED (1L)': { ingredients: ["매실 엑기스 60g", "카페 시럽 20g (2P)", "코코넛 젤리 60g", "정수 400g", "애플민트 2줄기", "레몬 슬라이스 2EA", "얼음 340g(가득)"] } } },
+    { category: '티(tea)', name: '얼그레이 티', image: "https://placehold.co/600x400/BDB76B/FFFFFF?text=Earl+Grey", versions: { 'HOT': { ingredients: ['티백 1ea', '온수 300g'] }, 'ICED': { ingredients: ['티백 1ea', '온수 100g', '정수 200g', '얼음 170g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] }, 'ICED (1L)': { ingredients: ['티백 2ea', '온수 150g', '정수 400g', '얼음 370g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] } } },
+    { category: '티(tea)', name: '페퍼민트 티', image: "https://placehold.co/600x400/BDB76B/FFFFFF?text=Peppermint", versions: { 'HOT': { ingredients: ['티백 1ea', '온수 300g'] }, 'ICED': { ingredients: ['티백 1ea', '온수 100g', '정수 200g', '얼음 170g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] }, 'ICED (1L)': { ingredients: ['티백 2ea', '온수 150g', '정수 400g', '얼음 370g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] } } },
+    { category: '티(tea)', name: '캐모마일 티', image: "https://placehold.co/600x400/BDB76B/FFFFFF?text=Chamomile", versions: { 'HOT': { ingredients: ['티백 1ea', '온수 300g'] }, 'ICED': { ingredients: ['티백 1ea', '온수 100g', '정수 200g', '얼음 170g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] }, 'ICED (1L)': { ingredients: ['티백 2ea', '온수 150g', '정수 400g', '얼음 370g'], instructions: ['온수에 티백을 우려낸 후, 얼음과 정수가 담긴 컵에 붓습니다.'] } } },
+    { category: '티(tea)', name: '레몬차', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Lemon+Tea", versions: { 'HOT': { ingredients: ['레몬 베이스 60g', '온수 225g'] }, 'ICED': { ingredients: ['레몬 베이스 50g', '카페시럽 1P (10g)', '정수 200g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['레몬 베이스 100g', '카페시럽 2P (20g)', '정수 400g', '얼음 가득'] } } },
+    { category: '티(tea)', name: '자몽차', image: "https://placehold.co/600x400/FF7F50/FFFFFF?text=Grapefruit+Tea", versions: { 'HOT': { ingredients: ['자몽 베이스 60g', '온수 225g'] }, 'ICED': { ingredients: ['자몽 베이스 50g', '카페시럽 1P (10g)', '정수 200g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['자몽 베이스 100g', '카페시럽 2P (20g)', '정수 400g', '얼음 가득'] } } },
+    { category: '티(tea)', name: '유자차', image: "https://placehold.co/600x400/F0E68C/FFFFFF?text=Yuja+Tea", versions: { 'HOT': { ingredients: ['유자청 60g', '온수 225g'] }, 'ICED': { ingredients: ['유자청 60g', '카페 시럽 1P (10g)', '정수 200g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['유자청 120g', '카페 시럽 2P (20g)', '정수 400g', '얼음 가득'] } } },
+    { category: '티(tea)', name: '오미자차', image: "https://placehold.co/600x400/DB7093/FFFFFF?text=Omija+Tea", versions: { 'HOT': { ingredients: ["오미자 엑기스 90g", "온수 225g"] }, 'ICED': { ingredients: ["오미자 엑기스 90g", "카페 시럽 1P (10g)", "정수 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["오미자 엑기스 180g", "카페 시럽 2P (20g)", "정수 400g", "얼음 가득"] } } },
+    { category: '티(tea)', name: '매실차', image: "https://placehold.co/600x400/32CD32/FFFFFF?text=Plum+Tea", versions: { 'HOT': { ingredients: ["매실 엑기스 90g", "온수 225g"] }, 'ICED': { ingredients: ["매실 엑기스 90g", "카페 시럽 1P (10g)", "정수 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["매실 엑기스 180g", "카페 시럽 2P (20g)", "정수 400g", "얼음 가득"] } } },
+    { category: '티(tea)', name: '자몽 허니 블랙티', image: "https://placehold.co/600x400/FF7F50/FFFFFF?text=Grapefruit+Honey+Black+Tea", versions: { 'HOT': { ingredients: ["자몽 베이스 50g", "밀크티 베이스 50g", "온수 225g"] }, 'ICED': { ingredients: ["자몽 베이스 50g", "밀크티 베이스 50g", "정수 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["자몽 베이스 100g", "밀크티 베이스 100g", "정수 400g", "얼음 가득"] } } },
+    { category: '티(tea)', name: '홀리베리 뱅쇼', image: "https://placehold.co/600x400/8B0000/FFFFFF?text=Vin+Chaud", versions: { 'HOT': { ingredients: ['뱅쇼 베이스 40g', '온수 250g', '딸기 베이스 30g', '건조레몬 1EA', '시나몬스틱 1EA', '레드커런트 5g'] }, 'ICED': { ingredients: ['뱅쇼 베이스 40g', '정수 200g', '얼음 170g', '딸기 베이스 30g', '건조레몬 1EA', '시나몬스틱 1EA', '레드커런트 5g'] }, 'ICED (1L)': { ingredients: ['뱅쇼 베이스 80g', '정수 400g', '얼음 370g', '딸기 베이스 60g', '건조레몬 2EA', '시나몬스틱 2EA', '레드커런트 10g'] } } },
+
+    // 버블티
+    { category: '버블티', name: '흑당 버블티', image: "https://placehold.co/600x400/C4A484/FFFFFF?text=Brown+Sugar+Bubble+Tea", versions: { 'ICED': { ingredients: ['흑당 베이스 30g', '흑당베이스 드리즐 1바퀴', '타피오카 펄 1개', '우유 220g', '얼음 가득'], instructions: ['물로 씻지말고 그대로 넣어주세요.'] }, 'ICED (1L)': { ingredients: ['흑당 베이스 40g', '흑당베이스 드리즐 2바퀴', '타피오카 펄 2개', '우유 440g', '얼음 가득'], instructions: ['물로 씻지말고 그대로 넣어주세요.'] } } },
+    { category: '버블티', name: '딸기홍차 버블티', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Strawberry+Black+Tea+Bubble+Tea", versions: { 'ICED': { ingredients: ["딸기 베이스 30g", "밀크티 베이스 30g", "타피오카 펄 1개", "우유 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["딸기 베이스 60g", "밀크티 베이스 60g", "타피오카 펄 2개", "우유 400g", "얼음 가득"] } } },
+    { category: '버블티', name: '꿀 녹차 버블티', image: "https://placehold.co/600x400/6B8E23/FFFFFF?text=Honey+Green+Tea+Bubble+Tea", versions: { 'ICED': { ingredients: ["녹차 파우더 30g", "꿀 베이스 10g", "온수 20g", "타피오카 펄 1EA", "우유 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["녹차 파우더 60g", "꿀 베이스 20g", "온수 40g", "타피오카 펄 2EA", "우유 200g", "얼음 가득"] } } },
+    { category: '버블티', name: '타피오카펄 조리법', image: "https://placehold.co/600x400/000000/FFFFFF?text=Tapioca+Pearls", versions: { '조리법': { instructions: ["봉지 뜯지말고 그대로 전자레인지 1분", "손가락 끝으로 톡톡치면서 알갱이끼리 분리해주기", "봉지 한번 뒤집어서 꼼꼼히 떨어뜨려주기", "딱딱한 알갱이 있으면 10초만 더 돌려주기", "가위로 봉지 자르고 작은채망에 올리고 찬물샤워"] } } },
+    
+    // 주스
+    { category: '주스', name: '수박주스', image: "https://placehold.co/600x400/FF6347/FFFFFF?text=Watermelon+Juice", versions: { 'ICED': { ingredients: ['대용량 베이스 285ml', '시럽 10g', '얼음 가득'] }, 'ICED (1L)': { ingredients: ['대용량 베이스 570ml', '시럽 20g', '얼음 가득'] } } },
+    { category: '주스', name: '파인사과 주스', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Pineapple+Apple+Juice", versions: { 'ICED': { ingredients: ["파인사과주스 1팩", "얼음 170g (가득)"] }, 'ICED (1L)': { ingredients: ["파인사과주스 2팩", "얼음 370g (가득)"] } } },
+    { category: '주스', name: '망고주스 (블렌딩)', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Mango+Juice", versions: { 'ICED': { ingredients: ['냉동 망고 65g', '망고 베이스 30g', '카페시럽 2P (20g)', '정수 175g', '얼음 170g (가득)'], instructions: ['블랜딩 2번'] }, 'ICED (1L)': { ingredients: ['냉동 망고 130g', '망고 베이스 60g', '카페시럽 4P (40g)', '정수 350g', '얼음 370g (가득)'], instructions: ['블랜딩 2번'] } } },
+    { category: '주스', name: '딸기주스 (블렌딩)', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Strawberry+Juice", versions: { 'ICED': { ingredients: ["주스 딸기 140g", "카페시럽 2P", "온수 100g", "얼음 170g (가득)"], instructions: ["블랜딩 2번"] }, 'ICED (1L)': { ingredients: ["주스 딸기 280g", "카페시럽 4P", "온수 200g", "얼음 370g (가득)"], instructions: ["블랜딩 2번"] } } },
+    { category: '주스', name: '키위주스', image: "https://placehold.co/600x400/9ACD32/FFFFFF?text=Kiwi+Juice", versions: { 'ICED': { ingredients: ["키위베이스 100g", "정수 200g", "얼음 170g (가득)"] }, 'ICED (1L)': { ingredients: ["키위베이스 200g", "정수 400g", "얼음 170g (가득)"] } } },
+    
+    // 에이드
+    { category: '에이드', name: '백억 슈퍼 드링크', image: "https://placehold.co/600x400/7FFF00/FFFFFF?text=Super+Drink", versions: { 'ICED': { ingredients: ["몬스터 에너지 142g", "파워에이드 142g", "얼음 170g (가득)"] }, 'ICED (1L)': { ingredients: ["몬스터 에너지 285g", "파워에이드 285g", "얼음 370g (가득)"] } } },
+    { category: '에이드', name: '자몽 에이드', image: "https://placehold.co/600x400/FF7F50/FFFFFF?text=Grapefruit+Ade", versions: { 'ICED': { ingredients: ['자몽 베이스 80g', '카페시럽 1P (10g)', '탄산수 200g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['자몽 베이스 160g', '카페시럽 2P (20g)', '탄산수 500g', '얼음 370g (가득)'] } } },
+    { category: '에이드', name: '자두 에이드', image: "https://placehold.co/600x400/DDA0DD/FFFFFF?text=Plum+Ade", versions: { 'ICED': { ingredients: ['자두 베이스 80g', '카페시럽 1P (10g)', '탄산수 200g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['자두 베이스 160g', '카페시럽 2P (20g)', '탄산수 500g', '얼음 370g (가득)'] } } },
+    { category: '에이드', name: '레몬 에이드', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Lemon+Ade", versions: { 'ICED': { ingredients: ['레몬 베이스 80g', '카페시럽 1P (10g)', '탄산수 200g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['레몬 베이스 160g', '카페시럽 2P (20g)', '탄산수 500g', '얼음 370g (가득)'] } } },
+    { category: '에이드', name: '청포도 에이드', image: "https://placehold.co/600x400/9ACD32/FFFFFF?text=Green+Grape+Ade", versions: { 'ICED': { ingredients: ['청포도 베이스 80g', '카페시럽 1P (10g)', '탄산수 200g', '얼음 170g (가득)'] }, 'ICED (1L)': { ingredients: ['청포도 베이스 160g', '카페시럽 2P (20g)', '탄산수 500g', '얼음 370g (가득)'] } } },
+    { category: '에이드', name: '더블베리 에이드', image: "https://placehold.co/600x400/BA55D3/FFFFFF?text=Double+Berry", versions: { 'ICED': { ingredients: ["딸기 베이스 20g", "블루베리 베이스 40g", "카페시럽 1P (10g)", "탄산수 200g", "얼음 170g (가득)"] }, 'ICED (1L)': { ingredients: ["딸기 베이스 40g", "블루베리 베이스 80g", "카페시럽 2P (20g)", "탄산수 500g", "얼음 370g (가득)"] } } },
+    { category: '에이드', name: '체리 에이드', image: "https://placehold.co/600x400/DC143C/FFFFFF?text=Cherry+Ade", versions: { 'ICED': { ingredients: ["체리 베이스 60g", "카페시럽 1P (10g)", "탄산수 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["체리 베이스 120g", "카페시럽 2P (20g)", "탄산수 500g", "얼음 370g (가득)"] } } },
+    { category: '에이드', name: '체리콕', image: "https://placehold.co/600x400/DC143C/FFFFFF?text=Cherry+Coke", versions: { 'ICED': { ingredients: ["체리 베이스 40g", "코카콜라 200g", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["체리 베이스 80g", "코카콜라 400g (2캔)", "얼음 370g (가득)"] } } },
+    { category: '에이드', name: '레몬콕', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Lemon+Coke", versions: { 'ICED': { ingredients: ["레몬 베이스 50g", "코카콜라 200g (1캔)", "얼음 가득"] }, 'ICED (1L)': { ingredients: ["레몬 베이스 100g", "코카콜라 400g (2캔)", "얼음 가득"] } } },
+
+    // 스무디
+    { category: '스무디', name: '백억커피 스무디 (블렌딩)', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Billion+Coffee+Smoothie", versions: { 'ICED': { ingredients: ['우유 150g', '백억커피 파우더 60g', '카페시럽 4P (40g)', '얼음 220g'], instructions: ['블랜딩 5번'] }, 'ICED (1L)': { ingredients: ['우유 300g', '백억커피 파우더 120g', '카페시럽 8P (80g)', '얼음 440g'], instructions: ['블랜딩 5번'] } } },
+    { category: '스무디', name: '플레인 요거트 스무디 (블렌딩)', image: "https://placehold.co/600x400/F5F5DC/333333?text=Yogurt+Smoothie", versions: { 'ICED': { ingredients: ['우유 175g', '요거트P 듬뿍 3스푼', '카페 시럽 2P (20g)', '얼음 260g'], instructions: ['블랜딩 5번'] }, 'ICED (1L)': { ingredients: ['우유 350g', '요거트P 듬뿍 6스푼', '카페 시럽 4P (40g)', '얼음 520g'], instructions: ['블랜딩 5번'] } } },
+    { category: '스무디', name: '블루베리 요거트 스무디 (블렌딩)', image: "https://placehold.co/600x400/DDA0DD/FFFFFF?text=Blueberry+Yogurt+Smoothie", versions: { 'ICED': { ingredients: ['블루베리 베이스 80g', '우유 175g', '요거트P 듬뿍 2스푼', '카페 시럽 1P (10g)', '얼음 260g'], instructions: ['블랜딩 5번'] }, 'ICED (1L)': { ingredients: ['블루베리 베이스 160g', '우유 350g', '요거트P 듬뿍 4스푼', '카페 시럽 2P (20g)', '얼음 520g'], instructions: ['블랜딩 5번'] } } },
+    { category: '스무디', name: '망고 요거트 스무디 (블렌딩)', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Mango+Yogurt+Smoothie", versions: { 'ICED': { ingredients: ["망고 베이스 40g", "우유 175g", "요거트P 듬뿍 2스푼", "카페 시럽 1P (10g)", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["망고 베이스 80g", "우유 350g", "요거트P 듬뿍 4스푼", "카페 시럽 2P (20g)", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '딸기 요거트 스무디 (블렌딩)', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Strawberry+Yogurt+Smoothie", versions: { 'ICED': { ingredients: ["딸기 베이스 30g", "우유 175g", "요거트P 듬뿍 2스푼", "카페 시럽 1P (10g)", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["딸기 베이스 60g", "우유 350g", "요거트P 듬뿍 4스푼", "카페 시럽 2P (20g)", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '배 스무디 (블렌딩)', image: "https://placehold.co/600x400/F0E68C/FFFFFF?text=Pear+Smoothie", versions: { 'ICED': { ingredients: ["배 베이스 80g", "카페시럽 20g (2P)", "정수 150g", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["배 베이스 160g", "카페시럽 40g (4P)", "정수 300g", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '자두 스무디 (블렌딩)', image: "https://placehold.co/600x400/DDA0DD/FFFFFF?text=Plum+Smoothie", versions: { 'ICED': { ingredients: ["자두 베이스 80g", "카페시럽 20g (2P)", "정수 150g", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["자두 베이스 160g", "카페시럽 40g (4P)", "정수 300g", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '키위 스무디 (블렌딩)', image: "https://placehold.co/600x400/9ACD32/FFFFFF?text=Kiwi+Smoothie", versions: { 'ICED': { ingredients: ["키위 베이스 80g", "정수 150g", "얼음 260g", "키위드리즐 20g", "코코넛젤리 50g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["키위 베이스 160g", "정수 300g", "얼음 500g", "키위드리즐 40g", "코코넛젤리 100g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '미숫가루 스무디 (블렌딩)', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Misutgaru+Smoothie", versions: { 'ICED': { ingredients: ["우유 150g", "메주콩차 파우더 50g", "카페시럽 5P (50g)", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["우유 300g", "메주콩차 파우더 100g", "카페시럽 10P (120g)", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '딸기망고 스무디 (블렌딩)', image: "https://placehold.co/600x400/FF8C69/FFFFFF?text=Strawberry+Mango+Smoothie", versions: { 'ICED': { ingredients: ["냉동 망고 65g", "망고 베이스 30g", "카페시럽 2P (20g)", "정수 170g", "얼음 170g", "딸기 드리즐 2바퀴 (20p)", "가당딸기 30g"], instructions: ["컵에 딸기 드리즐과 가당딸기를 먼저 넣기", "나머지 재료 블랜딩 5번 후 컵에 담기"] }, 'ICED (1L)': { ingredients: ["냉동 망고 130g", "망고 베이스 60g", "카페시럽 4P (40g)", "정수 340g", "얼음 340g", "딸기 드리즐 4바퀴 (40p)", "가당딸기 60g"], instructions: ["컵에 딸기 드리즐과 가당딸기를 먼저 넣기", "나머지 재료 블랜딩 5번 후 컵에 담기"] } } },
+    { category: '스무디', name: '초코 스무디 (블렌딩)', image: "https://placehold.co/600x400/8B4513/FFFFFF?text=Chocolate+Smoothie", versions: { 'ICED': { ingredients: ["우유 175g", "초코 파우더 50g", "카페시럽 3P (30g)", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["우유 350g", "초코 파우더 100g", "카페시럽 6P (60g)", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '녹차 스무디 (블렌딩)', image: "https://placehold.co/600x400/6B8E23/FFFFFF?text=Green+Tea+Smoothie", versions: { 'ICED': { ingredients: ["우유 175g", "녹차 파우더 60g", "카페시럽 2P", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["우유 350g", "녹차 파우더 120g", "카페시럽 4P", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '민트초코 스무디 (블렌딩)', image: "https://placehold.co/600x400/98FF98/FFFFFF?text=Mint+Choco+Smoothie", versions: { 'ICED': { ingredients: ["우유 175g", "민트초코 파우더 60g", "카페시럽 2P", "얼음 260g"], instructions: ["블랜딩 5번"] }, 'ICED (1L)': { ingredients: ["우유 350g", "민트초코 파우더 120g", "카페시럽 4P", "얼음 520g"], instructions: ["블랜딩 5번"] } } },
+    { category: '스무디', name: '홀리베리 뱅쇼 스무디 (블렌딩)', image: "https://placehold.co/600x400/8B0000/FFFFFF?text=Vin+Chaud+Smoothie", versions: { 'ICED': { ingredients: ["뱅쇼 베이스 40g", "얼음 250g", "카페 시럽 30g", "정수 100g", "딸기 베이스 30g"], instructions: ["토핑(건조레몬, 시나몬스틱, 레드커런트)을 제외한 모든 재료를 넣고 블렌더로 5번 작동시킨 후, 토핑을 올립니다."] }, 'ICED (1L)': { ingredients: ["뱅쇼 베이스 80g", "얼음 500g", "카페 시럽 60g", "정수 200g", "딸기 베이스 60g"], instructions: ["토핑(건조레몬, 시나몬스틱, 레드커런트)을 제외한 모든 재료를 넣고 블렌더로 5번 작동시킨 후, 토핑을 올립니다."] } } },
+
+    // 빙수 및 토핑
+    { category: '빙수 및 토핑', name: '밀크 팥빙수', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Patbingsu", versions: { '공통': { ingredients: ['빙수 얼음 베이스', '인절미 떡 20g', '단팥 150g', '바닐라 아이스크림 한 스쿱', '연유 50g (별도)'] } } },
+    { category: '빙수 및 토핑', name: '딸기 빙수', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Strawberry+Bingsu", versions: { '공통': { ingredients: ['빙수 얼음 베이스', '가당딸기 100g', '딸기 베이스 50g', '냉동 딸기 다이스 50g', '바닐라 아이스크림 한 스쿱', '연유 50g (별도)'] } } },
+    { category: '빙수 및 토핑', name: '애플 망고 빙수', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Mango+Bingsu", versions: { '공통': { ingredients: ['빙수 얼음 베이스', '망고 베이스 90g', '냉동 망고 150g', '바닐라 아이스크림 한 스쿱', '연유 50g (별도)'] } } },
+    { category: '빙수 및 토핑', name: '통팥 범벅', image: "https://placehold.co/600x400/8B4513/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['팥 150g', '인절미 떡 20g'], instructions:['내점: 7온스 투명 컵', '포장/배달: 빙수 토핑 용기'] } } },
+    { category: '빙수 및 토핑', name: '딸기 범벅', image: "https://placehold.co/600x400/FF69B4/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['냉동 딸기 다이스 50g', '딸기 베이스 50g', '냉동 가당 딸기 100g'], instructions:['내점: 7온스 투명 컵', '포장/배달: 빙수 토핑 용기'] } } },
+    { category: '빙수 및 토핑', name: '망고 범벅', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['냉동 망고 150g', '망고 베이스 90g'], instructions:['내점: 7온스 투명 컵', '포장/배달: 빙수 토핑 용기'] } } },
+    { category: '빙수 및 토핑', name: '바닐라 아이스크림', image: "https://placehold.co/600x400/F0E68C/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['1스쿱 (40g)'], instructions:['내점: 7온스 투명 컵', '포장/배달: 빙수 토핑 용기'] } } },
+    { category: '빙수 및 토핑', name: '인절미떡', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['20g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '콩고물', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['20g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '흑당+펄', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['펄 1EA', '흑당시럽 20g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '코코넛 젤리', image: "https://placehold.co/600x400/FFFFFF/333333?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '연유 소스', image: "https://placehold.co/600x400/F5F5DC/333333?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '딸기 소스', image: "https://placehold.co/600x400/FFB6C1/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '망고 소스', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '블루베리 소스', image: "https://placehold.co/600x400/8A2BE2/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '초코 소스', image: "https://placehold.co/600x400/8B4513/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '카라멜 소스', image: "https://placehold.co/600x400/DAA520/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '꿀', image: "https://placehold.co/600x400/FFEC8B/FFFFFF?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+    { category: '빙수 및 토핑', name: '아몬드 슬라이스', image: "https://placehold.co/600x400/FFE4B5/333333?text=Topping", versions: { '추가옵션': { ingredients:['50g'], instructions:['내점: 2온스 투명 컵', '포장/배달: 빙수 소스 용기'] } } },
+
+    // 푸드
+    { category: '푸드', name: '탕종 올리브 베이글', image: "https://placehold.co/600x400/DEB887/FFFFFF?text=Olive+Bagel", versions: { '조리법': { ingredients:['올리브 크림치즈'], instructions: ['에어프라이기 200도 3분'] } } },
+    { category: '푸드', name: '탕종 블루베리 베이글', image: "https://placehold.co/600x400/DEB887/FFFFFF?text=Blueberry+Bagel", versions: { '조리법': { ingredients:['블루베리 크림치즈'], instructions: ['에어프라이기 200도 3분'] } } },
+    { category: '푸드', name: '탕종 어니언 베이글', image: "https://placehold.co/600x400/DEB887/FFFFFF?text=Onion+Bagel", versions: { '조리법': { ingredients:['대파 크림치즈'], instructions: ['에어프라이기 200도 3분'] } } },
+    { category: '푸드', name: '붕어빵 (6ea)', image: "https://placehold.co/600x400/CD853F/FFFFFF?text=Bungeoppang", versions: { '조리법': { ingredients:['붕어빵 6개'], instructions: ["에어프라이기 180도 8분"] } } },
+    { category: '푸드', name: '반반 붕어빵 (팥3+슈3)', image: "https://placehold.co/600x400/CD853F/FFFFFF?text=Half+Bungeoppang", versions: { '조리법': { ingredients:['팥 붕어빵 3개', '슈크림 붕어빵 3개'], instructions: ["에어프라이기 180도 8분"] } } },
+    { category: '푸드', name: '찰깨 크림빵', image: "https://placehold.co/600x400/F5DEB3/FFFFFF?text=Cream+Bread", versions: { '조리법': { instructions: ["전자레인지 20초"] } } },
+    { category: '푸드', name: '버터 소금빵', image: "https://placehold.co/600x400/F4A460/FFFFFF?text=Salt+Bread", versions: { '조리법': { instructions: ["에어프라이기 180도 4분"] } } },
+    { category: '푸드', name: '크로크 무슈', image: "https://placehold.co/600x400/DEB887/FFFFFF?text=Croque+Monsieur", versions: { '조리법': { instructions: ['포장지 모서리 자른 후 전자레인지 1분', '에어프라이기 180도 4분', '반으로 잘라 제공'] } } },
+    { category: '푸드', name: '백억 커피번', image: "https://placehold.co/600x400/8B4513/FFFFFF?text=Coffee+Bun", versions: { '조리법': { instructions: ["에어프라이기 180도 4분"] } } },
+    { category: '푸드', name: '백억 메론 크림빵', image: "https://placehold.co/600x400/90EE90/FFFFFF?text=Melon+Cream+Bread", versions: { '조리법': { instructions: ["에어프라이기 180도 3분"] } } },
+    { category: '푸드', name: '매콤 떡볶이', image: "https://placehold.co/600x400/B22222/FFFFFF?text=Tteokbokki", versions: { '조리법': { instructions: ["꺼내서 세게 흔들어 섞어주기", "유통기한에 구멍내고 물 10-20g 넣기", "전자레인지 3분 30초"] } } },
+    { category: '푸드', name: '칠리 치즈 핫도그', image: "https://placehold.co/600x400/FF6347/FFFFFF?text=Chili+Cheese+Hotdog", versions: { '조리법': { instructions: ["소세지 에어프라이기 180도 3분", "빵에 소세지 넣고 살사 + 치즈소스 이후 파슬리", "박스 닫아서 전자레인지 20초"] } } },
+    { category: '푸드', name: '플레인 핫도그', image: "https://placehold.co/600x400/FFE4B5/333333?text=Plain+Hotdog", versions: { '조리법': { instructions: ["소세지 에어프라이기 180도 3분", "빵에 피클 1스푼 펴바르고 소세지 넣기", "케찹, 머스타드 뿌리고 파슬리", "박스 닫아서 전자레인지 20초"] } } },
+    { category: '푸드', name: '떡강정 (12ea)', image: "https://placehold.co/600x400/CD5C5C/FFFFFF?text=Tteok+Gangjeong", versions: { '조리법': { ingredients:['떡 12개'], instructions: ["에어프라이기 200도 8분 조리 후 30초 이상 식힌 후 매콤소스와 함께 포장"] } } },
+    { category: '푸드', name: '순대강정 (12ea)', image: "https://placehold.co/600x400/A0522D/FFFFFF?text=Sundae+Gangjeong", versions: { '조리법': { ingredients:['순대 12개'], instructions: ["에어프라이기 200도 8분 조리 후 30초 이상 식힌 후 매콤소스와 함께 포장"] } } },
+    { category: '푸드', name: '반반강정 (떡6+순대6)', image: "https://placehold.co/600x400/D2691E/FFFFFF?text=Half+Half+Gangjeong", versions: { '조리법': { ingredients:['떡 6개', '순대 6개'], instructions: ["에어프라이기 200도 8분 조리 후 30초 이상 식힌 후 매콤소스와 함께 포장"] } } },
+    { category: '푸드', name: '토도독 소세지', image: "https://placehold.co/600x400/FF4500/FFFFFF?text=Sausage", versions: { '조리법': { ingredients:['소세지 2개'], instructions: ["에어프라이기 4분", "케찹+머스타드 드리즐 후 파슬리 뿌리고 포장"] } } },
+    { category: '푸드', name: '칠리 치즈 나초', image: "https://placehold.co/600x400/FFA500/FFFFFF?text=Chili+Cheese+Nachos", versions: { '제공': { ingredients:['나초 80g', '살사소스 40g', '치즈소스 40g'] } } },
+    { category: '푸드', name: '가볍게 뿌셔진 나초', image: "https://placehold.co/600x400/FFA500/FFFFFF?text=Crushed+Nachos", versions: { '제공': { ingredients:['뿌셔진 나초 80g', '살사소스 40g', '치즈소스 40g'] } } },
+    { category: '푸드', name: '버터구이 오징어', image: "https://placehold.co/600x400/F4A460/FFFFFF?text=Grilled+Squid", versions: { '조리법': { instructions: ["전자레인지 30초", "손으로 잘 풀어주기", "뜯어서 박스에 담고 전자레인지 1분 10초", "집게로 섞어주면서 뭉친곳 없게 + 수분 날리기"] } } },
+    { category: '푸드', name: '새우 볶음밥', image: "https://placehold.co/600x400/FFE4C4/333333?text=Shrimp+Fried+Rice", versions: { '조리법': { ingredients:['계란 1pc'], instructions: ["전자레인지 6분", "케찹 뿌리고 파슬리 뿌린 후 보냉팩에 포장"] } } },
+    { category: '푸드', name: '대패 삼겹 볶음밥', image: "https://placehold.co/600x400/D2B48C/FFFFFF?text=Pork+Belly+Fried+Rice", versions: { '조리법': { ingredients:['계란 1pc'], instructions: ["전자레인지 6분", "파슬리 뿌린 후 보냉팩에 포장"] } } },
+    { category: '푸드', name: '김치 볶음밥', image: "https://placehold.co/600x400/DC143C/FFFFFF?text=Kimchi+Fried+Rice", versions: { '조리법': { ingredients:['계란 1pc'], instructions: ["전자레인지 6분", "파슬리 뿌린 후 보냉팩에 포장"] } } },
+    { category: '푸드', name: '바삭 감자 치즈볼 (5ea)', image: "https://placehold.co/600x400/FFD700/FFFFFF?text=Potato+Cheese+Ball", versions: { '조리법': { ingredients:['치즈볼 5개', '케찹 40g'], instructions: ["해동 없이 에어프라이기 6분", "샌드위치 용기에 담아 케찹과 함께 제공", "조리 후 최소 30초 공기와 접촉 후 뚜껑 닫기"] } } },
+
+    // 팝콘
+    { category: '팝콘', name: '카라멜 팝콘', image: "https://placehold.co/600x400/DAA520/FFFFFF?text=Caramel+Popcorn", versions: { '조리법': { ingredients: ['팝콘 옥수수: 1 CUP', '팝콘 오일: 150ml', '카라멜 시즈닝: 180ml'], instructions: ['모터와 히터를 함께 ON 합니다.', '오일 → 시즈닝 → 옥수수 순으로 넣습니다.', '팝콘이 20개 정도 터지면 히터를 OFF 합니다.', '소리가 멈추면 모터를 끄고 정리합니다.'] } } },
+    { category: '팝콘', name: '딸기 팝콘', image: "https://placehold.co/600x400/FFC0CB/FFFFFF?text=Strawberry+Popcorn", versions: { '조리법': { ingredients: ["팝콘 옥수수: 1.5 CUP", "팝콘 오일: 1 CUP", "카라멜 시즈닝: 1.2 CUP"], instructions: ["카라멜 팝콘 조리법과 동일합니다."] } } }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const homeView = document.getElementById('home-view');
+    const detailViewsContainer = document.getElementById('detail-views');
+    const mainCategoryCards = document.querySelectorAll('.main-category-card');
+    const gnb = document.getElementById('main-gnb');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const globalSearchInput = document.getElementById('global-search-input');
+    const globalSearchInputMobile = document.getElementById('global-search-input-mobile');
+
+    let currentCategory = 'all';
+
+    function formatRecipeContent(versionData) {
+        let html = '';
+        if (versionData.ingredients) {
+            html += `<div class="mb-2"><strong class="text-[#A1887F] text-lg">재료:</strong></div><div>${versionData.ingredients.map(ing => `<span class="ingredient-block">${ing}</span>`).join('')}</div>`;
+        }
+        if (versionData.instructions) {
+            html += `<div class="mt-3"><strong class="text-[#A1887F] text-lg">조리법:</strong></div><ol class="list-decimal list-inside text-gray-600 mt-1 space-y-1 text-base">${versionData.instructions.map(inst => `<li>${inst}</li>`).join('')}</ol>`;
+        }
+        return html;
+    }
+
+    function renderRecipes(filter = 'all', searchTerm = '') {
+        const recipeGrid = document.getElementById('recipe-grid');
+        const noResults = document.getElementById('no-results');
+        if (!recipeGrid || !noResults) return;
+
+        recipeGrid.innerHTML = '';
+        const lowerCaseSearchTerm = searchTerm.toLowerCase().trim();
+        const filteredRecipes = recipeData.filter(recipe => {
+            const matchesCategory = filter === 'all' || recipe.category === filter;
+            const matchesSearch = recipe.name.toLowerCase().includes(lowerCaseSearchTerm);
+            return matchesCategory && matchesSearch;
+        });
+        noResults.classList.toggle('hidden', filteredRecipes.length > 0);
+        const gridFragment = document.createDocumentFragment();
+        filteredRecipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col';
+            card.dataset.recipe = JSON.stringify(recipe);
+            const versionKeys = Object.keys(recipe.versions);
+            const sortOrder = ['ICED', 'ICED (1L)', 'HOT'];
+            versionKeys.sort((a, b) => {
+                const indexA = sortOrder.indexOf(a);
+                const indexB = sortOrder.indexOf(b);
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                if (indexA !== -1) return -1;
+                if (indexB !== -1) return 1;
+                return a.localeCompare(b);
+            });
+            const firstVersionKey = versionKeys[0];
+            let versionButtons = '';
+            if (versionKeys.length > 1) {
+                versionButtons = versionKeys.map((key, i) => 
+                    `<button class="version-btn flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition rounded-md ${i === 0 ? 'active' : ''}" data-version="${key}">${key}</button>`
+                ).join('');
+            } else {
+                versionButtons = `<div class="flex-1 px-3 py-2 text-sm font-bold text-[#6D4C41] bg-gray-100 rounded-md text-center">${versionKeys[0]}</div>`;
+            }
+            card.innerHTML = `
+                <img src="${recipe.image}" alt="${recipe.name}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found'">
+                <div class="p-5 flex-grow">
+                    <p class="text-sm font-semibold text-[#A1887F]">${recipe.category}</p>
+                    <h3 class="text-2xl font-bold text-[#6D4C41] mt-1 truncate">${recipe.name}</h3>
+                    <div class="recipe-text mt-4 text-base leading-relaxed min-h-[8rem]">
+                        ${formatRecipeContent(recipe.versions[firstVersionKey])}
+                    </div>
+                </div>
+                <div class="bg-gray-50 border-t border-gray-200 p-2 flex flex-wrap rounded-b-lg gap-1">
+                    ${versionButtons}
+                </div>
+            `;
+            gridFragment.appendChild(card);
+        });
+        recipeGrid.appendChild(gridFragment);
+    }
+
+    function showView(viewId) {
+        if (viewId === 'home-view') {
+            homeView.style.display = 'block';
+            detailViewsContainer.classList.add('hidden');
+        } else {
+            homeView.style.display = 'none';
+            detailViewsContainer.classList.remove('hidden');
+            document.querySelectorAll('#detail-views > div').forEach(view => {
+                view.style.display = 'none';
+            });
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.style.display = 'block';
+            }
+        }
+        document.querySelectorAll('.gnb-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`.gnb-btn[data-view="${viewId}"]`).forEach(btn => btn.classList.add('active'));
+        mobileMenu.classList.add('hidden');
+
+        if (viewId !== 'recipe-view') {
+            if (globalSearchInput) globalSearchInput.value = '';
+            if (globalSearchInputMobile) globalSearchInputMobile.value = '';
+        }
+    }
+
+    function handleGlobalSearch(e) {
+        const searchTerm = e.target.value;
+        
+        if (globalSearchInput) globalSearchInput.value = searchTerm;
+        if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+
+        showView('recipe-view');
+
+        const recipeSearchInput = document.getElementById('search-input');
+        const mobileRecipeSearchInput = document.getElementById('mobile-search-input');
+        if(recipeSearchInput) recipeSearchInput.value = searchTerm;
+        if(mobileRecipeSearchInput) mobileRecipeSearchInput.value = searchTerm;
+
+        currentCategory = 'all';
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`.category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
+
+        renderRecipes('all', searchTerm);
+
+        if (e.target.id === 'global-search-input-mobile') {
+            mobileMenu.classList.add('hidden');
+        }
+    }
+
+    gnb.addEventListener('click', (e) => {
+        const button = e.target.closest('.gnb-btn');
+        if (button) {
+            const viewId = button.dataset.view;
+            showView(viewId);
+        }
+    });
+    
+    mainCategoryCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const viewId = card.dataset.view;
+            showView(viewId);
+        });
+    });
+
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    function initializeRecipeApp() {
+        const recipeViewContainer = document.getElementById('recipe-view');
+        recipeViewContainer.innerHTML = `
+            <div class="relative min-h-screen">
+                <aside id="sidebar" class="hidden md:flex sidebar bg-[#F1EBE5] text-[#6D4C41] w-64 fixed inset-y-0 left-0 transform md:translate-x-0 z-30 flex flex-col h-screen">
+                    <div class="flex-shrink-0 px-4 pt-7">
+                        <div class="relative mb-4">
+                            <input type="text" id="search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                            <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <nav id="category-nav" class="flex-grow overflow-y-auto px-4 pb-7">
+                        <button class="w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn active" data-category="all">전체 메뉴</button>
+                    </nav>
+                </aside>
+                <div class="md:ml-64">
+                    <div class="md:hidden sticky top-0 z-10 bg-white shadow-md">
+                         <div class="px-4 pt-3 pb-3">
+                            <div class="relative">
+                                <input type="text" id="mobile-search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F] transition duration-200">
+                                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <nav id="mobile-category-nav" class="bg-white border-t border-gray-200 px-2 overflow-x-auto whitespace-nowrap no-scrollbar flex space-x-2">
+                        </nav>
+                    </div>
+                    <main class="main-content flex-1 p-4 sm:p-6 lg:p-10">
+                        <div class="max-w-7xl mx-auto">
+                             <div id="recipe-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"></div>
+                             <div id="no-results" class="hidden text-center py-10">
+                                <p class="text-xl text-gray-500">검색 결과가 없습니다.</p>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        `;
+        
+        const categoryNav = document.getElementById('category-nav');
+        const mobileCategoryNav = document.getElementById('mobile-category-nav');
+        const recipeGrid = document.getElementById('recipe-grid');
+        const searchInput = document.getElementById('search-input');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const noResults = document.getElementById('no-results');
+
+        const categories = ['all', ...new Set(recipeData.map(recipe => recipe.category))];
+
+        function setupCategories() {
+            const desktopNavFragment = document.createDocumentFragment();
+            const mobileNavFragment = document.createDocumentFragment();
+            categories.slice(1).forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left text-base font-medium rounded-lg transition-colors duration-200 py-2.5 px-4 hover:bg-[#E0DACE] category-btn';
+                button.dataset.category = category;
+                button.textContent = category;
+                desktopNavFragment.appendChild(button);
+                const mobileButton = document.createElement('button');
+                mobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 border-transparent category-btn';
+                mobileButton.dataset.category = category;
+                mobileButton.textContent = category;
+        const checklistContainer = document.getElementById('checklist-view');
+        if (checklistContainer) {
+            checklistContainer.addEventListener('change', (e) => {
+                if (e.target.matches('input[type="checkbox"]')) {
+                    updateChecklistProgress();
+                }
+            });
+            updateChecklistProgress();
+        }
+    }
+
+    function updateChecklistProgress() {
+        const checklistContainer = document.getElementById('checklist-view');
+        if (!checklistContainer) return;
+
+        const tasks = {
+            common: { total: 0, checked: 0 },
+            open: { total: 0, checked: 0 },
+            middle: { total: 0, checked: 0 },
+            closing: { total: 0, checked: 0 },
+            'late-night': { total: 0, checked: 0 }
+        };
+
+        checklistContainer.querySelectorAll('input[type="checkbox"][data-task]').forEach(checkbox => {
+            const taskType = checkbox.dataset.task;
+            if (tasks[taskType]) {
+                tasks[taskType].total++;
+                if (checkbox.checked) {
+                    tasks[taskType].checked++;
+                }
+            }
+        });
+
+        const calculatePercentage = (shiftType) => {
+            const commonTotal = tasks.common.total;
+            const commonChecked = tasks.common.checked;
+            const shiftTotal = tasks[shiftType].total;
+            const shiftChecked = tasks[shiftType].checked;
+
+            if (commonTotal + shiftTotal === 0) return 0;
+            return Math.round(((commonChecked + shiftChecked) / (commonTotal + shiftTotal)) * 100);
+        };
+
+        const percentages = {
+            open: calculatePercentage('open'),
+            middle: calculatePercentage('middle'),
+            closing: calculatePercentage('closing'),
+            'late-night': calculatePercentage('late-night')
+        };
+
+        for (const shift in percentages) {
+            const bar = document.getElementById(`progress-bar-${shift}`);
+            const text = document.getElementById(`progress-text-${shift}`);
+            if (bar && text) {
+                bar.style.width = `${percentages[shift]}%`;
+                text.textContent = `${percentages[shift]}%`;
+            }
+        }
+    }
+    
+    if(globalSearchInput) globalSearchInput.addEventListener('input', handleGlobalSearch);
+    if(globalSearchInputMobile) globalSearchInputMobile.addEventListener('input', handleGlobalSearch);
+
+    initializeRecipeApp();
+    showView('home-view');
+});
+</script>
+</body>
+</html>
+
+
+
+
+
