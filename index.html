@@ -72,23 +72,6 @@
             background-color: #8D6E63;
             color: white;
         }
-        .progress-bar-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .progress-bar-wrapper {
-            flex-grow: 1;
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-            height: 0.8rem;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            border-radius: 9999px;
-            transition: width 0.3s ease-in-out;
-        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -205,82 +188,45 @@
                 <p class="text-gray-700">매장 청소 및 분리배출 관리 더미 데이터입니다. 여기에 일간/주간 청소 체크리스트, 분리배출 요령 등에 대한 내용을 추가할 수 있습니다.</p>
             </div>
              <div id="checklist-view" class="p-8 max-w-7xl mx-auto">
-                <h1 class="text-3xl font-bold text-[#6D4C41] mb-6 text-center">근무 교대 시 체크리스트</h1>
-
-                <!-- Progress Bars -->
-                <div class="bg-white rounded-lg shadow-md p-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                    <h2 class="text-xl font-bold text-[#6D4C41] md:col-span-2">업무 완료 현황</h2>
-                    <!-- 오픈 -->
-                    <div class="progress-bar-container">
-                        <label for="progress-open" class="w-28 text-center font-semibold text-gray-700">🌞 공통 + 오픈</label>
-                        <div class="progress-bar-wrapper">
-                            <div id="progress-bar-open" class="progress-bar bg-yellow-400" style="width: 0%"></div>
-                        </div>
-                        <span id="progress-text-open" class="w-10 text-right font-medium text-gray-700">0%</span>
-                    </div>
-                    <!-- 미들 -->
-                    <div class="progress-bar-container">
-                        <label for="progress-middle" class="w-28 text-center font-semibold text-gray-700">🌥️ 공통 + 미들</label>
-                        <div class="progress-bar-wrapper">
-                            <div id="progress-bar-middle" class="progress-bar bg-sky-400" style="width: 0%"></div>
-                        </div>
-                        <span id="progress-text-middle" class="w-10 text-right font-medium text-gray-700">0%</span>
-                    </div>
-                    <!-- 마감/저녁 -->
-                    <div class="progress-bar-container">
-                        <label for="progress-closing" class="w-28 text-center font-semibold text-gray-700">🌜 공통 + 마감</label>
-                        <div class="progress-bar-wrapper">
-                            <div id="progress-bar-closing" class="progress-bar bg-indigo-400" style="width: 0%"></div>
-                        </div>
-                        <span id="progress-text-closing" class="w-10 text-right font-medium text-gray-700">0%</span>
-                    </div>
-                    <!-- 심야 -->
-                    <div class="progress-bar-container">
-                        <label for="progress-late-night" class="w-28 text-center font-semibold text-gray-700">⭐ 공통 + 심야</label>
-                        <div class="progress-bar-wrapper">
-                            <div id="progress-bar-late-night" class="progress-bar bg-gray-600" style="width: 0%"></div>
-                        </div>
-                        <span id="progress-text-late-night" class="w-10 text-right font-medium text-gray-700">0%</span>
-                    </div>
-                </div>
+                <h1 class="text-3xl font-bold text-[#6D4C41] mb-8 text-center">근무 교대 시 체크리스트</h1>
                 
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                     <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-tasks mr-3"></i>공통 업무</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-play-circle mr-2 text-green-500"></i>출근 시</h4>
-                            <ul class="space-y-2">
-                                <li class="flex items-center"><input type="checkbox" id="task-common-1" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-1" class="text-gray-600">조명 / 어닝 / DID 모니터 확인</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-2" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-2" class="text-gray-600">배달 어플 확인</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-3" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-3" class="text-gray-600">시재 인수인계 및 전달사항 확인</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-4" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-4" class="text-gray-600">제빙기 얼음양 확인</label></li>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
+                                <li>조명 / 어닝 / DID 모니터 확인</li>
+                                <li>배달 어플 확인</li>
+                                <li>시재 인수인계 및 전달사항 확인</li>
+                                <li>제빙기 얼음양 확인</li>
                             </ul>
                         </div>
                         <div>
                             <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-sync-alt mr-2 text-blue-500"></i>교체 시</h4>
-                            <ul class="space-y-2">
-                                <li class="flex items-center"><input type="checkbox" id="task-common-5" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-5" class="text-gray-600"><span class="font-bold">원두:</span> 그라인더 호퍼 분리 후 청소</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-6" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-6" class="text-gray-600"><span class="font-bold">시럽:</span> 굳지 않도록 뜨거운 물 빼주기</label></li>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
+                                <li><span class="font-bold">원두:</span> 그라인더 호퍼 분리 후 청소</li>
+                                <li><span class="font-bold">시럽:</span> 굳지 않도록 뜨거운 물 빼주기</li>
                             </ul>
                         </div>
                         <div class="md:col-span-2">
                             <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-box-open mr-2 text-yellow-500"></i>채워주기 <span class="text-sm font-normal text-red-500">(*퇴근 1시간 전 미리 확인)</span></h4>
-                            <ul class="space-y-2 mb-2">
-                                <li class="flex items-center"><input type="checkbox" id="task-common-7" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-7" class="text-gray-600">팝콘, 나쵸, 대용량 베이스, 음료용 가당딸기</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-8" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-8" class="text-gray-600">냉장해동 디저트, 오징어</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-9" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-9" class="text-gray-600">2온스 소스통, 시럽 및 파우더, 각종 부자재</label></li>
-                                <li class="text-blue-600 font-medium ml-4">Tip: 핫도그 박스, 케이크 용기 스티커, 오징어 박스 포크 등은 바쁘지 않을 때 미리 준비해두세요.</li>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600 mb-2">
+                                <li>팝콘, 나쵸, 대용량 베이스, 음료용 가당딸기</li>
+                                <li>냉장해동 디저트, 오징어</li>
+                                <li>2온스 소스통, 시럽 및 파우더, 각종 부자재</li>
+                                <li class="text-blue-600 font-medium">Tip: 핫도그 박스, 케이크 용기 스티커, 오징어 박스 포크 등은 바쁘지 않을 때 미리 준비해두세요.</li>
                             </ul>
                         </div>
                         <div>
                             <h4 class="text-lg font-semibold text-gray-700 mb-2"><i class="fas fa-stopwatch mr-2 text-purple-500"></i>퇴근 한 시간 전</h4>
-                            <ul class="space-y-2">
-                                <li class="flex items-center"><input type="checkbox" id="task-common-10" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-10" class="text-gray-600">커피퍽, 쓰레기통, 싱크대, 우유곽, 배수구 확인 및 교체</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-11" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-11" class="text-gray-600">자동 탬핑기 내부 브러쉬 청소, 실링기 오염 제거</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-12" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-12" class="text-gray-600">커피 바 전체 정리 및 청소</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-13" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-13" class="text-gray-600">찐딸기용 계량스푼 물 교체</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-14" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-14" class="text-gray-600">행주, 스팀행주 세척</label></li>
-                                <li class="flex items-center"><input type="checkbox" id="task-common-15" data-task="common" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-common-15" class="text-gray-600">시재 확인 및 인수인계 사항 남기기</label></li>
+                            <ul class="list-disc list-inside space-y-1 text-gray-600">
+                                <li>커피퍽, 쓰레기통, 싱크대, 우유곽, 배수구 확인 및 교체</li>
+                                <li>자동 탬핑기 내부 브러쉬 청소, 실링기 오염 제거</li>
+                                <li>커피 바 전체 정리 및 청소</li>
+                                <li>찐딸기용 계량스푼 물 교체</li>
+                                <li>행주, 스팀행주 세척</li>
+                                <li>시재 확인 및 인수인계 사항 남기기</li>
                             </ul>
                         </div>
                     </div>
@@ -290,19 +236,19 @@
                     <!-- 오픈 -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-sun mr-3 text-yellow-400"></i>오픈</h3>
-                        <ul class="space-y-2">
-                            <li class="flex items-center"><input type="checkbox" id="task-open-1" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-1" class="text-gray-600">픽업대 및 포스기 주변 정리 및 청소</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-open-2" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-2" class="text-gray-600">행주 세척</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-open-3" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-3" class="text-gray-600">냉장/상온/실온 정리 및 선입선출 확인</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-open-4" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-4" class="text-gray-600">재고 및 발주 확인</label></li>
+                        <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li>픽업대 및 포스기 주변 정리 및 청소</li>
+                            <li>행주 세척</li>
+                            <li>냉장/상온/실온 정리 및 선입선출 확인</li>
+                            <li>재고 및 발주 확인</li>
                             <li><span class="font-bold">[마감 청소]</span>
-                                <ul class="space-y-2 ml-4 mt-1">
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-5" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 상부/대용량 냉장고 물기 제거</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-6" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 파우더 선반, 시럽병 근처 바닥 청소</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-7" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 파우더 스푼 세척 및 건조</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-8" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-8" class="text-gray-600"><span class="font-semibold text-gray-800">(월,수,금)</span> 싱크대 물때 청소</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-9" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-9" class="text-gray-600"><span class="font-semibold text-gray-800">(화)</span> 오거나이저 빈, 팝콘 기계 뒤쪽 청소</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-open-10" data-task="open" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-open-10" class="text-gray-600"><span class="font-semibold text-gray-800">(목)</span> 창문틀, 키오스크 양쪽 먼지 제거</label></li>
+                                <ul class="list-inside list-[circle] ml-4 mt-1 space-y-1">
+                                    <li><span class="font-semibold text-gray-800">(매일)</span> 상부/대용량 냉장고 물기 제거</li>
+                                    <li><span class="font-semibold text-gray-800">(매일)</span> 파우더 선반, 시럽병 근처 바닥 청소</li>
+                                    <li><span class="font-semibold text-gray-800">(매일)</span> 파우더 스푼 세척 및 건조</li>
+                                    <li><span class="font-semibold text-gray-800">(월,수,금)</span> 싱크대 물때 청소</li>
+                                    <li><span class="font-semibold text-gray-800">(화)</span> 오거나이저 빈, 팝콘 기계 뒤쪽 청소</li>
+                                    <li><span class="font-semibold text-gray-800">(목)</span> 창문틀, 키오스크 양쪽 먼지 제거</li>
                                 </ul>
                             </li>
                         </ul>
@@ -310,14 +256,14 @@
                     <!-- 미들 -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-cloud-sun mr-3 text-sky-400"></i>미들</h3>
-                        <ul class="space-y-2">
-                            <li class="flex items-center"><input type="checkbox" id="task-middle-1" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-1" class="text-gray-600">매장 밖, 문 앞 청소 (명함, 쓰레기 등)</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-middle-2" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-2" class="text-gray-600">영수증 쓰레기통, 커피 퍽 비우기</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-middle-3" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-3" class="text-gray-600">전체 바닥 청소</label></li>
+                        <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li>매장 밖, 문 앞 청소 (명함, 쓰레기 등)</li>
+                            <li>영수증 쓰레기통, 커피 퍽 비우기</li>
+                            <li>전체 바닥 청소</li>
                              <li><span class="font-bold">[마감 청소]</span>
-                                <ul class="space-y-2 ml-4 mt-1">
-                                    <li class="flex items-center"><input type="checkbox" id="task-middle-4" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 아이스빈 및 서랍 내부 청소</label></li>
-                                    <li class="flex items-center"><input type="checkbox" id="task-middle-5" data-task="middle" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-middle-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 빙수기계, 디퍼웰, 소도구 세척</label></li>
+                                <ul class="list-inside list-[circle] ml-4 mt-1 space-y-1">
+                                    <li><span class="font-semibold text-gray-800">(매일)</span> 아이스빈 및 서랍 내부 청소</li>
+                                    <li><span class="font-semibold text-gray-800">(매일)</span> 빙수기계, 디퍼웰, 소도구 세척</li>
                                 </ul>
                             </li>
                         </ul>
@@ -325,16 +271,16 @@
                     <!-- 마감/저녁 -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-moon mr-3 text-indigo-400"></i>마감/저녁</h3>
-                         <ul class="space-y-2">
-                            <li class="flex items-center"><input type="checkbox" id="task-closing-1" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-1" class="text-gray-600"><span class="font-bold">[18:00-20:00]</span> 리뷰 댓글 달기</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-closing-2" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-2" class="text-gray-600"><span class="font-bold">[20:30]</span> 심야 대비 재료 채워져 있는지 확인 (볶음밥/강정 소분)</label></li>
+                         <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li><span class="font-bold">[18:00-20:00]</span> 리뷰 댓글 달기</li>
+                            <li><span class="font-bold">[20:30]</span> 심야 대비 재료 채워져 있는지 확인 (볶음밥/강정 소분)</li>
                             <li><span class="font-bold">[마감 청소 - 커피머신]</span>
-                                <ul class="space-y-2 ml-4 mt-1">
-                                     <li class="flex items-center"><input type="checkbox" id="task-closing-3" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-3" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 그룹헤드 솔 청소 및 물 흘리기</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-closing-4" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 포터필터 용액 세척, 트레이 분리 세척</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-closing-5" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 커피머신 전체, 그라인더, 탬핑기 청소</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-closing-6" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 온수기(홀더상자, 물 입출구, 코크 손잡이) 청소</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-closing-7" data-task="closing" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-closing-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어 망, 전자레인지용 접시 세척</label></li>
+                                <ul class="list-inside list-[circle] ml-4 mt-1 space-y-1">
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 그룹헤드 솔 청소 및 물 흘리기</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 포터필터 용액 세척, 트레이 분리 세척</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 커피머신 전체, 그라인더, 탬핑기 청소</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 온수기(홀더상자, 물 입출구, 코크 손잡이) 청소</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어 망, 전자레인지용 접시 세척</li>
                                 </ul>
                             </li>
                         </ul>
@@ -342,22 +288,22 @@
                     <!-- 심야 -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-2xl font-bold text-[#8D6E63] mb-4 border-b pb-2 flex items-center"><i class="fas fa-star mr-3 text-gray-600"></i>심야</h3>
-                         <ul class="space-y-2">
-                            <li class="flex items-center"><input type="checkbox" id="task-late-night-1" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-1" class="text-gray-600">어닝 접기, 시재 정리, 포스 마감 및 보고</label></li>
-                            <li class="flex items-center"><input type="checkbox" id="task-late-night-2" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-2" class="text-gray-600">물류 입고 확인 및 정리 (불량 체크)</label></li>
-                             <li class="flex items-center"><input type="checkbox" id="task-late-night-3" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-3" class="text-gray-600"><span class="font-bold">[평일]</span> 포장재 미리 준비 (핫도그박스, 오징어상자, 캔/케이크 스티커 등)</label></li>
+                         <ul class="list-disc list-inside space-y-2 text-gray-600">
+                            <li>어닝 접기, 시재 정리, 포스 마감 및 보고</li>
+                            <li>물류 입고 확인 및 정리 (불량 체크)</li>
+                             <li><span class="font-bold">[평일]</span> 포장재 미리 준비 (핫도그박스, 오징어상자, 캔/케이크 스티커 등)</li>
                              <li><span class="font-bold">[05:00 마감청소]</span>
-                                <ul class="space-y-2 ml-4 mt-1">
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-4" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-4" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어, 접시, 바스푼통, 디퍼웰 마감</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-5" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-5" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 모든 쓰레기 배출</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-6" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-6" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 창고 정리 및 청소</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-7" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-7" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 냉장고 아래 청소</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-8" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-8" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 창고 → 커피바 → 홀 전체 바닥 쓸고 닦기</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-9" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-9" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 대걸레 세척</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-10" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-10" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 스팀행주 세척 및 건조</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-11" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-11" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 영수증 통 세척 및 건조</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-12" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-12" class="text-gray-600"><span class="font-semibold text-gray-800">(매일)</span> 일반행주 세제에 담궈두기</label></li>
-                                     <li class="flex items-center"><input type="checkbox" id="task-late-night-13" data-task="late-night" class="h-4 w-4 rounded border-gray-300 text-[#8D6E63] focus:ring-[#A1887F] mr-3"><label for="task-late-night-13" class="text-gray-600"><span class="font-semibold text-gray-800">(월,수,금)</span> 음식물 쓰레기통, 분리수거함 세척</label></li>
+                                <ul class="list-inside list-[circle] ml-4 mt-1 space-y-1">
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 에어프라이어, 접시, 바스푼통, 디퍼웰 마감</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 모든 쓰레기 배출</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 창고 정리 및 청소</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 냉장고 아래 청소</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 창고 → 커피바 → 홀 전체 바닥 쓸고 닦기</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 대걸레 세척</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 스팀행주 세척 및 건조</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 영수증 통 세척 및 건조</li>
+                                     <li><span class="font-semibold text-gray-800">(매일)</span> 일반행주 세제에 담궈두기</li>
+                                     <li><span class="font-semibold text-gray-800">(월,수,금)</span> 음식물 쓰레기통, 분리수거함 세척</li>
                                 </ul>
                             </li>
                         </ul>
@@ -727,64 +673,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 border-transparent category-btn';
                 mobileButton.dataset.category = category;
                 mobileButton.textContent = category;
-        const checklistContainer = document.getElementById('checklist-view');
-        if (checklistContainer) {
-            checklistContainer.addEventListener('change', (e) => {
-                if (e.target.matches('input[type="checkbox"]')) {
-                    updateChecklistProgress();
-                }
+                mobileNavFragment.appendChild(mobileButton.cloneNode(true));
             });
-            updateChecklistProgress();
+            const allMobileButton = document.createElement('button');
+            allMobileButton.className = 'flex-shrink-0 text-sm font-medium transition-colors duration-200 py-2 px-4 border-b-2 category-btn active';
+            allMobileButton.dataset.category = 'all';
+            allMobileButton.textContent = '전체 메뉴';
+            mobileCategoryNav.appendChild(allMobileButton);
+            categoryNav.appendChild(desktopNavFragment);
+            mobileCategoryNav.appendChild(mobileNavFragment);
+            mobileCategoryNav.querySelector('.category-btn[data-category="all"]').classList.add('active');
         }
-    }
 
-    function updateChecklistProgress() {
-        const checklistContainer = document.getElementById('checklist-view');
-        if (!checklistContainer) return;
+        function handleCategoryClick(e) {
+            const button = e.target.closest('.category-btn');
+            if (button) {
+                currentCategory = button.dataset.category;
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll(`.category-btn[data-category="${currentCategory}"]`).forEach(btn => btn.classList.add('active'));
+                
+                if (globalSearchInput) globalSearchInput.value = '';
+                if (globalSearchInputMobile) globalSearchInputMobile.value = '';
+                searchInput.value = '';
+                mobileSearchInput.value = '';
 
-        const tasks = {
-            common: { total: 0, checked: 0 },
-            open: { total: 0, checked: 0 },
-            middle: { total: 0, checked: 0 },
-            closing: { total: 0, checked: 0 },
-            'late-night': { total: 0, checked: 0 }
-        };
-
-        checklistContainer.querySelectorAll('input[type="checkbox"][data-task]').forEach(checkbox => {
-            const taskType = checkbox.dataset.task;
-            if (tasks[taskType]) {
-                tasks[taskType].total++;
-                if (checkbox.checked) {
-                    tasks[taskType].checked++;
-                }
-            }
-        });
-
-        const calculatePercentage = (shiftType) => {
-            const commonTotal = tasks.common.total;
-            const commonChecked = tasks.common.checked;
-            const shiftTotal = tasks[shiftType].total;
-            const shiftChecked = tasks[shiftType].checked;
-
-            if (commonTotal + shiftTotal === 0) return 0;
-            return Math.round(((commonChecked + shiftChecked) / (commonTotal + shiftTotal)) * 100);
-        };
-
-        const percentages = {
-            open: calculatePercentage('open'),
-            middle: calculatePercentage('middle'),
-            closing: calculatePercentage('closing'),
-            'late-night': calculatePercentage('late-night')
-        };
-
-        for (const shift in percentages) {
-            const bar = document.getElementById(`progress-bar-${shift}`);
-            const text = document.getElementById(`progress-text-${shift}`);
-            if (bar && text) {
-                bar.style.width = `${percentages[shift]}%`;
-                text.textContent = `${percentages[shift]}%`;
+                renderRecipes(currentCategory);
             }
         }
+
+        function handleSearch(e) {
+            const searchTerm = e.target.value;
+            if (globalSearchInput) globalSearchInput.value = searchTerm;
+            if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+            searchInput.value = searchTerm;
+            mobileSearchInput.value = searchTerm;
+            renderRecipes(currentCategory, searchTerm);
+        }
+        
+        function handleVersionClick(e) {
+            const button = e.target.closest('.version-btn');
+            if (button && !button.classList.contains('active')) {
+                const card = button.closest('.recipe-card');
+                const recipe = JSON.parse(card.dataset.recipe);
+                const versionKey = button.dataset.version;
+                const recipeText = card.querySelector('.recipe-text');
+                recipeText.innerHTML = formatRecipeContent(recipe.versions[versionKey]);
+                card.querySelectorAll('.version-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        }
+
+        categoryNav.addEventListener('click', handleCategoryClick);
+        mobileCategoryNav.addEventListener('click', handleCategoryClick);
+        searchInput.addEventListener('input', handleSearch);
+        mobileSearchInput.addEventListener('input', handleSearch);
+        recipeGrid.addEventListener('click', handleVersionClick);
+
+        setupCategories();
+        renderRecipes();
     }
     
     if(globalSearchInput) globalSearchInput.addEventListener('input', handleGlobalSearch);
@@ -796,8 +742,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
-
-
-
