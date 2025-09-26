@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메뉴 관리 - 백억커피 통합 운영 매뉴얼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #FDFBF8; }
+        .gnb-link.active { background-color: #8D6E63; color: white; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header id="main-gnb" class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="gnb-link font-bold text-xl text-[#6D4C41] hidden md:flex items-center">
+                        <i class="fas fa-home mr-2"></i>백억커피 매뉴얼
+                    </a>
+                    <a href="../index.html" class="gnb-link flex md:hidden items-center space-x-2">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmgK7X5UjYipj8B0revMEDlmBiNaoJfIDfpw&s" class="h-8 w-auto" alt="백억커피 로고">
+                        <span class="font-bold text-lg text-[#6D4C41]">매뉴얼</span>
+                    </a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="settings.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium">시스템</a>
+                        <a href="order.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium">발주/재고</a>
+                        <a href="menupan.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium active">메뉴관리</a>
+                        <a href="storemgnt.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium">청소</a>
+                        <a href="checklist.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium">체크리스트</a>
+                        <a href="../index.html" class="gnb-link text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] px-3 py-2 rounded-md text-sm font-medium">레시피</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" id="mobile-menu-button" class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                 <a href="settings.html" class="text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">시스템 관리</a>
+                 <a href="order.html" class="text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">발주/재고</a>
+                 <a href="menupan.html" class="text-gray-600 bg-[#E0DACE] text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">메뉴관리</a>
+                 <a href="storemgnt.html" class="text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">청소</a>
+                 <a href="checklist.html" class="text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">체크리스트</a>
+                 <a href="../index.html" class="text-gray-600 hover:bg-[#E0DACE] hover:text-[#6D4C41] block px-3 py-2 rounded-md text-base font-medium">레시피</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-[#6D4C41] mb-4">메뉴 품절 / 품절 해제 관리</h1>
+        <p class="text-gray-700">이 페이지에 각 배달앱 및 포스에서 메뉴 상태를 변경하는 방법에 대한 내용을 추가할 수 있습니다.</p>
+    </main>
+
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
