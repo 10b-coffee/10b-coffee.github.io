@@ -108,6 +108,10 @@
             margin-top: 0.25rem;
             padding-left: 0.25rem;
         }
+        .task-group-header {
+            /* Calculated sticky top: 64px (GNB) + ~44px (shrunken progress bar) = 108px */
+            top: 108px;
+        }
         .custom-checkbox {
             appearance: none; -webkit-appearance: none;
             min-width: 1.5rem; width: 1.5rem; height: 1.5rem;
@@ -139,6 +143,19 @@
         }
         @keyframes fall {
             to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Improved Form Styles */
+        .shift-btn-radio { display: none; }
+        .shift-btn-radio + label {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .shift-btn-radio:checked + label {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-color: #6D4C41;
         }
     </style>
 </head>
@@ -199,36 +216,12 @@
         <div id="home-view">
             <main class="p-4 sm:p-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="system-view">
-                        <i class="fas fa-desktop fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">시스템 관리</h2>
-                        <p class="text-gray-500 mt-1">포스, 배달앱</p>
-                    </div>
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="inventory-view">
-                        <i class="fas fa-boxes fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">발주 및 재고 관리</h2>
-                         <p class="text-gray-500 mt-1">주문, 재고 확인</p>
-                    </div>
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="status-view">
-                        <i class="fas fa-toggle-on fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">메뉴 품절/해제 관리</h2>
-                         <p class="text-gray-500 mt-1">메뉴 상태 변경</p>
-                    </div>
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="cleaning-view">
-                        <i class="fas fa-broom fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">매장 청소 및 분리배출</h2>
-                         <p class="text-gray-500 mt-1">청결 관리</p>
-                    </div>
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="checklist-view">
-                        <i class="fas fa-clipboard-list fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">근무 교대 체크리스트</h2>
-                         <p class="text-gray-500 mt-1">인수인계 항목</p>
-                    </div>
-                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="recipe-view">
-                        <i class="fas fa-book-open fa-3x text-[#A1887F] mb-4"></i>
-                        <h2 class="text-xl font-bold text-[#6D4C41]">레시피 목록</h2>
-                         <p class="text-gray-500 mt-1">음료, 푸드 제조법</p>
-                    </div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="system-view"><i class="fas fa-desktop fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">시스템 관리</h2><p class="text-gray-500 mt-1">포스, 배달앱</p></div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="inventory-view"><i class="fas fa-boxes fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">발주 및 재고 관리</h2><p class="text-gray-500 mt-1">주문, 재고 확인</p></div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="status-view"><i class="fas fa-toggle-on fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">메뉴 품절/해제 관리</h2><p class="text-gray-500 mt-1">메뉴 상태 변경</p></div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="cleaning-view"><i class="fas fa-broom fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">매장 청소 및 분리배출</h2><p class="text-gray-500 mt-1">청결 관리</p></div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="checklist-view"><i class="fas fa-clipboard-list fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">근무 교대 체크리스트</h2><p class="text-gray-500 mt-1">인수인계 항목</p></div>
+                    <div class="main-category-card bg-white rounded-lg shadow-sm p-6 cursor-pointer text-center" data-view="recipe-view"><i class="fas fa-book-open fa-3x text-[#A1887F] mb-4"></i><h2 class="text-xl font-bold text-[#6D4C41]">레시피 목록</h2><p class="text-gray-500 mt-1">음료, 푸드 제조법</p></div>
                 </div>
             </main>
         </div>
@@ -243,31 +236,50 @@
             <div id="checklist-view" class="p-4 sm:p-8 max-w-4xl mx-auto">
                 <h1 class="text-3xl font-bold text-[#6D4C41] mb-8 text-center">근무 교대 체크리스트</h1>
                 
-                <!-- User Info Form -->
+                <!-- Combined User Info and Shift Selection Form -->
                 <div id="user-info-container">
-                    <div class="bg-white rounded-lg shadow-md p-6">
-                        <h2 class="text-xl font-semibold text-center text-gray-700 mb-6">근무자 정보를 입력해주세요.</h2>
-                        <form id="user-info-form" class="space-y-4">
-                            <div><label for="worker-name" class="block text-sm font-medium text-gray-700">이름</label><input type="text" id="worker-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm"></div>
-                            <div><label for="work-date" class="block text-sm font-medium text-gray-700">날짜</label><input type="date" id="work-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm"></div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label for="start-time" class="block text-sm font-medium text-gray-700">시작 시간</label><input type="time" id="start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm"></div>
-                                <div><label for="end-time" class="block text-sm font-medium text-gray-700">종료 시간</label><input type="time" id="end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm"></div>
-                            </div>
-                            <button type="submit" class="w-full bg-[#8D6E63] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#A1887F] transition-all">다음</button>
-                        </form>
-                    </div>
-                </div>
+                    <form id="user-info-form" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+                        <h2 class="text-xl font-semibold text-center text-gray-700">근무 정보를 입력하고 시작하세요.</h2>
+                        
+                        <div>
+                            <label for="worker-name" class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+                            <input type="text" id="worker-name" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="work-date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                            <input type="date" id="work-date" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">근무 타임</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <input type="radio" name="shift" id="shift-open" value="open" class="shift-btn-radio" required>
+                                <label for="shift-open" class="block text-center bg-yellow-400 text-white font-bold py-3 rounded-lg shadow-md">🌞 오픈</label>
+                                
+                                <input type="radio" name="shift" id="shift-middle" value="middle" class="shift-btn-radio">
+                                <label for="shift-middle" class="block text-center bg-sky-400 text-white font-bold py-3 rounded-lg shadow-md">🌥️ 미들</label>
+                                
+                                <input type="radio" name="shift" id="shift-closing" value="closing" class="shift-btn-radio">
+                                <label for="shift-closing" class="block text-center bg-indigo-400 text-white font-bold py-3 rounded-lg shadow-md">🌜 마감</label>
 
-                <!-- Shift Selection -->
-                <div id="shift-selection-container" class="mb-8 hidden">
-                    <h2 class="text-xl font-semibold text-center text-gray-700 mb-4">근무 타임을 선택해주세요.</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button data-shift="open" class="shift-btn bg-yellow-400 text-white font-bold py-4 rounded-lg shadow-md hover:bg-yellow-500 transition-all">🌞 오픈</button>
-                        <button data-shift="middle" class="shift-btn bg-sky-400 text-white font-bold py-4 rounded-lg shadow-md hover:bg-sky-500 transition-all">🌥️ 미들</button>
-                        <button data-shift="closing" class="shift-btn bg-indigo-400 text-white font-bold py-4 rounded-lg shadow-md hover:bg-indigo-500 transition-all">🌜 마감</button>
-                        <button data-shift="late-night" class="shift-btn bg-gray-600 text-white font-bold py-4 rounded-lg shadow-md hover:bg-gray-700 transition-all">⭐ 심야</button>
-                    </div>
+                                <input type="radio" name="shift" id="shift-late-night" value="late-night" class="shift-btn-radio">
+                                <label for="shift-late-night" class="block text-center bg-gray-600 text-white font-bold py-3 rounded-lg shadow-md">⭐ 심야</label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="start-time" class="block text-sm font-medium text-gray-700 mb-1">시작 시간</label>
+                                <input type="time" id="start-time" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="end-time" class="block text-sm font-medium text-gray-700 mb-1">종료 시간</label>
+                                <input type="time" id="end-time" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#A1887F] focus:border-[#A1887F] sm:text-sm">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-[#8D6E63] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#A1887F] transition-all">체크리스트 시작</button>
+                    </form>
                 </div>
 
                 <!-- Checklist Area -->
@@ -276,7 +288,7 @@
                         <div class="details-wrapper mb-4">
                             <div class="flex justify-between items-center">
                                 <h2 id="progress-title" class="text-xl font-bold text-[#6D4C41]">업무 완료 현황</h2>
-                                <button id="reset-checklist-btn" class="text-sm text-gray-500 hover:text-gray-800 transition-colors"><i class="fas fa-undo mr-1"></i>다시 선택</button>
+                                <button id="reset-checklist-btn" class="text-sm text-gray-500 hover:text-gray-800 transition-colors"><i class="fas fa-undo mr-1"></i>처음으로</button>
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
@@ -395,7 +407,7 @@ const checklistData = {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- 기본 요소 선택 ---
+    // --- Basic Element Selectors ---
     const homeView = document.getElementById('home-view');
     const detailViewsContainer = document.getElementById('detail-views');
     const mainCategoryCards = document.querySelectorAll('.main-category-card');
@@ -405,10 +417,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const globalSearchInput = document.getElementById('global-search-input');
     const globalSearchInputMobile = document.getElementById('global-search-input-mobile');
     
-    // --- 레시피 앱 관련 변수 ---
+    // --- Recipe App Variables ---
     let currentRecipeCategory = 'all';
 
-    // --- 뷰(화면) 전환 함수 ---
+    // --- View Switching Function ---
     function showView(viewId) {
         if (viewId === 'home-view') {
             homeView.style.display = 'block';
@@ -434,38 +446,152 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 글로벌 검색 처리 함수 ---
+    // --- Global Search Handler ---
     function handleGlobalSearch(e) {
         const searchTerm = e.target.value;
         if (globalSearchInput) globalSearchInput.value = searchTerm;
         if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
         showView('recipe-view');
-        const recipeSearchInput = document.getElementById('search-input');
-        const mobileRecipeSearchInput = document.getElementById('mobile-search-input');
-        if(recipeSearchInput) recipeSearchInput.value = searchTerm;
-        if(mobileRecipeSearchInput) mobileRecipeSearchInput.value = searchTerm;
-        currentRecipeCategory = 'all';
-        document.querySelectorAll('#recipe-view .category-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll(`#recipe-view .category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
-        renderRecipes('all', searchTerm);
+        // The rest of search logic is inside initializeRecipeApp
+        const searchEvent = new CustomEvent('external-search', { detail: searchTerm });
+        document.getElementById('recipe-view').dispatchEvent(searchEvent);
     }
     
-    // --- 레시피 앱 초기화 및 관련 함수 ---
+    // --- Recipe App Initialization & Functions ---
     function initializeRecipeApp() {
-        // ... 레시피 앱 코드는 이전과 동일 ...
+        const recipeViewContainer = document.getElementById('recipe-view');
+        if (recipeViewContainer.innerHTML.trim() !== '') return;
+
+        // Recipe App HTML injection (omitted for brevity, it's the same as before)
+        recipeViewContainer.innerHTML = `
+            <div class="relative min-h-screen">
+                <aside id="sidebar" class="hidden md:flex sidebar bg-[#F1EBE5] text-[#6D4C41] w-64 fixed inset-y-0 left-0 transform md:translate-x-0 z-30 flex flex-col h-screen">
+                    <div class="flex-shrink-0 px-4 pt-7"><div class="relative mb-4"><input type="text" id="search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F]"><i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i></div></div>
+                    <nav id="category-nav" class="flex-grow overflow-y-auto px-4 pb-7"><button class="w-full text-left text-base font-medium rounded-lg py-2.5 px-4 hover:bg-[#E0DACE] category-btn active" data-category="all">전체 메뉴</button></nav>
+                </aside>
+                <div class="md:ml-64">
+                    <div class="md:hidden sticky top-16 z-10 bg-white shadow-md">
+                         <div class="px-4 pt-3 pb-3"><div class="relative"><input type="text" id="mobile-search-input" placeholder="메뉴 검색..." class="w-full px-4 py-2 border border-[#D7CCC8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A1887F]"><i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i></div></div>
+                        <nav id="mobile-category-nav" class="bg-white border-t border-gray-200 px-2 overflow-x-auto no-scrollbar flex space-x-2"></nav>
+                    </div>
+                    <main class="main-content flex-1 p-4 sm:p-6 lg:p-10"><div class="max-w-7xl mx-auto"><div id="recipe-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"></div><div id="no-results" class="hidden text-center py-10"><p class="text-xl text-gray-500">검색 결과가 없습니다.</p></div></div></main>
+                </div>
+            </div>`;
+        
+        const categoryNav = document.getElementById('category-nav');
+        const mobileCategoryNav = document.getElementById('mobile-category-nav');
+        const recipeGrid = document.getElementById('recipe-grid');
+        const searchInput = document.getElementById('search-input');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const categories = ['all', ...new Set(recipeData.map(recipe => recipe.category))];
+
+        function setupCategories() {
+            const desktopNavFragment = document.createDocumentFragment();
+            const mobileNavFragment = document.createDocumentFragment();
+            const allMobileButton = document.createElement('button');
+            allMobileButton.className = 'flex-shrink-0 text-sm font-medium py-2 px-4 border-b-2 category-btn active';
+            allMobileButton.dataset.category = 'all';
+            allMobileButton.textContent = '전체 메뉴';
+            mobileCategoryNav.appendChild(allMobileButton);
+
+            categories.slice(1).forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left text-base font-medium rounded-lg py-2.5 px-4 hover:bg-[#E0DACE] category-btn';
+                button.dataset.category = category;
+                button.textContent = category;
+                desktopNavFragment.appendChild(button);
+                const mobileButton = document.createElement('button');
+                mobileButton.className = 'flex-shrink-0 text-sm font-medium py-2 px-4 border-b-2 border-transparent category-btn';
+                mobileButton.dataset.category = category;
+                mobileButton.textContent = category;
+                mobileNavFragment.appendChild(mobileButton);
+            });
+            categoryNav.appendChild(desktopNavFragment);
+            mobileCategoryNav.appendChild(mobileNavFragment);
+        }
+
+        function handleCategoryClick(e) {
+            const button = e.target.closest('.category-btn');
+            if (button) {
+                currentRecipeCategory = button.dataset.category;
+                document.querySelectorAll('#recipe-view .category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll(`#recipe-view .category-btn[data-category="${currentRecipeCategory}"]`).forEach(btn => btn.classList.add('active'));
+                searchInput.value = '';
+                mobileSearchInput.value = '';
+                if(globalSearchInput) globalSearchInput.value = '';
+                if(globalSearchInputMobile) globalSearchInputMobile.value = '';
+                renderRecipes(currentRecipeCategory);
+            }
+        }
+        function handleRecipeSearch(e) {
+            const searchTerm = e.target.value;
+            if (globalSearchInput) globalSearchInput.value = searchTerm;
+            if (globalSearchInputMobile) globalSearchInputMobile.value = searchTerm;
+            renderRecipes(currentRecipeCategory, searchTerm);
+        }
+        recipeGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.version-btn');
+            if (button && !button.classList.contains('active')) {
+                const card = button.closest('.recipe-card');
+                const recipe = JSON.parse(card.dataset.recipe);
+                const version = button.dataset.version;
+                card.querySelector('.recipe-text').innerHTML = formatRecipeContent(recipe.versions[version]);
+                card.querySelectorAll('.version-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        });
+
+        recipeViewContainer.addEventListener('external-search', (e) => {
+            const searchTerm = e.detail;
+            if(searchInput) searchInput.value = searchTerm;
+            if(mobileSearchInput) mobileSearchInput.value = searchTerm;
+            currentRecipeCategory = 'all';
+            document.querySelectorAll('#recipe-view .category-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll(`#recipe-view .category-btn[data-category="all"]`).forEach(btn => btn.classList.add('active'));
+            renderRecipes('all', searchTerm);
+        });
+
+        categoryNav.addEventListener('click', handleCategoryClick);
+        mobileCategoryNav.addEventListener('click', handleCategoryClick);
+        searchInput.addEventListener('input', handleRecipeSearch);
+        mobileSearchInput.addEventListener('input', handleRecipeSearch);
+        setupCategories();
+        renderRecipes();
     }
     function formatRecipeContent(versionData) {
-        // ... 레시피 앱 코드는 이전과 동일 ...
+        let html = '';
+        if (versionData.ingredients) html += `<div class="mb-2"><strong class="text-[#A1887F] text-lg">재료:</strong></div><div>${versionData.ingredients.map(ing => `<span class="ingredient-block">${ing}</span>`).join('')}</div>`;
+        if (versionData.instructions) html += `<div class="mt-3"><strong class="text-[#A1887F] text-lg">조리법:</strong></div><ol class="list-decimal list-inside text-gray-600 mt-1 space-y-1 text-base">${versionData.instructions.map(inst => `<li>${inst}</li>`).join('')}</ol>`;
+        return html;
     }
     function renderRecipes(filter = 'all', searchTerm = '') {
-       // ... 레시피 앱 코드는 이전과 동일 ...
+       const recipeGrid = document.getElementById('recipe-grid');
+        const noResults = document.getElementById('no-results');
+        if (!recipeGrid || !noResults) return;
+        recipeGrid.innerHTML = '';
+        const lowerCaseSearchTerm = searchTerm.toLowerCase().trim();
+        const filteredRecipes = recipeData.filter(r => (filter === 'all' || r.category === filter) && r.name.toLowerCase().includes(lowerCaseSearchTerm));
+        noResults.classList.toggle('hidden', filteredRecipes.length > 0);
+        const gridFragment = document.createDocumentFragment();
+        filteredRecipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col';
+            card.dataset.recipe = JSON.stringify(recipe);
+            const versionKeys = Object.keys(recipe.versions);
+            const sortOrder = ['ICED', 'ICED (1L)', 'HOT'];
+            versionKeys.sort((a, b) => { const iA = sortOrder.indexOf(a), iB = sortOrder.indexOf(b); if (iA!==-1&&iB!==-1) return iA - iB; if(iA!==-1)return -1; if(iB!==-1) return 1; return a.localeCompare(b); });
+            const firstVersionKey = versionKeys[0];
+            let versionButtons = versionKeys.length > 1 ? versionKeys.map((k, i) => `<button class="version-btn flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition rounded-md ${i === 0 ? 'active' : ''}" data-version="${k}">${k}</button>`).join('') : `<div class="flex-1 px-3 py-2 text-sm font-bold text-[#6D4C41] bg-gray-100 rounded-md text-center">${versionKeys[0]}</div>`;
+            card.innerHTML = `<img src="${recipe.image}" alt="${recipe.name}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found'"><div class="p-5 flex-grow"><p class="text-sm font-semibold text-[#A1887F]">${recipe.category}</p><h3 class="text-2xl font-bold text-[#6D4C41] mt-1 truncate">${recipe.name}</h3><div class="recipe-text mt-4 text-base leading-relaxed min-h-[8rem]">${formatRecipeContent(recipe.versions[firstVersionKey])}</div></div><div class="bg-gray-50 border-t border-gray-200 p-2 flex flex-wrap rounded-b-lg gap-1">${versionButtons}</div>`;
+            gridFragment.appendChild(card);
+        });
+        recipeGrid.appendChild(gridFragment);
     }
     
-    // --- 체크리스트 앱 초기화 및 관련 함수 ---
+    // --- Checklist App Initialization & Functions ---
     function initializeChecklistApp() {
         const userInfoContainer = document.getElementById('user-info-container');
         const userInfoForm = document.getElementById('user-info-form');
-        const selectionContainer = document.getElementById('shift-selection-container');
         const checklistArea = document.getElementById('checklist-area');
         const taskListContainer = document.getElementById('task-list-container');
         const progressContainer = document.getElementById('checklist-progress-container');
@@ -477,37 +603,43 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const completionModal = document.getElementById('completion-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
-        
         const incompleteModal = document.getElementById('incomplete-modal');
         const closeIncompleteModalBtn = document.getElementById('close-incomplete-modal-btn');
 
         let currentShift = null;
         let workerInfo = {};
         const shiftInfo = {
-            open: { label: '🌞 오픈', color: 'bg-yellow-400' },
-            middle: { label: '🌥️ 미들', color: 'bg-sky-400' },
-            closing: { label: '🌜 마감', color: 'bg-indigo-400' },
-            'late-night': { label: '⭐ 심야', color: 'bg-gray-600' }
+            open: { label: '🌞 오픈', color: 'bg-yellow-400', start: '07:00', end: '15:00' },
+            middle: { label: '🌥️ 미들', color: 'bg-sky-400', start: '11:00', end: '15:00' },
+            closing: { label: '🌜 마감', color: 'bg-indigo-400', start: '15:00', end: '23:00' },
+            'late-night': { label: '⭐ 심야', color: 'bg-gray-600', start: '23:00', end: '07:00' }
         };
 
-        // Set default date to today
         document.getElementById('work-date').valueAsDate = new Date();
+
+        userInfoForm.addEventListener('change', (e) => {
+            if (e.target.name === 'shift') {
+                const selectedShift = e.target.value;
+                document.getElementById('start-time').value = shiftInfo[selectedShift].start;
+                document.getElementById('end-time').value = shiftInfo[selectedShift].end;
+            }
+        });
 
         userInfoForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            const selectedShift = userInfoForm.querySelector('input[name="shift"]:checked').value;
             workerInfo = {
                 name: document.getElementById('worker-name').value,
                 date: document.getElementById('work-date').value,
                 startTime: document.getElementById('start-time').value,
                 endTime: document.getElementById('end-time').value,
             };
-            userInfoContainer.classList.add('hidden');
-            selectionContainer.classList.remove('hidden');
+            startShift(selectedShift);
         });
 
         function startShift(shift) {
             currentShift = shift;
-            selectionContainer.classList.add('hidden');
+            userInfoContainer.classList.add('hidden');
             checklistArea.classList.remove('hidden');
             progressLabel.textContent = shiftInfo[shift].label;
             progressBar.className = `progress-bar ${shiftInfo[shift].color}`;
@@ -521,7 +653,6 @@ document.addEventListener('DOMContentLoaded', () => {
             userInfoForm.reset();
             document.getElementById('work-date').valueAsDate = new Date();
             checklistArea.classList.add('hidden');
-            selectionContainer.classList.add('hidden');
             userInfoContainer.classList.remove('hidden');
             taskListContainer.innerHTML = '';
         }
@@ -544,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 groupContainer.dataset.groupName = groupName;
                 
                 const groupHeader = document.createElement('h3');
-                groupHeader.className = 'task-group-header text-lg font-bold text-[#8D6E63] mt-4 mb-2 sticky top-[110px] md:top-[124px] bg-[#FDFBF8] py-2 z-10 flex justify-between items-center';
+                groupHeader.className = 'task-group-header text-lg font-bold text-[#8D6E63] mt-4 mb-2 sticky bg-[#FDFBF8] py-2 z-10 flex justify-between items-center';
                 const groupTitle = document.createElement('span');
                 groupTitle.textContent = groupName;
                 const groupCounter = document.createElement('span');
@@ -604,14 +735,13 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateGroupCountersAndOrder() {
             const groupContainers = taskListContainer.querySelectorAll('.task-group');
             groupContainers.forEach(container => {
-                const groupName = container.dataset.groupName;
                 const tasksInGroup = container.querySelectorAll('.task-card');
                 const completedInGroup = container.querySelectorAll('.task-card.completed');
                 const counter = container.querySelector('.task-group-header span:last-child');
                 counter.textContent = `(${completedInGroup.length} / ${tasksInGroup.length})`;
 
                 if(tasksInGroup.length === completedInGroup.length) {
-                    container.style.order = 1; // Move completed group to bottom
+                    container.style.order = 1;
                 } else {
                     container.style.order = 0;
                 }
@@ -628,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const observer = new IntersectionObserver(
-            ([e]) => document.getElementById('checklist-progress-container').classList.toggle('sticky', e.intersectionRatio < 1),
+            ([e]) => progressContainer.classList.toggle('sticky', e.intersectionRatio < 1),
             { threshold: [1] }
         );
         if(progressContainer) observer.observe(progressContainer);
@@ -657,13 +787,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
             
             let message = "수고하셨습니다! 다음 근무자에게 인수인계 잘 부탁드려요.";
-            if (percentage >= 80) {
-                message = "거의 다 했어요! 정말 대단해요! 남은 업무는 잘 인계해주세요.";
-            } else if (percentage >= 50) {
-                message = "절반 이상 해냈네요! 고생 많으셨습니다.";
-            } else {
-                message = "바쁜 하루였네요. 아쉽지만 수고하셨습니다!";
-            }
+            if (percentage >= 80) message = "거의 다 했어요! 정말 대단해요! 남은 업무는 잘 인계해주세요.";
+            else if (percentage >= 50) message = "절반 이상 해냈네요! 고생 많으셨습니다.";
+            else message = "바쁜 하루였네요. 아쉽지만 수고하셨습니다!";
 
             document.getElementById('incomplete-modal-worker-name').textContent = workerInfo.name;
             document.getElementById('incomplete-modal-work-date').textContent = workerInfo.date;
@@ -723,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeIncompleteModalBtn.addEventListener('click', hideIncompleteModal);
     }
 
-    // --- 이벤트 리스너 할당 ---
+    // --- Event Listener Assignments ---
     gnb.addEventListener('click', (e) => {
         const button = e.target.closest('.gnb-btn');
         if (button) showView(button.dataset.view);
@@ -740,7 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(globalSearchInput) globalSearchInput.addEventListener('input', handleGlobalSearch);
     if(globalSearchInputMobile) globalSearchInputMobile.addEventListener('input', handleGlobalSearch);
     
-    // --- 앱 시작 ---
+    // --- App Start ---
     initializeRecipeApp();
     initializeChecklistApp();
     showView('home-view');
