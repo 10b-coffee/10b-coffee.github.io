@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백억커피 구리점 위생등급 평가 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Emerald Accent -->
+    <!-- Application Structure Plan: A task-oriented SPA with a tabbed navigation system ('종합 현황', '구매 목록', '준비 체크리스트', '서류 양식'). The main page is a '종합 현황' dashboard with dynamic charts and a progress bar showing overall completion. Users can navigate to other tabs to interact with detailed checklists. Checking an item updates the dashboard in real-time. This structure was chosen because the source report is a checklist; a dashboard provides the best user experience by offering a quick overview of progress while keeping detailed tasks organized and accessible, directly supporting the user's goal of systematic preparation. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Overall progress. Goal: Inform/Motivate. Viz: HTML/CSS Progress Bar, Chart.js Donut Charts. Interaction: Real-time updates from checklist interactions. Justification: Provides immediate, visually engaging feedback on completion status. Library: Chart.js for canvas-based charts.
+        - Report Info: Checklist items. Goal: Organize/Track. Viz: Interactive HTML tables with checkboxes. Interaction: Clicking checkboxes updates state, triggers dashboard updates, and applies a strikethrough style. Justification: A familiar and effective way to manage tasks.
+        - Report Info: Document templates. Goal: Provide Resources. Viz: Styled cards with <pre> blocks. Interaction: "Copy to Clipboard" button. Justification: Makes the templates easily accessible and usable.
+        - All elements are designed to work together within the dashboard structure to streamline the audit preparation process. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #FDFBF7; }
+        .tab-active { border-bottom: 2px solid #10B981; color: #059669; font-weight: 700; }
+        .tab-inactive { color: #6B7280; }
+        .chart-container { position: relative; width: 100%; max-width: 280px; margin-left: auto; margin-right: auto; height: 280px; max-height: 300px; }
+        .task-item.completed label { text-decoration: line-through; color: #9CA3AF; }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-emerald-800">백억커피 구리점 위생등급 평가 대시보드</h1>
+            <p class="text-lg text-stone-600 mt-2">'매우 우수' 등급 유지를 위한 최종 점검</p>
+            <div class="mt-4 text-2xl font-bold text-red-600 bg-red-100 border border-red-300 rounded-lg py-2 px-4 inline-block">
+                평가 D-1
+            </div>
+        </header>
+
+        <nav class="flex justify-center border-b border-gray-200 mb-8">
+            <button data-tab="dashboard" class="py-4 px-6 tab-active">종합 현황</button>
+            <button data-tab="purchase" class="py-4 px-6 tab-inactive">구매 목록</button>
+            <button data-tab="checklist" class="py-4 px-6 tab-inactive">준비 체크리스트</button>
+            <button data-tab="templates" class="py-4 px-6 tab-inactive">서류 양식</button>
+        </nav>
+
+        <main>
+            <div id="dashboard-content">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-2 text-center">전체 진행률</h2>
+                    <p class="text-center text-stone-500 mb-4">체크리스트의 항목을 완료하여 진행률을 100%로 만들어 보세요.</p>
+                    <div class="w-full bg-gray-200 rounded-full h-6 mb-6">
+                        <div id="overall-progress-bar" class="bg-emerald-500 h-6 rounded-full text-center text-white font-bold text-sm transition-all duration-500" style="width: 0%;">0%</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">구매 목록</h3>
+                            <div class="chart-container"><canvas id="purchase-chart"></canvas></div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">서류 및 게시물</h3>
+                            <div class="chart-container"><canvas id="docs-chart"></canvas></div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">시설 관리 및 대청소</h3>
+                            <div class="chart-container"><canvas id="cleaning-chart"></canvas></div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">최종 점검</h3>
+                            <div class="chart-container"><canvas id="final-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="purchase-content" class="hidden">
+                 <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">구매 필요 항목</h2>
+                    <p class="text-stone-500 mb-6">평가 전 미리 구매하여 준비해야 할 물품 목록입니다. 구매 완료 시 체크해 주세요.</p>
+                    <div id="purchase-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="checklist-content" class="hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">카테고리별 준비 체크리스트</h2>
+                    <p class="text-stone-500 mb-6">일정에 맞춰 각 항목을 점검하고 완료 시 체크해 주세요. 진행 상황은 종합 현황 대시보드에 실시간으로 반영됩니다.</p>
+                    <div id="checklist-accordion" class="space-y-6"></div>
+                </div>
+            </div>
+
+            <div id="templates-content" class="hidden">
+                 <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">서류 양식</h2>
+                    <p class="text-stone-500 mb-6">평가에 필요한 서류 양식입니다. '내용 복사' 버튼을 눌러 간편하게 사용하세요.</p>
+                    <div id="templates-list" class="space-y-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const appState = {
+            tasks: [
+                { id: 'p1', category: 'purchase', group: '시설 보수용', text: '롤 페인트, 붓', completed: false },
+                { id: 'p2', category: 'purchase', group: '시설 보수용', text: '시트지', completed: false },
+                { id: 'p3', category: 'purchase', group: '비품 교체용', text: '싱크대 거름망', completed: false },
+                { id: 'p4', category: 'purchase', group: '비품 교체용', text: '에어프라이기, 빙수기 부품', completed: false },
+                { id: 'p5', category: 'purchase', group: '비품 교체용', text: '휴지통 뚜껑', completed: false },
+                { id: 'p6', category: 'purchase', group: '청소 및 위생용품', text: '행주 (용도별 색상 구분)', completed: false },
+                { id: 'p7', category: 'purchase', group: '청소 및 위생용품', text: '밀폐용기 (락앤락 등, 뚜껑 필수)', completed: false },
+                { id: 'p8', category: 'purchase', group: '청소 및 위생용품', text: '손 소독제 (2개 이상)', completed: false },
+                { id: 'p9', category: 'purchase', group: '청소 및 위생용품', text: '청소용품 (매직블럭, 묵은때 제거제 등)', completed: false },
+                { id: 'p10', category: 'purchase', group: '기타', text: '선반 가림막/커튼', completed: false },
+
+                { id: 'c1', category: 'docs', group: '서류 및 게시물', text: '전 직원 보건증 확인 (유효기간)', completed: false },
+                { id: 'c2', category: 'docs', group: '서류 및 게시물', text: '직원 위생 교육 일지 작성 및 서명', completed: false },
+                { id: 'c3', category: 'docs', group: '서류 및 게시물', text: '냉장/냉동고 온도 점검표 기록 및 비치', completed: false },
+                { id: 'c4', category: 'docs', group: '서류 및 게시물', text: '알레르기/영양성분 정보 최신화 및 게시', completed: false },
+                { id: 'c5', category: 'docs', group: '서류 및 게시물', text: '영업신고증/사업자등록증 비치', completed: false },
+
+                { id: 'c6', category: 'cleaning', group: '시설 관리 및 보수', text: '페인트 보수 (홀, 싱크대, 픽업대)', completed: false },
+                { id: 'c7', category: 'cleaning', group: '시설 관리 및 보수', text: '시트지 작업 (커피머신 주변)', completed: false },
+                { id: 'c8', category: 'cleaning', group: '시설 관리 및 보수', text: '비품 교체 및 수리 (거름망, 기계 부품)', completed: false },
+                { id: 'c9', category: 'cleaning', group: '시설 관리 및 보수', text: '홀 소파 청소 (매직클리너)', completed: false },
+                { id: 'c10', category: 'cleaning', group: '시설 관리 및 보수', text: '선반 가림막 설치', completed: false },
+                { id: 'c11', category: 'cleaning', group: '시설 관리 및 보수', text: '휴지통 뚜껑 확인', completed: false },
+                
+                { id: 'c12', category: 'cleaning', group: '대청소', text: '묵은 때 및 먼지 제거 (바닥, 벽, 천장, 창문틀)', completed: false },
+                { id: 'c13', category: 'cleaning', group: '대청소', text: '고지대 청소 (선반 위, 냉장고 위, 조명)', completed: false },
+                { id: 'c14', category: 'cleaning', group: '대청소', text: '기계 주변 청소 (아래, 뒤, 옆 틈새)', completed: false },
+                { id: 'c15', category: 'cleaning', group: '대청소', text: '창고 대청소 및 불필요 물품 정리', completed: false },
+                { id: 'c16', category: 'cleaning', group: '대청소', text: '냉장/냉동고 청소 (성에 제거, 내부 세척)', completed: false },
+                
+                { id: 'c17', category: 'final', group: '최종 점검', text: '라벨링 작업 (품명, 소분일, 유통기한)', completed: false },
+                { id: 'c18', category: 'final', group: '최종 점검', text: '유통기한 확인 (선입선출, 경과품 폐기)', completed: false },
+                { id: 'c19', category: 'final', group: '최종 점검', text: '식재료 보관 상태 확인 (바닥에서 15cm 이상)', completed: false },
+                { id: 'c20', category: 'final', group: '최종 점검', text: '냉장/냉동고 온도 확인 및 기록', completed: false },
+                { id: 'c21', category: 'final', group: '최종 점검', text: '기구 세척 및 소독 (도마살균기, 온수기 코크 등)', completed: false },
+                { id: 'c22', category: 'final', group: '최종 점검', text: '홀/조리장 최종 청결 확인', completed: false },
+            ]
+        };
+
+        const templates = [
+            {
+                title: '직원 위생 교육 일지',
+                content: `| **교육일자** | 2025. 9. 29. (월) |\n| :--- | :--- |\n| **교육장소** | 백억커피 구리점 |\n| **교육강사** | OOO (점주) |\n| **교육 내용** | 1. 개인위생 관리 (손 씻기, 위생복장 착용 등)<br>2. 식재료 위생관리 (유통기한 확인, 선입선출, 보관 방법)<br>3. 조리 기구 세척 및 소독 방법<br>4. 식품위생법규 주요 내용 및 위생등급제 연장 평가 안내 |\n| **참석자** | 아래 참석자는 위생 교육 내용을 숙지하였으며, 이를 준수할 것을 확인합니다. |\n| **소속** | **직책** | **성명** | **서명** |\n| 백억커피 구리점 | 점주 | | (인) |\n| 백억커피 구리점 | 직원 | | (인) |`
+            },
+            {
+                title: '냉장/냉동고 온도 점검표',
+                content: `**시설명:** 백억커피 구리점\n**점검 기간:** 2025년 9월\n\n| 날짜 | 시간 | 구분 | 온도(℃) | 점검자 | 특이사항 |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| 9/29(월) | 10:00 | 냉장 | 3℃ | 홍길동 | 정상 |\n| | 10:00 | 냉동 | -20℃ | 홍길동 | 정상 |\n| | 20:00 | 냉장 | 3.5℃ | 김철수 | 정상 |\n| | 20:00 | 냉동 | -20℃ | 김철수 | 정상 |\n| 9/30(화) | 10:00 | 냉장 | | | |\n| | 10:00 | 냉동 | | | |\n| | 20:00 | 냉장 | | | |\n| | 20:00 | 냉동 | | | |`
+            },
+            {
+                title: '알레르기 유발 식품 안내',
+                content: `#### **알레르기 유발 성분 안내**\n\n저희 백억커피를 이용해 주시는 고객님께 감사드립니다.\n고객님의 건강을 위해 저희 매장에서 사용하는 일부 메뉴에는 알레르기를 유발할 수 있는 성분이 포함되어 있을 수 있습니다.\n\n**[알레르기 유발 가능 식품]**\n**난류(계란), 우유, 메밀, 땅콩, 대두, 밀, 고등어, 게, 새우, 돼지고기, 복숭아, 토마토, 아황산류, 호두, 닭고기, 쇠고기, 오징어, 조개류(굴, 전복, 홍합 포함), 잣**\n\n특정 식품에 알레르기 반응이 있으신 고객님께서는 주문 전 반드시 직원에게 문의하여 주시기 바랍니다.\n\n-백억커피 구리점-`
+            }
+        ];
+        
+        const charts = {};
+
+        function createOrUpdateChart(canvasId, completed, total) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            if (charts[canvasId]) {
+                charts[canvasId].data.datasets[0].data = [completed, total - completed];
+                charts[canvasId].options.plugins.tooltip.callbacks.title = () => `${percentage}% 완료`;
+                charts[canvasId].update();
+            } else {
+                charts[canvasId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['완료', '미완료'],
+                        datasets: [{
+                            data: [completed, total - completed],
+                            backgroundColor: ['#10B981', '#E5E7EB'],
+                            borderColor: ['#FFFFFF'],
+                            borderWidth: 4,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                   title: () => `${percentage}% 완료`,
+                                   label: (context) => `${context.label}: ${context.raw}개`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateDashboard() {
+            const allTasks = appState.tasks;
+            const totalTasks = allTasks.length;
+            const completedTasks = allTasks.filter(t => t.completed).length;
+            const overallPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            const progressBar = document.getElementById('overall-progress-bar');
+            progressBar.style.width = `${overallPercentage}%`;
+            progressBar.textContent = `${overallPercentage}%`;
+
+            const categories = ['purchase', 'docs', 'cleaning', 'final'];
+            categories.forEach(cat => {
+                const catTasks = cat === 'cleaning' 
+                    ? allTasks.filter(t => t.group === '시설 관리 및 보수' || t.group === '대청소')
+                    : allTasks.filter(t => t.category === cat);
+                
+                const completedCatTasks = catTasks.filter(t => t.completed).length;
+                const totalCatTasks = catTasks.length;
+                createOrUpdateChart(`${cat}-chart`, completedCatTasks, totalCatTasks);
+            });
+        }
+        
+        function renderTasks(containerId, tasks) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const groupedTasks = tasks.reduce((acc, task) => {
+                (acc[task.group] = acc[task.group] || []).push(task);
+                return acc;
+            }, {});
+
+            Object.entries(groupedTasks).forEach(([groupName, groupTasks]) => {
+                const groupWrapper = document.createElement('div');
+                groupWrapper.className = 'mb-6';
+                
+                const groupTitle = document.createElement('h3');
+                groupTitle.className = 'text-xl font-bold border-b-2 border-emerald-200 pb-2 mb-3 text-emerald-700';
+                groupTitle.textContent = groupName;
+                groupWrapper.appendChild(groupTitle);
+
+                groupTasks.forEach(task => {
+                    const taskEl = document.createElement('div');
+                    taskEl.className = `task-item p-3 flex items-center border-b border-gray-100 ${task.completed ? 'completed' : ''}`;
+                    taskEl.innerHTML = `
+                        <input type="checkbox" id="${task.id}" data-task-id="${task.id}" class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-4" ${task.completed ? 'checked' : ''}>
+                        <label for="${task.id}" class="flex-grow text-stone-700 transition-colors">${task.text}</label>
+                    `;
+                    groupWrapper.appendChild(taskEl);
+                });
+                container.appendChild(groupWrapper);
+            });
+        }
+
+        function renderTemplates() {
+            const container = document.getElementById('templates-list');
+            container.innerHTML = templates.map((template, index) => `
+                <div class="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden">
+                    <div class="p-4 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-emerald-800">${template.title}</h3>
+                        <button class="copy-btn bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition" data-template-index="${index}">내용 복사</button>
+                    </div>
+                    <div class="p-4 bg-white border-t border-stone-200">
+                        <pre class="whitespace-pre-wrap text-sm text-stone-600">${template.content.replace(/<br>/g, '\n')}</pre>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            document.querySelector('main').addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    const taskId = e.target.dataset.taskId;
+                    const task = appState.tasks.find(t => t.id === taskId);
+                    if (task) {
+                        task.completed = e.target.checked;
+                        e.target.closest('.task-item').classList.toggle('completed', task.completed);
+                        updateDashboard();
+                    }
+                }
+            });
+            
+            document.querySelector('nav').addEventListener('click', (e) => {
+                if(e.target.tagName === 'BUTTON') {
+                    const tab = e.target.dataset.tab;
+                    document.querySelectorAll('nav button').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
+                    e.target.classList.replace('tab-inactive', 'tab-active');
+                    
+                    document.querySelectorAll('main > div').forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `${tab}-content`);
+                    });
+                }
+            });
+
+            document.getElementById('templates-list').addEventListener('click', e => {
+                if(e.target.classList.contains('copy-btn')) {
+                    const index = e.target.dataset.templateIndex;
+                    const contentToCopy = templates[index].content.replace(/<br>/g, '\n').replace(/\|/g, ' | ').replace(/:---/g, ':---:');
+                    
+                    const textarea = document.createElement('textarea');
+                    textarea.value = contentToCopy;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    const originalText = e.target.textContent;
+                    e.target.textContent = '복사 완료!';
+                    e.target.classList.replace('bg-emerald-500', 'bg-green-600');
+                    setTimeout(() => {
+                        e.target.textContent = originalText;
+                        e.target.classList.replace('bg-green-600', 'bg-emerald-500');
+                    }, 2000);
+                }
+            });
+        }
+        
+        function init() {
+            renderTasks('purchase-list', appState.tasks.filter(t => t.category === 'purchase'));
+            const checklistTasks = appState.tasks.filter(t => ['docs', 'cleaning', 'final'].includes(t.category));
+            renderTasks('checklist-accordion', checklistTasks);
+            renderTemplates();
+            setupEventListeners();
+            updateDashboard();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
+
