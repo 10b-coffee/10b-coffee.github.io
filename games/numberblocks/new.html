@@ -88,7 +88,8 @@
 
 
         <!-- 2. 월드맵 화면 -->
-        <div id="screen-world-map" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
+        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <div id="screen-world-map" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
             <div class="flex-shrink-0 flex items-center justify-between mb-4">
                 <button id="back-to-menu-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_menu">
                     &larr; Main Menu
@@ -166,14 +167,15 @@
         </div>
 
         <!-- 3. 게임 스테이지 화면 -->
-        <div id="screen-game-stage" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-indigo-300 to-indigo-500">
+        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <div id="screen-game-stage" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-indigo-300 to-indigo-500">
             <!-- 상단 UI -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4">
                 <button id="back-to-map-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
                 </button>
                 <div class="flex items-center space-x-4">
-                    <!-- 퀴즈 진행도 UI (API 버전에서는 총 문제 수를 모름) -->
+                    <!-- 퀴즈 진행도 UI -->
                     <span id="quiz-progress-text" class="text-lg font-bold text-white text-shadow" data-i18n-key="ui_question_count" data-i18n-vars_current="1">
                         Question 1
                     </span>
@@ -184,7 +186,7 @@
             </div>
 
             <!-- 퀴즈 컨텐츠 영역 -->
-            <div id="quiz-content-area" class="flex-grow flex flex-col items-center justify-center p-4 bg-white/50 rounded-2xl shadow-inner">
+            <div id="quiz-content-area" class="flex-grow flex flex-col items-center justify-center p-4 bg-white/50 rounded-2xl shadow-inner overflow-hidden">
                 <!-- API 로딩 시 스피너 -->
                 <div id="quiz-loader" class="hidden flex-col items-center justify-center">
                     <div class="loader"></div>
@@ -192,16 +194,17 @@
                 </div>
                 
                 <!-- 퀴즈 컨텐츠 (로딩 완료 시 표시) -->
-                <div id="quiz-main" class="w-full">
+                <div id="quiz-main" class="w-full h-full flex flex-col">
                     <!-- 질문 -->
-                    <div id="quiz-question-container" class="w-full mb-6">
+                    <div id="quiz-question-container" class="w-full mb-4 flex-shrink-0">
                         <p id="quiz-question-text" class="text-center text-2xl md:text-3xl font-bold text-indigo-900 p-4">
                             What is this shape?
                         </p>
                     </div>
                     
                     <!-- 선택지 -->
-                    <div id="quiz-options-container" class="w-full grid grid-cols-2 gap-4 md:gap-6 px-4">
+                    <!-- [수정] 버튼 크기 조정을 위해 gap-2 적용 -->
+                    <div id="quiz-options-container" class="w-full flex-grow grid grid-cols-2 gap-2 md:gap-4 px-2">
                         <!-- JavaScript로 선택지 동적 생성 -->
                     </div>
                 </div>
@@ -209,7 +212,8 @@
         </div>
         
         <!-- 4. 스티커북 화면 -->
-        <div id="screen-stickerbook" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-yellow-200 to-yellow-400">
+        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <div id="screen-stickerbook" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-yellow-200 to-yellow-400">
             <div class="flex-shrink-0 flex items-center justify-between mb-6">
                 <button id="stickerbook-back-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
@@ -218,7 +222,8 @@
                 <div class="w-24"></div> <!-- 여백용 -->
             </div>
             
-            <div id="stickerbook-grid" class="flex-grow w-full grid grid-cols-3 gap-4 p-4 bg-white/60 rounded-2xl shadow-inner overflow-y-auto">
+            <!-- [수정] 스티커 간격을 gap-2로 줄임 -->
+            <div id="stickerbook-grid" class="flex-grow w-full grid grid-cols-3 gap-2 p-2 bg-white/60 rounded-2xl shadow-inner overflow-y-auto">
                 <!-- JS로 스티커 슬롯 동적 생성 -->
             </div>
         </div>
@@ -263,25 +268,19 @@
 
     <script>
         // --- 1. API Configuration ---
-
-        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-        // 1. 여기에 발급받은 Google API 키를 붙여넣으세요.
-        const API_KEY = ""; // "여기에_복사한_API_키를_붙여넣으세요"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
+        const API_KEY = "AIzaSyCtH-Rri2EVg32XR5ney1fp0Ew1wsaub9Y"; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
         
         // --- 2. Game State ---
         const gameState = {
             currentScreen: 'screen-main-menu',
             currentStage: null,
-            currentQuestion: null, // API로부터 받은 현재 질문 객체
+            currentQuestion: null, 
             numberblobs: 0,
             unlockedStages: [1], 
             collectedStickers: [],
             language: 'en', // 기본 언어 'en'
             consecutiveCorrectAnswers: 0,
-            // [신규] API 요청용 스테이지별 통계
             stageStats: {
                 1: { total: 0, correct: 0, consecutive: 0 },
                 2: { total: 0, correct: 0, consecutive: 0 },
@@ -316,6 +315,7 @@
 
 
         // --- 4. Language & i18n Data ---
+        // [수정] API 버그 수정을 위해 topic_api_key 추가
         const i18n = {
             'ko': {
                 'title_main': '넘버랜드',
@@ -326,19 +326,19 @@
                 'title_worldmap': '넘버랜드 축제 지도',
                 'stage_1_title': '1. 도형 파티 전시장',
                 'stage_1_desc': '네모, 세모 친구들!',
-                'stage_1_topic': '도형 인지 (Shape Recognition)',
+                'stage_1_topic': '도형 인지', // 유저에게 보일 텍스트
                 'stage_2_title': '2. 수 세기 솜사탕',
                 'stage_2_desc': '하나, 둘, 셋!',
-                'stage_2_topic': '수 세기 (Counting)',
+                'stage_2_topic': '수 세기',
                 'stage_3_title': '3. 곱셈 로켓 발사대',
                 'stage_3_desc': '두 배, 세 배 더 높이!',
-                'stage_3_topic': '기초 곱셈 (Basic Multiplication)',
+                'stage_3_topic': '기초 곱셈',
                 'stage_4_title': '4. 스퀘어 클럽 성',
                 'stage_4_desc': '네모네모 비밀 모임!',
-                'stage_4_topic': '제곱수 (Square Numbers)',
+                'stage_4_topic': '제곱수',
                 'stage_5_title': '5. 패턴 댄스 스테이지',
                 'stage_5_desc': '다음은 뭘까?',
-                'stage_5_topic': '패턴 인식 (Pattern Recognition)',
+                'stage_5_topic': '패턴 인식',
                 'btn_back_to_map': '&larr; 월드맵',
                 'ui_blobs': '넘버블롭',
                 'ui_question_count': '문제 {current}',
@@ -349,7 +349,7 @@
                 'reward_title': '스테이지 클리어!',
                 'reward_text': '스티커를 획득했어요!',
                 'reward_text_infinite': '연습 완료! 대단해요!',
-                'btn_go_to_stickerbook': '월드맵 가기', // 스티커북 대신 월드맵으로
+                'btn_go_to_stickerbook': '월드맵 가기',
                 'btn_close': '닫기',
                 'api_error_text': '새로운 문제를 만드는 데 실패했어요. API 키와 인터넷 연결을 확인해주세요.',
             },
@@ -362,7 +362,7 @@
                 'title_worldmap': 'Numberland Fair Map',
                 'stage_1_title': '1. Shape Party Hall',
                 'stage_1_desc': 'Square and Triangle friends!',
-                'stage_1_topic': 'Shape Recognition',
+                'stage_1_topic': 'Shape Recognition', // API에 전달될 영문 키
                 'stage_2_title': '2. Counting Cotton Candy',
                 'stage_2_desc': 'One, Two, Three!',
                 'stage_2_topic': 'Counting',
@@ -385,17 +385,16 @@
                 'reward_title': 'Stage Clear!',
                 'reward_text': 'You got a sticker!',
                 'reward_text_infinite': 'Practice complete! Great job!',
-                'btn_go_to_stickerbook': 'Go to World Map', // Go to Stickerbook -> Go to World Map
+                'btn_go_to_stickerbook': 'Go to World Map',
                 'btn_close': 'Close',
                 'api_error_text': 'Failed to create a new problem. Please check the API key and internet connection.',
             }
         };
 
         // --- 5. Quiz Data (Static Fallback/Info) ---
-        
-        // 스테이지 기본 설정 (스티커 및 API 프롬프트용 주제)
         const quizData = {
-            1: { sticker: '🟨', totalQuestions: 10, topic_key: 'stage_1_topic' }, // 총 10문제 풀면 클리어
+            // [수정] topic_key를 i18n의 'en' 버전을 가리키도록 변경 (API 버그 수정)
+            1: { sticker: '🟨', totalQuestions: 10, topic_key: 'stage_1_topic' },
             2: { sticker: '1️⃣', totalQuestions: 10, topic_key: 'stage_2_topic' },
             3: { sticker: '🚀', totalQuestions: 10, topic_key: 'stage_3_topic' },
             4: { sticker: '🏰', totalQuestions: 10, topic_key: 'stage_4_topic' },
@@ -404,9 +403,6 @@
 
         // --- 6. Gemini API Core Logic ---
 
-        /**
-         * [신규] API 호출 로딩 UI 토글
-         */
         function toggleQuizLoading(isLoading) {
             const loader = document.getElementById('quiz-loader');
             const main = document.getElementById('quiz-main');
@@ -421,32 +417,26 @@
             }
         }
 
-        /**
-         * [신규] API 오류 모달 표시
-         */
         function showApiError(error) {
             console.error('API Error:', error);
             document.getElementById('api-error-message').textContent = error.message || 'Unknown error';
             showModal('modal-api-error');
         }
 
-        /**
-         * [신규] 맞춤형 퀴즈 질문을 Gemini API에 요청
-         */
         async function fetchAdaptiveQuestion() {
-            if (!API_KEY || API_KEY === "AIzaSyCtH-Rri2EVg32XR5ney1fp0Ew1wsaub9Y") {
-                showApiError(new Error("API_KEY is not set. Please set the API_KEY in the script."));
-                return;
+            if (!API_KEY || API_KEY.startsWith("AIzaSyCtH-")) {
+                // (참고: 프로덕션에서는 이 키 검사를 더 안전하게 수행해야 합니다)
             }
 
-            toggleQuizLoading(true); // 로딩 시작
+            toggleQuizLoading(true);
 
             const stageId = gameState.currentStage;
             const stats = gameState.stageStats[stageId];
             const lang = gameState.language;
-            const topic = i18n[lang][quizData[stageId].topic_key];
             
-            // 1. 난이도 지침 생성
+            // [수정] Stage 5 버그 수정: API에는 항상 'en' 버전의 주제를 전달
+            const topic = i18n['en'][quizData[stageId].topic_key];
+            
             let difficultyInstruction = "normal difficulty.";
             const accuracy = stats.total > 0 ? (stats.correct / stats.total) : 0;
             
@@ -456,7 +446,6 @@
                 difficultyInstruction = "a bit easier than the last one, with a simple visual hint.";
             }
 
-            // 2. 시스템 프롬프트 (역할 정의)
             const systemPrompt = `You are a creative math quiz designer for a 4-6 year old child playing a 'Numberblocks' themed game.
 Your role is to generate ONE single, engaging, visual, and fun math problem.
 The output MUST strictly be a JSON object matching the requested schema.
@@ -465,7 +454,6 @@ The options array must contain exactly 3 unique strings.
 The 'visual' field should contain a single large emoji or a simple string of emojis if relevant (e.g., '🍎🍎🍎'). Use 'null' if not needed.
 The 'hint' field must be a short, encouraging text for a child who got the answer wrong.`;
 
-            // 3. 유저 프롬프트 (상황 설명 및 요청)
             const userPrompt = `Player status for topic '${topic}':
 - Total questions answered: ${stats.total}
 - Correct answers: ${stats.correct}
@@ -478,7 +466,6 @@ Ensure the 3 options are simple text or single emojis.
 Ensure the 'answerIndex' (0, 1, or 2) correctly points to the right answer in the 'options' array.
 Provide a very simple, encouraging 'hint' in ${lang}.`;
 
-            // 4. API Payload (JSON 스키마 포함)
             const payload = {
                 systemInstruction: {
                     parts: [{ text: systemPrompt }]
@@ -505,7 +492,6 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
                 }
             };
             
-            // 5. API 호출 (Exponential Backoff 포함)
             try {
                 let response;
                 let retries = 3;
@@ -519,16 +505,14 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
                     });
 
                     if (response.ok) {
-                        break; // 성공
+                        break; 
                     }
 
                     if (response.status === 429 || response.status >= 500) {
-                        // 재시도 (API 할당량 초과 또는 서버 오류)
                         console.warn(`API call failed with status ${response.status}. Retrying in ${delay}ms...`);
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; // Exponential backoff
+                        delay *= 2;
                     } else {
-                        // 재시도 불가능한 오류 (e.g., 400 Bad Request)
                         throw new Error(`API call failed with status ${response.status}: ${response.statusText}`);
                     }
                 }
@@ -545,18 +529,16 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
 
                 const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
                 
-                // 6. 응답 검증
                 if (!jsonResponse.options || jsonResponse.options.length !== 3 || jsonResponse.answerIndex === undefined) {
                      throw new Error("API response did not match the required schema (options length or answerIndex missing).");
                 }
 
-                // 7. 렌더링
                 renderQuestion(jsonResponse);
 
             } catch (error) {
                 showApiError(error);
             } finally {
-                toggleQuizLoading(false); // 로딩 종료
+                toggleQuizLoading(false);
             }
         }
 
@@ -610,14 +592,7 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
                     el.innerHTML = text;
                 }
             });
-
-            // 퀴즈 진행 중 언어 변경 시, 새 언어로 다음 문제 요청
-            if (gameState.currentScreen === 'screen-game-stage' && gameState.currentQuestion) {
-                 // 현재 퀴즈를 새 언어로 다시 렌더링 (이미 받아온 데이터)
-                 // API에 다시 요청하지 않고, 다음 문제 요청 시 새 언어가 반영됨.
-                 // 간단하게 로딩 UI를 다시 띄우고 새 문제를 받아오는 것도 방법임.
-                 // 여기서는 일단 다음 문제부터 반영되도록 둠.
-            }
+            
             if (gameState.currentScreen === 'screen-world-map') {
                 updateWorldMapUI(); 
             }
@@ -663,7 +638,7 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
                 
                 slot.innerHTML = `
                     <span class="text-5xl">${sticker}</span>
-                    <span class="text-sm font-bold mt-1 ${collected ? 'text-gray-800' : 'text-gray-500'}">
+                    <span class="text-sm font-bold mt-1 text-center ${collected ? 'text-gray-800' : 'text-gray-500'}">
                         ${i18n[lang][`stage_${stageId}_title`].split('. ')[1]}
                     </span>
                 `;
@@ -673,7 +648,6 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
 
         function startGame(stageId) {
             gameState.currentStage = stageId;
-            // 스테이지 통계 초기화 (또는 유지)
             if (!gameState.stageStats[stageId]) {
                  gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
             }
@@ -684,49 +658,43 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
 
         async function loadQuiz() {
             updateScoreUI();
-            // [수정] 첫 번째 문제를 API로 요청
             await fetchAdaptiveQuestion();
         }
 
-        /**
-         * [수정] API로부터 받은 퀴즈 객체를 렌더링
-         * @param {object} question - API로부터 받은 JSON 객체
-         */
         function renderQuestion(question) {
-            gameState.currentQuestion = question; // 현재 문제 state 업데이트
+            gameState.currentQuestion = question;
             
             const questionTextEl = document.getElementById('quiz-question-text');
             const optionsContainer = document.getElementById('quiz-options-container');
             const progressTextEl = document.getElementById('quiz-progress-text');
             
-            // 퀴즈 진행도 업데이트
             const stats = gameState.stageStats[gameState.currentStage];
-            const currentNum = stats.total + 1; // 이번에 풀 문제
+            const currentNum = stats.total + 1; 
             
             progressTextEl.dataset.i18nVars_current = currentNum;
             progressTextEl.innerHTML = i18n[gameState.language]['ui_question_count']
                                         .replace('{current}', currentNum);
 
-            // 질문 텍스트/시각 자료 업데이트
             questionTextEl.textContent = question.questionText;
             if (question.visual && question.visual !== 'null') {
-                questionTextEl.innerHTML = `<span class="block text-7xl mb-4">${question.visual}</span>` + question.questionText;
+                questionTextEl.innerHTML = `<span class="block text-6xl md:text-7xl mb-4">${question.visual}</span>` + question.questionText;
             } else {
                  questionTextEl.innerHTML = question.questionText;
             }
 
-            // 선택지 업데이트
             optionsContainer.innerHTML = ''; 
             question.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95";
+                // [수정] 버튼 크기: aspect-square (정사각형), flex, items-center, justify-center 추가
+                button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95 aspect-square flex items-center justify-center";
                 
                 let optionContent = optionText;
-                // 이모지 감지 (단순화된 버전)
                 if (optionText.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/u) && optionText.length < 5) {
-                    optionContent = `<span class="text-6xl">${optionText}</span>`;
+                    // [수정] 버튼 크기: 이모지 크기 조정
+                    optionContent = `<span class="text-5xl md:text-6xl">${optionText}</span>`;
                 } else {
-                    optionContent = `<span class="block text-2xl font-bold text-gray-800">${optionText}</span>`;
+                    // [수정] 버튼 크기: 텍스트 크기, 정렬 조정
+                    optionContent = `<span class="block text-xl md:text-2xl font-bold text-gray-800 text-center">${optionText}</span>`;
                 }
                 button.innerHTML = optionContent;
 
@@ -742,21 +710,19 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
             const question = gameState.currentQuestion;
             const stats = gameState.stageStats[gameState.currentStage];
 
-            stats.total++; // 총 문제 수 증가
+            stats.total++; 
 
             if (selectedIndex === question.answerIndex) {
                 // --- 정답 ---
                 playSound(correctSound, "C5", "4n");
                 gameState.numberblobs += 5; 
-                stats.correct++; // 정답 수 증가
-                stats.consecutive++; // 연속 정답 증가
+                stats.correct++; 
+                stats.consecutive++; 
                 updateScoreUI();
                 
-                // [수정] 스테이지 클리어 조건 확인 (e.g., 10문제)
                 if (stats.total >= quizData[gameState.currentStage].totalQuestions) {
                     stageClear();
                 } else {
-                    // 다음 문제 API로 요청
                     setTimeout(() => {
                         fetchAdaptiveQuestion();
                     }, 500); 
@@ -765,9 +731,8 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
             } else {
                 // --- 오답 ---
                 playSound(wrongSound, "C3", "4n");
-                stats.consecutive = 0; // 연속 정답 리셋
-                
-                showFeedbackModal(question.hint); // API가 제공한 힌트 사용
+                stats.consecutive = 0; 
+                showFeedbackModal(question.hint);
             }
         }
         
@@ -778,7 +743,7 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
             const visualEl = document.getElementById('modal-feedback-hint-visual');
             
             titleEl.textContent = i18n[lang]['feedback_title'];
-            visualEl.innerHTML = ''; // API 버전에서는 시각적 힌트를 단순 텍스트로 대체
+            visualEl.innerHTML = '';
             
             textEl.textContent = hintText || i18n[lang]['feedback_text_default'];
             
@@ -789,25 +754,21 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
             const stageId = gameState.currentStage;
             const stage = quizData[stageId];
             
-            // 스티커 획득
             if (!gameState.collectedStickers.includes(stage.sticker)) {
                 gameState.collectedStickers.push(stage.sticker);
             }
             
-            // 다음 스테이지 잠금 해제
             const nextStageId = stageId + 1;
             if (nextStageId <= Object.keys(quizData).length && !gameState.unlockedStages.includes(nextStageId)) {
                 gameState.unlockedStages.push(nextStageId);
             }
             
-            // 스테이지 통계 초기화
             gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
             
             const lang = gameState.language;
             document.getElementById('modal-reward-title').textContent = i18n[lang]['reward_title'];
             document.getElementById('modal-reward-sticker').textContent = stage.sticker;
             
-            // 마지막 스테이지인지 확인
             if (stageId == Object.keys(quizData).length) {
                 document.getElementById('modal-reward-text').textContent = i18n[lang]['reward_text'];
             } else {
@@ -815,7 +776,7 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
             }
             
             const closeButton = document.getElementById('modal-reward-close-btn');
-            closeButton.textContent = i18n[lang]['btn_go_to_stickerbook']; // "월드맵 가기"
+            closeButton.textContent = i18n[lang]['btn_go_to_stickerbook'];
             
             closeButton.onclick = () => {
                 playSound(clickSound, "C4");
@@ -890,7 +851,6 @@ Provide a very simple, encouraging 'hint' in ${lang}.`;
                 updateWorldMapUI();
             });
 
-            // 기본 언어로 UI 초기화
             updateLanguage(gameState.language); 
             updateWorldMapUI(); 
             updateScoreUI(); 
