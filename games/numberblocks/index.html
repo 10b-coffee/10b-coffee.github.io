@@ -236,74 +236,61 @@
         }
 
         function hideModal(modalId) {
-            document.getElementById('lang-en-btn').addEventListener('click', () => updateLanguage('en'));
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        
+// ... existing code ... -->
+        // --- Initialize Game ---
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 4.2. 언어 전환 버튼 (사운드 추가)
+            document.getElementById('lang-ko-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                updateLanguage('ko');
+            });
+            document.getElementById('lang-en-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                updateLanguage('en');
+            });
             
             // 네비게이션 버튼
-            // [수정] 주석 처리되어 있던 'start-game-btn' 이벤트 리스너의 주석을 해제합니다.
-            document.getElementById('start-game-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                showScreen('screen-world-map');
-                updateWorldMapUI(); // 월드맵 UI (잠금/해제) 업데이트
+// ... existing code ... -->
             });
             
             document.getElementById('back-to-menu-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
+                // [오류 1 수정] 'screen-world-map'이 아닌 'screen-main-menu'로 이동
+                showScreen('screen-main-menu');
+            });
+            
+            // [오류 3 수정] stickerbook-btn에 사운드 추가
+            document.getElementById('stickerbook-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-stickerbook');
+                renderStickerbook();
+            });
+            
+            // [오류 3 수정] stickerbook-back-btn에 사운드 추가
+            document.getElementById('stickerbook-back-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
                 showScreen('screen-world-map');
             });
             
-            // 모달 닫기 버튼 (hideModal 사용하도록 수정)
-            document.getElementById('close-feedback-modal-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                hideModal('modal-feedback');
-                // showScreen('screen-game-stage'); // 모달은 화면을 가릴 뿐, 화면을 전환하지 않음
-            });
-            document.getElementById('close-reward-modal-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                hideModal('modal-reward');
-                // showScreen('screen-world-map'); // 월드맵으로 가는 로직은 reward 모달 띄울 때 결정
-            });
-            
-            // 5.2. 월드맵 스테이지 버튼 동적 생성
+            document.getElementById('back-to-map-btn').addEventListener('click', () => {
 // ... existing code ... -->
-        // 4.1. 피드백 모달 표시
-        function showFeedbackModal(text, visual) {
-            document.getElementById('feedback-text').innerText = text;
-            document.getElementById('feedback-visual').innerText = visual;
-            showModal('modal-feedback'); // showScreen 대신 showModal 사용
-        }
-
-        function handleStageClear() {
-// ... existing code ... -->
-        // 4.1. / 3.4. 보상 모달 (통합)
-        function showRewardModal(isSpeedRound) {
-            const lang = gameState.language;
-            const closeButton = document.getElementById('close-reward-modal-btn');
-            
-            if (isSpeedRound) {
-                document.getElementById('reward-title').innerText = i18n[lang]['reward_speed_round_title'];
-// ... existing code ... -->
-                document.getElementById('reward-sticker-text').innerText = i18n[lang]['reward_speed_round_text'];
-                // 스피드 라운드 모달 닫기 버튼은 다음 문제로 진행
-                closeButton.onclick = () => {
-                    playSound(clickSound, "C4");
-                    hideModal('modal-reward');
-                    goToNextQuestion(); // 다음 문제로
-                };
-            } else {
-// ... existing code ... -->
-                document.getElementById('reward-visual').innerText = '🎉';
-                document.getElementById('reward-sticker-text').innerText = `${i18n[lang]['sticker_text']} '${stageData.sticker}'`;
                 // 일반 클리어 모달 닫기 버튼은 월드맵으로
                 closeButton.onclick = () => {
                     playSound(clickSound, "C4");
                     hideModal('modal-reward');
                     showScreen('screen-world-map'); // 월드맵으로 화면 전환
+                    // [오류 2 수정] 월드맵으로 돌아갈 때 UI를 즉시 갱신하여 잠금 해제 표시
+                    updateWorldMapUI(); 
                 };
             }
             showModal('modal-reward'); // showScreen 대신 showModal 사용
-        }
-
-        // 5.2. 스티커북 렌더링
 // ... existing code ... -->
-
 
