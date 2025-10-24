@@ -63,19 +63,14 @@
 
         <!-- 1. 메인 메뉴 화면 -->
         <div id="screen-main-menu" class="game-screen flex flex-col items-center justify-center w-full h-full p-8 bg-gradient-to-b from-blue-300 to-blue-500 text-white text-shadow" style="display: flex;">
-            <h1 class="text-5xl md:text-6xl font-extrabold mb-4" data-i18n-key="title_main">넘버랜드</h1>
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-12" data-i18n-key="title_sub">축제 대모험</h2>
-            <img src="https://placehold.co/200x150/FFFFFF/3B82F6?text=Numberblocks+Friends&font=pretendard" alt="Numberblocks Characters" class="w-48 md:w-64 mb-12 rounded-lg shadow-lg">
+            <!-- [수정] h1, h2 텍스트를 로고 이미지로 변경 -->
+            <img src="https://logos-world.net/wp-content/uploads/2024/09/Numberblocks-Logo.jpg" alt="Numberblocks Logo" class="w-64 md:w-80 mb-8">
+            <!-- [수정] placeholder 이미지를 요청하신 이미지로 변경 -->
+            <img src="https://media.licdn.com/dms/image/v2/D4E12AQHpZaoyVgX5Jg/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1714056782878?e=2147483647&v=beta&t=e5b3Xcnj_Ov2fDsar4T2zkHV0lJupW2ahqSPBCreWFE" alt="Numberblocks Friends" class="w-60 md:w-72 mb-12 rounded-2xl shadow-lg object-cover">
             <button id="start-game-btn" class="w-full max-w-xs px-6 py-4 bg-yellow-400 text-blue-800 text-2xl md:text-3xl font-bold rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_start_game">
                 게임 시작!
             </button>
         </div>
-
-        <!-- [오류 수정]
-            이전 커밋에서 <script> 태그 밖에 잘못 배치되었던
-            JavaScript 코드와 주석들을 모두 삭제했습니다.
-            (document.addEventListener('DOMContentLoaded', ... 등)
-        -->
 
         <!-- 2. 월드맵 화면 -->
         <div id="screen-world-map" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
@@ -182,12 +177,6 @@
                 <!-- 선택지 -->
                 <div id="quiz-options-container" class="w-full grid grid-cols-2 gap-4 md:gap-6 px-4">
                     <!-- JavaScript로 선택지 동적 생성 -->
-                    <!-- 예시: 
-                    <button class="quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95">
-                        <span class="text-6xl">🔺</span>
-                        <span class="block text-2xl font-bold text-gray-800 mt-2">세모</span>
-                    </button>
-                    -->
                 </div>
             </div>
         </div>
@@ -204,16 +193,6 @@
             
             <div id="stickerbook-grid" class="flex-grow w-full grid grid-cols-3 gap-4 p-4 bg-white/60 rounded-2xl shadow-inner overflow-y-auto">
                 <!-- JS로 스티커 슬롯 동적 생성 -->
-                <!-- 예시:
-                <div class="sticker-slot flex flex-col items-center justify-center aspect-square bg-gray-200 rounded-lg shadow-md sticker-slot-locked">
-                    <span class="text-5xl">1️⃣</span>
-                    <span class="text-sm font-bold text-gray-600 mt-1">1구역</span>
-                </div>
-                <div class="sticker-slot flex flex-col items-center justify-center aspect-square bg-white rounded-lg shadow-md">
-                    <span class="text-5xl">🟨</span>
-                    <span class="text-sm font-bold text-gray-800 mt-1">도형 마스터</span>
-                </div>
-                -->
             </div>
         </div>
 
@@ -252,7 +231,7 @@
             numberblobs: 0,
             unlockedStages: [1], // 1단계는 기본으로 잠금 해제
             collectedStickers: [],
-            language: 'ko',
+            language: 'en', // [수정] 기본 언어를 'en' (영어)로 변경
             consecutiveCorrectAnswers: 0, // 연속 정답 횟수 (적응형 학습용)
         };
 
@@ -293,15 +272,12 @@
         function initializeAudio() {
             if (!soundsReady) {
                 Tone.start();
-                // (보상 사운드는 실제 오디오 파일 로드가 필요하므로 여기서는 생략)
                 soundsReady = true;
                 console.log("Audio context started.");
-                // 초기화 후에는 이벤트 리스너 제거
                 document.body.removeEventListener('click', initializeAudio);
                 document.body.removeEventListener('touchstart', initializeAudio);
             }
         }
-        // 사용자의 첫 클릭 또는 터치 시 오디오 컨텍스트 활성화
         document.body.addEventListener('click', initializeAudio, { once: true });
         document.body.addEventListener('touchstart', initializeAudio, { once: true });
 
@@ -420,7 +396,6 @@
 
         /**
          * 지정된 ID의 화면을 표시하고 나머지는 숨깁니다.
-         * @param {string} screenId - 표시할 화면의 ID (e.g., 'screen-main-menu')
          */
         function showScreen(screenId) {
             document.querySelectorAll('.game-screen').forEach(screen => {
@@ -432,7 +407,6 @@
 
         /**
          * 지정된 ID의 모달(팝업)을 표시합니다.
-         * @param {string} modalId - 표시할 모달의 ID (e.g., 'modal-feedback')
          */
         function showModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -444,7 +418,6 @@
 
         /**
          * 지정된 ID의 모달(팝업)을 숨깁니다.
-         * @param {string} modalId - 숨길 모달의 ID
          */
         function hideModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -457,12 +430,10 @@
 
         /**
          * 게임 언어를 업데이트하고 UI를 갱신합니다.
-         * @param {string} lang - 'ko' 또는 'en'
          */
         function updateLanguage(lang) {
             gameState.language = lang;
             
-            // 버튼 활성/비활성 스타일 업데이트
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 if (btn.dataset.lang === lang) {
                     btn.classList.remove('opacity-50');
@@ -473,21 +444,18 @@
                 }
             });
 
-            // 모든 i18n 요소 텍스트 업데이트
             document.querySelectorAll('[data-i18n-key]').forEach(el => {
                 const key = el.dataset.i18nKey;
                 if (i18n[lang] && i18n[lang][key]) {
-                    el.innerHTML = i18n[lang][key]; // innerHTML을 사용하여 &larr; 등 특수문자 처리
+                    el.innerHTML = i18n[lang][key];
                 }
             });
 
-            // 현재 화면이 게임 스테이지일 경우 퀴즈 UI 다시 그리기 (언어 변경 반영)
             if (gameState.currentScreen === 'screen-game-stage' && gameState.currentStage) {
                 renderQuestion();
             }
-            // 현재 화면이 월드맵일 경우 스테이지 설명 다시 그리기
             if (gameState.currentScreen === 'screen-world-map') {
-                updateWorldMapUI(); // 스테이지 텍스트도 갱신
+                updateWorldMapUI(); 
             }
         }
         
@@ -508,11 +476,9 @@
                 const stageTitleEl = card.querySelector('h3');
                 const stageDescEl = card.querySelector('p');
                 
-                // i18n 텍스트 업데이트
                 if (stageTitleEl) stageTitleEl.innerHTML = i18n[lang][`stage_${stageId}_title`];
                 if (stageDescEl) stageDescEl.innerHTML = i18n[lang][`stage_${stageId}_desc`];
                 
-                // 잠금/해제 상태 업데이트
                 if (gameState.unlockedStages.includes(stageId)) {
                     card.classList.remove('stage-locked');
                 } else {
@@ -527,7 +493,7 @@
         function renderStickerbook() {
             const grid = document.getElementById('stickerbook-grid');
             const lang = gameState.language;
-            grid.innerHTML = ''; // 그리드 초기화
+            grid.innerHTML = ''; 
             
             Object.keys(quizData).forEach(stageId => {
                 const stage = quizData[stageId];
@@ -549,12 +515,11 @@
 
         /**
          * 특정 스테이지의 게임을 시작합니다.
-         * @param {number} stageId - 시작할 스테이지 ID (1~5)
          */
         function startGame(stageId) {
             gameState.currentStage = stageId;
             gameState.currentQuestionIndex = 0;
-            gameState.consecutiveCorrectAnswers = 0; // 스테이지 시작 시 초기화
+            gameState.consecutiveCorrectAnswers = 0; 
             
             loadQuiz();
             showScreen('screen-game-stage');
@@ -573,30 +538,34 @@
          */
         function renderQuestion() {
             const stage = quizData[gameState.currentStage];
-            const qIndex = gameState.currentQuestionIndex;
-            
-            // 스피드 라운드 스킵 로직
-            let question = stage.questions[qIndex];
-            if (question.speedRound && gameState.consecutiveCorrectAnswers < 2) {
-                // 연속 정답 2회 미만이면 스피드 라운드 문제 스킵
-                gameState.currentQuestionIndex++;
-                qIndex = gameState.currentQuestionIndex;
-                question = stage.questions[qIndex];
-            }
-            
-            // 모든 문제를 풀었는지 확인
-            if (!question) {
+            let qIndex = gameState.currentQuestionIndex;
+
+            // [오류 수정] 모든 문제를 풀었는지 *먼저* 확인
+            if (qIndex >= stage.questions.length) {
                 stageClear();
                 return;
             }
 
+            // 스피드 라운드 스킵 로직
+            let question = stage.questions[qIndex];
+            if (question.speedRound && gameState.consecutiveCorrectAnswers < 2) {
+                gameState.currentQuestionIndex++;
+                qIndex = gameState.currentQuestionIndex;
+
+                // [오류 수정] 스킵한 후에도 문제 배열의 끝인지 다시 확인
+                if (qIndex >= stage.questions.length) {
+                    stageClear();
+                    return;
+                }
+                question = stage.questions[qIndex];
+            }
+            
             const lang = gameState.language;
             const questionTextEl = document.getElementById('quiz-question-text');
             const optionsContainer = document.getElementById('quiz-options-container');
             const progressTextEl = document.getElementById('quiz-progress-text');
             
             // 퀴즈 진행도 업데이트
-            // (스피드 라운드를 포함할 수 있으므로 총 문제 수를 필터링)
             const totalQuestions = stage.questions.filter(q => !q.speedRound || (q.speedRound && gameState.consecutiveCorrectAnswers >= 2)).length;
             const currentQuestionNum = stage.questions.slice(0, qIndex + 1).filter(q => !q.speedRound || (q.speedRound && gameState.consecutiveCorrectAnswers >= 2)).length;
             progressTextEl.textContent = `문제 ${currentQuestionNum}/${totalQuestions}`;
@@ -608,15 +577,13 @@
             }
 
             // 선택지 업데이트
-            optionsContainer.innerHTML = ''; // 선택지 초기화
+            optionsContainer.innerHTML = ''; 
             question.options.forEach(option => {
                 const button = document.createElement('button');
                 button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95";
                 
-                // 옵션 텍스트/시각 자료
                 let optionContent = option[lang];
                 if (option[lang].match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u)) {
-                    // 이모지인 경우
                     optionContent = `<span class="text-6xl">${option[lang]}</span>`;
                 } else {
                     optionContent = `<span class="block text-2xl font-bold text-gray-800">${option[lang]}</span>`;
@@ -633,40 +600,32 @@
 
         /**
          * 사용자가 선택한 답을 확인합니다.
-         * @param {object} selectedOption - 사용자가 선택한 옵션 객체
          */
         function checkAnswer(selectedOption) {
             if (selectedOption.correct) {
                 // --- 정답 ---
                 playSound(correctSound, "C5", "4n");
-                gameState.numberblobs += 5; // 보상
+                gameState.numberblobs += 5; 
                 gameState.consecutiveCorrectAnswers++;
                 updateScoreUI();
                 
-                // 강점 심화 (적응형 학습)
                 if (gameState.currentStage == 3 && gameState.consecutiveCorrectAnswers === 2) {
-                    // 곱셈 스테이지에서 2연속 정답 시
-                    // (실제로는 모달을 띄우는 것이 좋으나, alert으로 시연)
                     alert(i18n[gameState.language]['adaptive_speed_round']);
                 }
 
-                // 다음 문제로 이동
                 gameState.currentQuestionIndex++;
-                setTimeout(renderQuestion, 500); // 0.5초 후 다음 문제
+                setTimeout(renderQuestion, 500); 
                 
             } else {
                 // --- 오답 ---
                 playSound(wrongSound, "C3", "4n");
-                gameState.consecutiveCorrectAnswers = 0; // 연속 정답 초기화
-                
-                // 약점 보완 (적응형 학습)
+                gameState.consecutiveCorrectAnswers = 0; 
                 showFeedbackModal(selectedOption.hint);
             }
         }
         
         /**
          * 약점 보완 피드백 모달 (건설적 교정)
-         * @param {object} hint - 힌트 객체 (optional)
          */
         function showFeedbackModal(hint) {
             const lang = gameState.language;
@@ -675,15 +634,13 @@
             const visualEl = document.getElementById('modal-feedback-hint-visual');
             
             titleEl.textContent = i18n[lang]['feedback_title'];
-            visualEl.innerHTML = ''; // 시각 힌트 초기화
+            visualEl.innerHTML = ''; 
             
             if (hint) {
-                // 1구역 (도형) 힌트
                 if (hint.visual) {
                     visualEl.innerHTML = hint.visual;
                 }
                 let hintText = i18n[lang][hint.text_key] || i18n[lang]['feedback_text_default'];
-                // 파라미터 치환 (e.g., {sides} -> 3)
                 if (hint.params) {
                     Object.keys(hint.params).forEach(key => {
                         hintText = hintText.replace(`{${key}}`, hint.params[key]);
@@ -691,7 +648,6 @@
                 }
                 textEl.textContent = hintText;
             } else {
-                // 기본 힌트
                 textEl.textContent = i18n[lang]['feedback_text_default'];
             }
             
@@ -705,42 +661,35 @@
             const stageId = gameState.currentStage;
             const stage = quizData[stageId];
             
-            // 1. 스티커 획득
             if (!gameState.collectedStickers.includes(stage.sticker)) {
                 gameState.collectedStickers.push(stage.sticker);
             }
             
-            // 2. 다음 스테이지 잠금 해제
             const nextStageId = stageId + 1;
             if (nextStageId <= Object.keys(quizData).length && !gameState.unlockedStages.includes(nextStageId)) {
                 gameState.unlockedStages.push(nextStageId);
             }
             
-            // 3. 보상 모달 표시
             const lang = gameState.language;
             document.getElementById('modal-reward-title').textContent = i18n[lang]['reward_title'];
             document.getElementById('modal-reward-sticker').textContent = stage.sticker;
             document.getElementById('modal-reward-text').textContent = i18n[lang]['reward_text'];
             
-            // 보상 모달 닫기 버튼 이벤트
             const closeButton = document.getElementById('modal-reward-close-btn');
             closeButton.textContent = i18n[lang]['btn_go_to_stickerbook'];
             
-            // 모든 스테이지 클리어 시
             if (stageId == Object.keys(quizData).length) {
-                closeButton.textContent = i18n[lang]['btn_back_to_menu']; // "메인 메뉴로"
+                closeButton.textContent = i18n[lang]['btn_back_to_menu']; 
                 closeButton.onclick = () => {
                     playSound(clickSound, "C4");
                     hideModal('modal-reward');
-                    showScreen('screen-main-menu'); // 모든 스테이지 클리어 시 메인 메뉴로
+                    showScreen('screen-main-menu'); 
                 };
             } else {
-                // 일반 클리어 모달 닫기 버튼은 월드맵으로
                 closeButton.onclick = () => {
                     playSound(clickSound, "C4");
                     hideModal('modal-reward');
-                    showScreen('screen-world-map'); // 월드맵으로 화면 전환
-                    // [QA 오류 2 수정] 월드맵으로 돌아갈 때 UI를 즉시 갱신
+                    showScreen('screen-world-map'); 
                     updateWorldMapUI(); 
                 };
             }
@@ -751,7 +700,6 @@
         // --- 6. Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             
-            // 6.1. 언어 전환 버튼 (사운드 추가)
             document.getElementById('lang-ko-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 updateLanguage('ko');
@@ -761,27 +709,23 @@
                 updateLanguage('en');
             });
             
-            // 6.2. 네비게이션 버튼
             document.getElementById('start-game-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 showScreen('screen-world-map');
-                updateWorldMapUI(); // 월드맵 UI (잠금/해제) 업데이트
+                updateWorldMapUI(); 
             });
             
             document.getElementById('back-to-menu-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
-                // [QA 오류 1 수정] 'screen-world-map'이 아닌 'screen-main-menu'로 이동
                 showScreen('screen-main-menu');
             });
             
-            // [QA 오류 3 수정] stickerbook-btn에 사운드 추가
             document.getElementById('stickerbook-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 showScreen('screen-stickerbook');
                 renderStickerbook();
             });
             
-            // [QA 오류 3 수정] stickerbook-back-btn에 사운드 추가
             document.getElementById('stickerbook-back-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 showScreen('screen-world-map');
@@ -793,32 +737,28 @@
                 updateWorldMapUI();
             });
             
-            // 6.3. 스테이지 진입 버튼
             document.querySelectorAll('.stage-card').forEach((card, index) => {
                 card.addEventListener('click', () => {
                     const stageId = index + 1;
                     if (gameState.unlockedStages.includes(stageId)) {
-                        playSound(clickSound, "C5"); // 스테이지 진입은 높은 톤
+                        playSound(clickSound, "C5"); 
                         startGame(stageId);
                     }
-                    // 잠긴 스테이지는 어차피 'pointer-events: none'이라 클릭 안됨
                 });
             });
             
-            // 6.4. 모달 닫기 버튼
             document.getElementById('modal-feedback-close-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 hideModal('modal-feedback');
             });
-            // (보상 모달 닫기 버튼은 stageClear()에서 동적으로 할당됨)
 
-            // 6.5. 초기화
-            updateLanguage(gameState.language); // 기본 언어로 UI 설정
-            updateWorldMapUI(); // 월드맵 잠금/해제 상태 초기화
-            updateScoreUI(); // 점수 초기화
+            updateLanguage(gameState.language); 
+            updateWorldMapUI(); 
+            updateScoreUI(); 
         });
 
     </script>
 </body>
 </html>
+
 
