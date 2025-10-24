@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- [수정] 기본 언어 'en' -->
+<html lang="en"> <!-- 기본 언어 'en' -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,9 +63,9 @@
 
         <!-- 1. 메인 메뉴 화면 -->
         <div id="screen-main-menu" class="game-screen flex flex-col items-center justify-center w-full h-full p-8 bg-gradient-to-b from-blue-300 to-blue-500 text-white text-shadow" style="display: flex;">
-            <!-- [수정] 로고 이미지로 변경 -->
+            <!-- 로고 이미지 -->
             <img src="https://logos-world.net/wp-content/uploads/2024/09/Numberblocks-Logo.jpg" alt="Numberblocks Logo" class="w-64 md:w-80 mb-8" onerror="this.onerror=null; this.src='https://placehold.co/320x100/FFFFFF/3B82F6?text=Numberblocks&font=pretendard';">
-            <!-- [수정] 넘버블록스 친구들 이미지로 변경 -->
+            <!-- 넘버블록스 친구들 이미지 -->
             <img src="https://media.licdn.com/dms/image/v2/D4E12AQHpZaoyVgX5Jg/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1714056782878?e=2147483647&v=beta&t=e5b3Xcnj_Ov2fDsar4T2zkHV0lJupW2ahqSPBCreWFE" alt="Numberblocks Friends" class="w-60 md:w-72 mb-12 rounded-2xl shadow-lg object-cover" onerror="this.onerror=null; this.src='https://placehold.co/288x200/FFFFFF/3B82F6?text=Numberblocks+Friends&font=pretendard';">
             <button id="start-game-btn" class="w-full max-w-xs px-6 py-4 bg-yellow-400 text-blue-800 text-2xl md:text-3xl font-bold rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_start_game">
                 Start Game!
@@ -159,7 +159,7 @@
                     &larr; World Map
                 </button>
                 <div class="flex items-center space-x-4">
-                    <!-- [수정] 퀴즈 진행도 UI 변경 -->
+                    <!-- 퀴즈 진행도 UI -->
                     <span id="quiz-progress-text" class="text-lg font-bold text-white text-shadow" data-i18n-key="ui_question_progress" data-i18n-vars_current="1" data-i18n-vars_total="20">
                         Question 1/20
                     </span>
@@ -231,12 +231,13 @@
         const gameState = {
             currentScreen: 'screen-main-menu',
             currentStage: null,
-            currentQuestion: null, // [수정] 현재 생성된 질문 객체
-            currentQuestionIndex: 0, // [수정] 스테이지 내 진행도 (e.g., 0 ~ 19)
+            currentQuizSet: [], // [신규] 미리 생성된 퀴즈 세트
+            currentQuestion: null, // [유지] 현재 렌더링된 질문 객체
+            currentQuestionIndex: 0, // [유지] 스테이지 내 진행도 (e.g., 0 ~ 19)
             numberblobs: 0,
             unlockedStages: [1], 
             collectedStickers: [],
-            language: 'en', // [수정] 기본 언어 'en'
+            language: 'en', // 기본 언어 'en'
             consecutiveCorrectAnswers: 0, 
         };
 
@@ -285,18 +286,17 @@
                 'stage_5_desc': '다음은 뭘까?',
                 'btn_back_to_map': '&larr; 월드맵',
                 'ui_blobs': '넘버블롭',
-                'ui_question_progress': '문제 {current}/{total}', // [추가]
+                'ui_question_progress': '문제 {current}/{total}',
                 'title_stickerbook': '스티커북 📔',
                 'feedback_title': '아쉬워요!',
                 'feedback_text_default': '다시 한번 생각해볼까요?',
                 'feedback_hint_shape': '이 모양은 변이 {sides}개예요.',
-                'feedback_hint_shape_no_corners': '이 모양은 모서리가 없어요.', // [추가]
+                'feedback_hint_shape_no_corners': '이 모양은 모서리가 없어요.',
                 'reward_title': '스테이지 클리어!',
                 'reward_text': '스티커를 획득했어요!',
                 'btn_go_to_stickerbook': '스티커북 가기',
                 'btn_close': '닫기',
                 'adaptive_speed_round': '🌟 슈퍼 스피드 라운드! 🌟\n다음 문제는 조금 더 어려워져요!',
-                // [추가] 도형 퀴즈 풀 (i18n)
                 'shape_q_name': '이 도형의 이름은 무엇일까요?',
                 'shape_q_find': '{shape}를 찾아보세요.',
                 'shape_q_sides': '변이 {sides}개인 도형은?',
@@ -307,13 +307,9 @@
                 'shape_rectangle': '직사각형',
                 'shape_star': '별',
                 'shape_heart': '하트',
-                // [추가] 수 세기 퀴즈 (i18n)
                 'counting_q': '{emoji}가 몇 개 있나요?',
-                // [추가] 곱셈 퀴즈 (i18n)
                 'multiplication_q': '{a} x {b} = ?',
-                // [추가] 제곱수 퀴즈 (i18n)
                 'square_q': '{a} x {a} = ?',
-                // [추가] 패턴 퀴즈 (i18n)
                 'pattern_q': '다음 순서는? {pattern} __',
             },
             'en': {
@@ -335,18 +331,17 @@
                 'stage_5_desc': 'What comes next?',
                 'btn_back_to_map': '&larr; World Map',
                 'ui_blobs': 'Numberblobs',
-                'ui_question_progress': 'Question {current}/{total}', // [추가]
+                'ui_question_progress': 'Question {current}/{total}',
                 'title_stickerbook': 'Stickerbook 📔',
                 'feedback_title': 'Not quite!',
                 'feedback_text_default': 'Let\'s think again.',
                 'feedback_hint_shape': 'This shape has {sides} sides.',
-                'feedback_hint_shape_no_corners': 'This shape has no corners.', // [추가]
+                'feedback_hint_shape_no_corners': 'This shape has no corners.',
                 'reward_title': 'Stage Clear!',
                 'reward_text': 'You got a sticker!',
                 'btn_go_to_stickerbook': 'Go to Stickerbook',
                 'btn_close': 'Close',
                 'adaptive_speed_round': '🌟 Super Speed Round! 🌟\nThe next one is a bit trickier!',
-                // [추가] 도형 퀴즈 풀 (i18n)
                 'shape_q_name': 'What is this shape?',
                 'shape_q_find': 'Find the {shape}.',
                 'shape_q_sides': 'Which shape has {sides} sides?',
@@ -357,20 +352,14 @@
                 'shape_rectangle': 'Rectangle',
                 'shape_star': 'Star',
                 'shape_heart': 'Heart',
-                // [추가] 수 세기 퀴즈 (i18n)
                 'counting_q': 'How many {emoji}?',
-                // [추가] 곱셈 퀴즈 (i18n)
                 'multiplication_q': '{a} x {b} = ?',
-                // [추가] 제곱수 퀴즈 (i18n)
                 'square_q': '{a} x {a} = ?',
-                // [추가] 패턴 퀴즈 (i18n)
                 'pattern_q': 'What comes next? {pattern} __',
             }
         };
 
         // --- 4. Quiz Data & Generators ---
-
-        // [수정] 퀴즈 데이터를 '설정'과 '동적 생성기'로 분리
         
         // 스테이지 기본 설정
         const quizData = {
@@ -381,7 +370,7 @@
             5: { sticker: '🎵', totalQuestions: 20 }
         };
 
-        // 도형 퀴즈 질문 풀 (약점 보완)
+        // 도형 퀴즈 질문 풀
         const shapeQuizPool = [
             { 
                 type: 'find', 
@@ -440,7 +429,7 @@
         ];
 
         /**
-         * [신규] 헬퍼 함수: 배열 섞기 (Fisher-Yates)
+         * 헬퍼 함수: 배열 섞기 (Fisher-Yates)
          */
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -451,35 +440,38 @@
         }
 
         /**
-         * [신규] 헬퍼 함수: min/max 사이의 랜덤 정수
+         * 헬퍼 함수: min/max 사이의 랜덤 정수
          */
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
         
         /**
-         * [신규] 퀴즈 생성기
+         * [수정] 퀴즈 생성기 (단일 질문 생성 및 반환)
+         * @returns {object} question - signature 포함
          */
         function generateQuestion(stageId) {
             const lang = gameState.language;
             let question = {
                 questionText: '',
                 options: [],
-                visual: ''
+                visual: '',
+                signature: '' // [신규] 중복 체크용 고유 식별자
             };
 
             switch (stageId) {
                 // 1. 도형 (미리 정의된 풀에서 무작위 선택)
                 case 1: {
-                    const qTemplate = { ...shapeQuizPool[getRandomInt(0, shapeQuizPool.length - 1)] }; // 템플릿 복사
+                    const qTemplate = { ...shapeQuizPool[getRandomInt(0, shapeQuizPool.length - 1)] };
                     
                     if (qTemplate.type === 'find') {
                         question.questionText = i18n[lang]['shape_q_find'].replace('{shape}', i18n[lang][qTemplate.shape.name]);
                         question.options = shuffleArray(qTemplate.options.map(opt => ({
-                            text: opt.visual, // 옵션을 시각적 이모지로
+                            text: opt.visual, 
                             correct: (opt.visual === qTemplate.shape.visual),
                             hint: (opt.visual === qTemplate.shape.visual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
                         })));
+                        question.signature = `shape-find-${qTemplate.shape.name}`;
                     } else if (qTemplate.type === 'sides') {
                         question.questionText = i18n[lang]['shape_q_sides'].replace('{sides}', qTemplate.sides);
                         question.options = shuffleArray(qTemplate.options.map(opt => ({
@@ -487,6 +479,7 @@
                             correct: (opt.visual === qTemplate.correctVisual),
                             hint: (opt.visual === qTemplate.correctVisual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
                         })));
+                        question.signature = `shape-sides-${qTemplate.sides}`;
                     } else if (qTemplate.type === 'no_corners') {
                         question.questionText = i18n[lang]['shape_q_no_corners'];
                         question.options = shuffleArray(qTemplate.options.map(opt => ({
@@ -494,14 +487,16 @@
                             correct: (opt.visual === qTemplate.correctVisual),
                             hint: (opt.visual === qTemplate.correctVisual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
                         })));
+                        question.signature = `shape-nocorners`;
                     } else if (qTemplate.type === 'name') {
                         question.visual = qTemplate.visual;
                         question.questionText = i18n[lang]['shape_q_name'];
                         question.options = shuffleArray(qTemplate.options.map(opt => ({
-                            text: i18n[lang][opt.name], // 옵션을 텍스트 이름으로
+                            text: i18n[lang][opt.name],
                             correct: (opt.name === qTemplate.correctName),
                             hint: qTemplate.hint 
                         })));
+                        question.signature = `shape-name-${qTemplate.visual}`;
                     }
                     break;
                 }
@@ -522,13 +517,13 @@
                         text: opt.toString(),
                         correct: (opt === count)
                     })));
+                    question.signature = `count-${count}-${emoji}`;
                     break;
                 }
 
                 // 3. 곱셈 (동적 생성 + 적응형)
                 case 3: {
                     let a, b;
-                    // 적응형: 2연속 정답 시 더 어려운 문제 (5~12단)
                     if (gameState.consecutiveCorrectAnswers >= 2) {
                         a = getRandomInt(5, 12);
                         b = getRandomInt(2, 9);
@@ -547,6 +542,7 @@
                         text: opt.toString(),
                         correct: (opt === answer)
                     })));
+                    question.signature = `mult-${a}-${b}`;
                     break;
                 }
                 
@@ -565,6 +561,7 @@
                         text: opt.toString(),
                         correct: (opt === answer)
                     })));
+                    question.signature = `square-${a}`;
                     break;
                 }
 
@@ -604,12 +601,31 @@
                         text: opt.toString(),
                         correct: (opt === answer)
                     })));
+                    question.signature = `pattern-${pTemplate.type}-${patternString}`;
                     break;
                 }
             }
-            
-            gameState.currentQuestion = question; // [수정] 생성된 질문을 state에 저장
-            return question;
+            return question; // [수정] 생성된 질문 객체 반환
+        }
+
+        /**
+         * [신규] 퀴즈 세트 생성 (연속 중복 방지)
+         */
+        function createQuizSet(stageId) {
+            gameState.currentQuizSet = [];
+            let lastSignature = null;
+            const totalQuestions = quizData[stageId].totalQuestions;
+
+            for (let i = 0; i < totalQuestions; i++) {
+                let question;
+                do {
+                    question = generateQuestion(stageId);
+                } while (question.signature === lastSignature); // [핵심 수정] 직전 문제와 시그니처가 같으면 재생성
+
+                lastSignature = question.signature;
+                gameState.currentQuizSet.push(question);
+            }
+            console.log("Generated quiz set for stage " + stageId, gameState.currentQuizSet.map(q => q.signature)); // 디버깅용
         }
 
 
@@ -656,7 +672,6 @@
                 const key = el.dataset.i18nKey;
                 if (i18n[lang] && i18n[lang][key]) {
                     let text = i18n[lang][key];
-                    // [수정] 변수 치환 기능 (i18n-vars)
                     if(el.dataset.i18nVars_current) {
                         text = text.replace('{current}', el.dataset.i18nVars_current);
                     }
@@ -667,11 +682,10 @@
                 }
             });
 
-            // [수정] 화면 갱신 시 언어 재적용
-            if (gameState.currentScreen === 'screen-game-stage' && gameState.currentQuestion) {
-                // 현재 질문이 있다면, 질문 텍스트만 언어를 바꿔서 다시 렌더링
-                generateQuestion(gameState.currentStage); // 새 질문 생성 (언어 변경 시)
-                renderQuestion();
+            // [수정] 퀴즈 진행 중 언어 변경 시, 퀴즈 세트 재생성
+            if (gameState.currentScreen === 'screen-game-stage' && gameState.currentStage) {
+                createQuizSet(gameState.currentStage); // 새 언어로 퀴즈 세트 다시 생성
+                renderQuestion(); // 현재 진행도에 맞는 문제 렌더링
             }
             if (gameState.currentScreen === 'screen-world-map') {
                 updateWorldMapUI(); 
@@ -728,31 +742,34 @@
 
         function startGame(stageId) {
             gameState.currentStage = stageId;
-            gameState.currentQuestionIndex = 0;
+            gameState.currentQuestionIndex = 0; // [수정] 인덱스 리셋
             gameState.consecutiveCorrectAnswers = 0; 
             
+            createQuizSet(stageId); // [신규] 퀴즈 세트 미리 생성
             loadQuiz();
             showScreen('screen-game-stage');
         }
 
         function loadQuiz() {
             updateScoreUI();
-            generateQuestion(gameState.currentStage); // [수정] 첫 번째 질문 생성
-            renderQuestion();
+            renderQuestion(); // [수정] 0번째 문제 렌더링
         }
 
         /**
-         * [수정] 현재 생성된 질문(gameState.currentQuestion)을 화면에 렌더링
+         * [수정] 퀴즈 세트에서 현재 인덱스의 질문을 렌더링
          */
         function renderQuestion() {
             const stage = quizData[gameState.currentStage];
-            const question = gameState.currentQuestion;
 
             // [수정] 스테이지 클리어 확인
             if (gameState.currentQuestionIndex >= stage.totalQuestions) {
                 stageClear();
                 return;
             }
+            
+            // [수정] 미리 생성된 퀴즈 세트에서 문제 가져오기
+            const question = gameState.currentQuizSet[gameState.currentQuestionIndex];
+            gameState.currentQuestion = question; // 현재 문제 state 업데이트
             
             const questionTextEl = document.getElementById('quiz-question-text');
             const optionsContainer = document.getElementById('quiz-options-container');
@@ -782,7 +799,6 @@
                 button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95";
                 
                 let optionContent = option.text;
-                // [수정] 옵션이 이모지인지 텍스트인지 판별
                 if (option.text.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u)) {
                     optionContent = `<span class="text-6xl">${option.text}</span>`;
                 } else {
@@ -806,26 +822,25 @@
                 gameState.consecutiveCorrectAnswers++;
                 updateScoreUI();
                 
-                // [수정] 적응형 학습 알림 (2연속 정답)
                 if (gameState.currentStage == 3 && gameState.consecutiveCorrectAnswers === 2) {
-                    // alert() 대신 커스텀 모달이나 간단한 알림을 사용하는 것이 좋으나,
-                    // 기획서 시연을 위해 임시로 alert 사용
                     alert(i18n[gameState.language]['adaptive_speed_round']);
                 }
 
-                gameState.currentQuestionIndex++; // [수정] 다음 문제 인덱스로
+                gameState.currentQuestionIndex++; // [수정] 다음 문제 인덱스로 이동
                 
-                // [수정] 다음 문제 생성 및 렌더링
+                // [수정] 다음 문제 렌더링
                 setTimeout(() => {
-                    generateQuestion(gameState.currentStage);
-                    renderQuestion();
+                    renderQuestion(); // 생성 대신 렌더링
                 }, 500); 
                 
             } else {
                 // --- 오답 ---
                 playSound(wrongSound, "C3", "4n");
                 gameState.consecutiveCorrectAnswers = 0; 
-                showFeedbackModal(selectedOption.hint);
+                
+                // [수정] 현재 문제의 힌트를 사용하도록 수정 (selectedOption.hint)
+                const currentHint = gameState.currentQuestion.options.find(opt => opt.correct)?.hint || selectedOption.hint;
+                showFeedbackModal(currentHint);
             }
         }
         
@@ -951,7 +966,7 @@
                 hideModal('modal-feedback');
             });
 
-            // [수정] 기본 언어로 UI 초기화
+            // 기본 언어로 UI 초기화
             updateLanguage(gameState.language); 
             updateWorldMapUI(); 
             updateScoreUI(); 
