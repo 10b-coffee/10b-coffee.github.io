@@ -63,7 +63,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* [수정] 난이도 표시기 투명도 애니메이션 */
+        /* 난이도 표시기 투명도 애니메이션 */
         .fade-out {
             opacity: 0;
         }
@@ -93,9 +93,9 @@
 
 
         <!-- 2. 월드맵 화면 -->
-        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-world-map" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
-            <!-- [수정] UI 겹침 방지: 우측 패딩 pr-16 추가 -->
+            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4 pr-16">
                 <button id="back-to-menu-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_menu">
                     &larr; Main Menu
@@ -173,9 +173,9 @@
         </div>
 
         <!-- 3. 게임 스테이지 화면 -->
-        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-game-stage" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-indigo-300 to-indigo-500">
-            <!-- [수정] UI 겹침 방지: 우측 패딩 pr-16 추가 -->
+            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4 pr-16">
                 <button id="back-to-map-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
@@ -191,13 +191,14 @@
                 </div>
             </div>
 
-            <!-- [수정] 난이도 피드백 UI 추가 -->
+            <!-- 난이도 피드백 UI 추가 -->
             <div id="difficulty-indicator" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 bg-black/70 text-white rounded-lg shadow-xl text-lg font-bold z-10 hidden transition-opacity duration-300">
                 Super Speed Round! 🔥
             </div>
 
             <!-- 퀴즈 컨텐츠 영역 (relative 추가) -->
-            <div id="quiz-content-area" class="relative flex-grow flex flex-col items-center justify-center p-4 bg-white/50 rounded-2xl shadow-inner overflow-hidden">
+            <!-- [수정] overflow-y-auto 추가, justify-center 제거 -->
+            <div id="quiz-content-area" class="relative flex-grow flex flex-col items-center p-4 bg-white/50 rounded-2xl shadow-inner overflow-y-auto">
                 <!-- API 로딩 시 스피너 -->
                 <div id="quiz-loader" class="hidden flex-col items-center justify-center">
                     <div class="loader"></div>
@@ -205,18 +206,19 @@
                 </div>
                 
                 <!-- 퀴즈 컨텐츠 (로딩 완료 시 표시) -->
-                <div id="quiz-main" class="w-full h-full flex flex-col">
+                <!-- [수정] h-full 제거 -->
+                <div id="quiz-main" class="w-full flex flex-col">
                     <!-- 질문 -->
                     <div id="quiz-question-container" class="w-full mb-4 flex-shrink-0">
-                        <!-- [수정] break-all 추가하여 긴 이모지 줄바꿈 -->
+                        <!-- break-all 추가하여 긴 이모지 줄바꿈 -->
                         <p id="quiz-question-text" class="text-center text-2xl md:text-3xl font-bold text-indigo-900 p-4 break-all">
                             What is this shape?
                         </p>
                     </div>
                     
                     <!-- 선택지 -->
-                    <!-- [수정] 버튼 크기: items-start 추가하여 버튼 세로 스트레칭 방지 -->
-                    <div id="quiz-options-container" class="w-full flex-grow grid grid-cols-2 gap-2 md:gap-4 px-2 items-start">
+                    <!-- [수정] flex-grow 제거 -->
+                    <div id="quiz-options-container" class="w-full grid grid-cols-2 gap-2 md:gap-4 px-2 items-start">
                         <!-- JavaScript로 선택지 동적 생성 -->
                     </div>
                 </div>
@@ -224,9 +226,9 @@
         </div>
         
         <!-- 4. 스티커북 화면 -->
-        <!-- [수정] UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
+        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-stickerbook" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-yellow-200 to-yellow-400">
-            <!-- [수정] UI 겹침 방지: 우측 패딩 pr-16 추가 -->
+            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-6 pr-16">
                 <button id="stickerbook-back-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
@@ -291,9 +293,8 @@
             unlockedStages: [1], 
             collectedStickers: [],
             language: 'en', // 기본 언어 'en'
-            // [수정] 문제 반복 방지 및 난이도 추적
-            lastQuestionText: null,
-            lastQuestionVisual: null,
+            // 스테이지 내 문제 중복 방지를 위한 기록
+            currentQuestionHistory: [], 
             stageStats: {
                 1: { total: 0, correct: 0, consecutive: 0 },
                 2: { total: 0, correct: 0, consecutive: 0 },
@@ -438,7 +439,7 @@
             showModal('modal-api-error');
         }
 
-        // [수정] 난이도 표시기 헬퍼 함수
+        // 난이도 표시기 헬퍼 함수
         function showDifficultyIndicator(textKey) {
             const indicator = document.getElementById('difficulty-indicator');
             const lang = gameState.language;
@@ -468,7 +469,6 @@
             let difficultyInstruction = "normal difficulty.";
             const accuracy = stats.total > 0 ? (stats.correct / stats.total) : 0;
             
-            // [수정] 난이도 피드백 로직
             if (stats.consecutive >= 2 && accuracy > 0.7) {
                 difficultyInstruction = "a bit harder than the last one (Super Speed Round!).";
                 showDifficultyIndicator('difficulty_hard'); // UI 피드백
@@ -485,21 +485,27 @@ The options array must contain exactly 3 unique strings.
 The 'visual' field should contain a single large emoji or a simple string of emojis if relevant (e.g., '🍎🍎🍎'). Use 'null' if not needed.
 The 'hint' field must be a short, encouraging text for a child who got the answer wrong.`;
 
-            // [수정] 문제 반복 방지를 위해 lastQuestion... 추가
+            // 스테이지 내 문제 중복 방지를 위해 'historyString' 추가
+            let historyString = "None yet.";
+            if (gameState.currentQuestionHistory.length > 0) {
+                historyString = gameState.currentQuestionHistory.map((q, i) => `${i + 1}. ${q.text} (Visual: ${q.visual || 'none'})`).join('\n');
+            }
+
             const userPrompt = `Player status for topic '${topic}':
 - Total questions answered: ${stats.total}
 - Correct answers: ${stats.correct}
 - Current accuracy: ${Math.round(accuracy * 100)}%
 - Consecutive correct answers: ${stats.consecutive}
-- Last question text (if any): "${gameState.lastQuestionText}"
-- Last question visual (if any): "${gameState.lastQuestionVisual}"
+
+Questions already asked in this stage (AVOID THESE):
+${historyString}
 
 Instruction: Generate the next question with ${difficultyInstruction}
 Ensure the question is related to the topic: '${topic}'.
 Ensure the 3 options are simple text or single emojis.
 Ensure the 'answerIndex' (0, 1, or 2) correctly points to the right answer in the 'options' array.
 Provide a very simple, encouraging 'hint' in ${lang}.
-IMPORTANT: The new question MUST be different from the "Last question text" and "Last question visual" provided above.`;
+IMPORTANT: The new question MUST be different from ALL questions listed in the "Questions already asked" section.`;
 
             const payload = {
                 systemInstruction: {
@@ -568,9 +574,11 @@ IMPORTANT: The new question MUST be different from the "Last question text" and 
                      throw new Error("API response did not match the required schema (options length or answerIndex missing).");
                 }
                 
-                // [수정] 마지막 문제 저장 (반복 방지용)
-                gameState.lastQuestionText = jsonResponse.questionText;
-                gameState.lastQuestionVisual = jsonResponse.visual;
+                // 새 문제를 기록 (반복 방지용)
+                gameState.currentQuestionHistory.push({
+                    text: jsonResponse.questionText,
+                    visual: jsonResponse.visual
+                });
 
                 renderQuestion(jsonResponse);
 
@@ -691,9 +699,8 @@ IMPORTANT: The new question MUST be different from the "Last question text" and 
                  gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
             }
             
-            // [수정] 스테이지 시작 시 마지막 문제 기록 초기화
-            gameState.lastQuestionText = null;
-            gameState.lastQuestionVisual = null;
+            // 스테이지 시작 시 문제 기록 초기화
+            gameState.currentQuestionHistory = [];
             
             showScreen('screen-game-stage');
             loadQuiz();
@@ -728,15 +735,15 @@ IMPORTANT: The new question MUST be different from the "Last question text" and 
             optionsContainer.innerHTML = ''; 
             question.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                // [수정] 버튼 크기: aspect-square (정사각형), flex, items-center, justify-center 추가
+                // 버튼 크기: aspect-square (정사각형), flex, items-center, justify-center 추가
                 button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95 aspect-square flex items-center justify-center";
                 
                 let optionContent = optionText;
                 if (optionText.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/u) && optionText.length < 5) {
-                    // [수정] 버튼 크기: 이모지 크기 조정
+                    // 버튼 크기: 이모지 크기 조정
                     optionContent = `<span class="text-5xl md:text-6xl">${optionText}</span>`;
                 } else {
-                    // [수정] 버튼 크기: 텍스트 크기, 정렬 조정
+                    // 버튼 크기: 텍스트 크기, 정렬 조정
                     optionContent = `<span class="block text-xl md:text-2xl font-bold text-gray-800 text-center">${optionText}</span>`;
                 }
                 button.innerHTML = optionContent;
@@ -806,8 +813,10 @@ IMPORTANT: The new question MUST be different from the "Last question text" and 
                 gameState.unlockedStages.push(nextStageId);
             }
             
-            // [수정] 스테이지 클리어 시 스탯 초기화
+            // 스테이지 클리어 시 스탯 초기화
             gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
+            // [중요] 스테이지 클리어 시 문제 기록도 초기화
+            gameState.currentQuestionHistory = [];
             
             const lang = gameState.language;
             document.getElementById('modal-reward-title').textContent = i18n[lang]['reward_title'];
