@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en"> <!-- [수정] 기본 언어 'en' -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,42 +57,43 @@
         
         <!-- 언어 전환 버튼 -->
         <div class="absolute top-4 right-4 z-20 flex space-x-2">
-            <button id="lang-ko-btn" data-lang="ko" class="lang-btn p-2 rounded-full bg-white shadow-md opacity-80 transition-all duration-200">🇰🇷</button>
-            <button id="lang-en-btn" data-lang="en" class="lang-btn p-2 rounded-full bg-white shadow-md opacity-50 transition-all duration-200">🇬🇧</button>
+            <button id="lang-ko-btn" data-lang="ko" class="lang-btn p-2 rounded-full bg-white shadow-md opacity-50 transition-all duration-200">🇰🇷</button>
+            <button id="lang-en-btn" data-lang="en" class="lang-btn p-2 rounded-full bg-white shadow-md opacity-80 transition-all duration-200">🇬🇧</button>
         </div>
 
         <!-- 1. 메인 메뉴 화면 -->
         <div id="screen-main-menu" class="game-screen flex flex-col items-center justify-center w-full h-full p-8 bg-gradient-to-b from-blue-300 to-blue-500 text-white text-shadow" style="display: flex;">
-            <!-- [수정] h1, h2 텍스트를 로고 이미지로 변경 -->
-            <img src="https://logos-world.net/wp-content/uploads/2024/09/Numberblocks-Logo.jpg" alt="Numberblocks Logo" class="w-64 md:w-80 mb-8">
-            <!-- [수정] placeholder 이미지를 요청하신 이미지로 변경 -->
-            <img src="https://media.licdn.com/dms/image/v2/D4E12AQHpZaoyVgX5Jg/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1714056782878?e=2147483647&v=beta&t=e5b3Xcnj_Ov2fDsar4T2zkHV0lJupW2ahqSPBCreWFE" alt="Numberblocks Friends" class="w-60 md:w-72 mb-12 rounded-2xl shadow-lg object-cover">
+            <!-- [수정] 로고 이미지로 변경 -->
+            <img src="https://logos-world.net/wp-content/uploads/2024/09/Numberblocks-Logo.jpg" alt="Numberblocks Logo" class="w-64 md:w-80 mb-8" onerror="this.onerror=null; this.src='https://placehold.co/320x100/FFFFFF/3B82F6?text=Numberblocks&font=pretendard';">
+            <!-- [수정] 넘버블록스 친구들 이미지로 변경 -->
+            <img src="https://media.licdn.com/dms/image/v2/D4E12AQHpZaoyVgX5Jg/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1714056782878?e=2147483647&v=beta&t=e5b3Xcnj_Ov2fDsar4T2zkHV0lJupW2ahqSPBCreWFE" alt="Numberblocks Friends" class="w-60 md:w-72 mb-12 rounded-2xl shadow-lg object-cover" onerror="this.onerror=null; this.src='https://placehold.co/288x200/FFFFFF/3B82F6?text=Numberblocks+Friends&font=pretendard';">
             <button id="start-game-btn" class="w-full max-w-xs px-6 py-4 bg-yellow-400 text-blue-800 text-2xl md:text-3xl font-bold rounded-2xl shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_start_game">
-                게임 시작!
+                Start Game!
             </button>
         </div>
+
 
         <!-- 2. 월드맵 화면 -->
         <div id="screen-world-map" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
             <div class="flex-shrink-0 flex items-center justify-between mb-4">
                 <button id="back-to-menu-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_menu">
-                    &larr; 메인 메뉴
+                    &larr; Main Menu
                 </button>
                 <button id="stickerbook-btn" class="px-4 py-2 bg-yellow-400 text-yellow-900 font-bold rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_stickerbook">
-                    스티커북 📔
+                    Stickerbook 📔
                 </button>
             </div>
             
             <div class="flex-grow w-full flex flex-col items-center space-y-4">
-                <h2 class="text-3xl font-bold text-green-800 text-shadow mb-4" data-i18n-key="title_worldmap">넘버랜드 축제 지도</h2>
+                <h2 class="text-3xl font-bold text-green-800 text-shadow mb-4" data-i18n-key="title_worldmap">Numberland Fair Map</h2>
                 
                 <!-- 스테이지 1: 도형 -->
                 <div id="stage-1" class="stage-card w-full max-w-md p-5 bg-blue-400 rounded-2xl shadow-lg border-4 border-blue-600 cursor-pointer transition-transform duration-200 hover:scale-105">
                     <div class="flex items-center">
                         <span class="text-5xl mr-4">🟨</span>
                         <div>
-                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_1_title">1. 도형 파티 전시장</h3>
-                            <p class="text-lg text-blue-100 text-shadow" data-i18n-key="stage_1_desc">네모, 세모 친구들!</p>
+                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_1_title">1. Shape Party Hall</h3>
+                            <p class="text-lg text-blue-100 text-shadow" data-i18n-key="stage_1_desc">Square and Triangle friends!</p>
                         </div>
                         <div class="stage-lock-icon ml-auto text-4xl hidden">🔒</div>
                     </div>
@@ -103,8 +104,8 @@
                     <div class="flex items-center">
                         <span class="text-5xl mr-4">🍎</span>
                         <div>
-                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_2_title">2. 수 세기 솜사탕</h3>
-                            <p class="text-lg text-red-100 text-shadow" data-i18n-key="stage_2_desc">하나, 둘, 셋!</p>
+                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_2_title">2. Counting Cotton Candy</h3>
+                            <p class="text-lg text-red-100 text-shadow" data-i18n-key="stage_2_desc">One, Two, Three!</p>
                         </div>
                         <div class="stage-lock-icon ml-auto text-4xl hidden">🔒</div>
                     </div>
@@ -115,8 +116,8 @@
                     <div class="flex items-center">
                         <span class="text-5xl mr-4">🚀</span>
                         <div>
-                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_3_title">3. 곱셈 로켓 발사대</h3>
-                            <p class="text-lg text-purple-100 text-shadow" data-i18n-key="stage_3_desc">두 배, 세 배 더 높이!</p>
+                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_3_title">3. Multiplication Rocket</h3>
+                            <p class="text-lg text-purple-100 text-shadow" data-i18n-key="stage_3_desc">Two, three times higher!</p>
                         </div>
                         <div class="stage-lock-icon ml-auto text-4xl hidden">🔒</div>
                     </div>
@@ -127,8 +128,8 @@
                     <div class="flex items-center">
                         <span class="text-5xl mr-4">🏰</span>
                         <div>
-                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_4_title">4. 스퀘어 클럽 성</h3>
-                            <p class="text-lg text-yellow-100 text-shadow" data-i18n-key="stage_4_desc">네모네모 비밀 모임!</p>
+                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_4_title">4. Square Club Castle</h3>
+                            <p class="text-lg text-yellow-100 text-shadow" data-i18n-key="stage_4_desc">The secret Square meeting!</p>
                         </div>
                         <div class="stage-lock-icon ml-auto text-4xl hidden">🔒</div>
                     </div>
@@ -139,8 +140,8 @@
                     <div class="flex items-center">
                         <span class="text-5xl mr-4">🎵</span>
                         <div>
-                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_5_title">5. 패턴 댄스 스테이지</h3>
-                            <p class="text-lg text-pink-100 text-shadow" data-i18n-key="stage_5_desc">다음은 뭘까?</p>
+                            <h3 class="text-2xl font-bold text-white text-shadow" data-i18n-key="stage_5_title">5. Pattern Dance Stage</h3>
+                            <p class="text-lg text-pink-100 text-shadow" data-i18n-key="stage_5_desc">What comes next?</p>
                         </div>
                         <div class="stage-lock-icon ml-auto text-4xl hidden">🔒</div>
                     </div>
@@ -155,12 +156,15 @@
             <!-- 상단 UI -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4">
                 <button id="back-to-map-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
-                    &larr; 월드맵
+                    &larr; World Map
                 </button>
                 <div class="flex items-center space-x-4">
-                    <span id="quiz-progress-text" class="text-lg font-bold text-white text-shadow">문제 1/3</span>
+                    <!-- [수정] 퀴즈 진행도 UI 변경 -->
+                    <span id="quiz-progress-text" class="text-lg font-bold text-white text-shadow" data-i18n-key="ui_question_progress" data-i18n-vars_current="1" data-i18n-vars_total="20">
+                        Question 1/20
+                    </span>
                     <span id="score-text" class="px-4 py-2 bg-yellow-400 text-yellow-900 font-bold rounded-lg shadow text-lg">
-                        <span data-i18n-key="ui_blobs">넘버블롭</span>: <span id="score-value">0</span>
+                        <span data-i18n-key="ui_blobs">Numberblobs</span>: <span id="score-value">0</span>
                     </span>
                 </div>
             </div>
@@ -170,7 +174,7 @@
                 <!-- 질문 -->
                 <div id="quiz-question-container" class="w-full mb-6">
                     <p id="quiz-question-text" class="text-center text-2xl md:text-3xl font-bold text-indigo-900 p-4">
-                        이 도형의 이름은 무엇일까요?
+                        What is this shape?
                     </p>
                 </div>
                 
@@ -185,9 +189,9 @@
         <div id="screen-stickerbook" class="game-screen flex flex-col w-full h-full p-6 bg-gradient-to-b from-yellow-200 to-yellow-400">
             <div class="flex-shrink-0 flex items-center justify-between mb-6">
                 <button id="stickerbook-back-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
-                    &larr; 월드맵으로
+                    &larr; World Map
                 </button>
-                <h2 class="text-3xl font-bold text-yellow-800 text-shadow" data-i18n-key="title_stickerbook">스티커북 📔</h2>
+                <h2 class="text-3xl font-bold text-yellow-800 text-shadow" data-i18n-key="title_stickerbook">Stickerbook 📔</h2>
                 <div class="w-24"></div> <!-- 여백용 -->
             </div>
             
@@ -199,11 +203,11 @@
         <!-- 5. 모달 (팝업창) - 피드백 (오답) -->
         <div id="modal-feedback" class="hidden absolute inset-0 w-full h-full bg-black/50 z-30 items-center justify-center p-6">
             <div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl flex flex-col items-center text-center">
-                <h3 id="modal-feedback-title" class="text-3xl font-bold text-red-600 mb-4" data-i18n-key="feedback_title">아쉬워요!</h3>
+                <h3 id="modal-feedback-title" class="text-3xl font-bold text-red-600 mb-4" data-i18n-key="feedback_title">Not quite!</h3>
                 <div id="modal-feedback-hint-visual" class="text-7xl mb-4"></div>
-                <p id="modal-feedback-text" class="text-xl text-gray-700 mb-6" data-i18n-key="feedback_text_default">다시 한번 생각해볼까요?</p>
+                <p id="modal-feedback-text" class="text-xl text-gray-700 mb-6" data-i18n-key="feedback_text_default">Let's think again.</p>
                 <button id="modal-feedback-close-btn" class="w-full px-6 py-3 bg-red-500 text-white text-xl font-bold rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_close">
-                    닫기
+                    Close
                 </button>
             </div>
         </div>
@@ -211,11 +215,11 @@
         <!-- 6. 모달 (팝업창) - 보상 (스테이지 클리어) -->
         <div id="modal-reward" class="hidden absolute inset-0 w-full h-full bg-black/50 z-30 items-center justify-center p-6">
             <div class="w-full max-w-md p-8 bg-gradient-to-b from-yellow-200 to-yellow-400 rounded-2xl shadow-2xl flex flex-col items-center text-center">
-                <h3 id="modal-reward-title" class="text-3xl font-bold text-yellow-900 mb-4" data-i18n-key="reward_title">스테이지 클리어!</h3>
+                <h3 id="modal-reward-title" class="text-3xl font-bold text-yellow-900 mb-4" data-i18n-key="reward_title">Stage Clear!</h3>
                 <div id="modal-reward-sticker" class="text-8xl mb-4"></div>
-                <p id="modal-reward-text" class="text-xl text-yellow-800 mb-6" data-i18n-key="reward_text">스티커를 획득했어요!</p>
+                <p id="modal-reward-text" class="text-xl text-yellow-800 mb-6" data-i18n-key="reward_text">You got a sticker!</p>
                 <button id="modal-reward-close-btn" class="w-full px-6 py-3 bg-yellow-500 text-white text-xl font-bold rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_go_to_stickerbook">
-                    스티커북 가기
+                    Go to Stickerbook
                 </button>
             </div>
         </div>
@@ -227,48 +231,26 @@
         const gameState = {
             currentScreen: 'screen-main-menu',
             currentStage: null,
-            currentQuestionIndex: 0,
+            currentQuestion: null, // [수정] 현재 생성된 질문 객체
+            currentQuestionIndex: 0, // [수정] 스테이지 내 진행도 (e.g., 0 ~ 19)
             numberblobs: 0,
-            unlockedStages: [1], // 1단계는 기본으로 잠금 해제
+            unlockedStages: [1], 
             collectedStickers: [],
-            language: 'en', // [수정] 기본 언어를 'en' (영어)로 변경
-            consecutiveCorrectAnswers: 0, // 연속 정답 횟수 (적응형 학습용)
+            language: 'en', // [수정] 기본 언어 'en'
+            consecutiveCorrectAnswers: 0, 
         };
 
         // --- 2. Sound Engine (Tone.js) ---
         let soundsReady = false;
-        // 클릭 사운드 (짧고 높은 톤)
-        const clickSound = new Tone.Synth({
-            oscillator: { type: 'triangle' },
-            envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
-        }).toDestination();
+        const clickSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination();
+        const correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.0, release: 0.1 } }).toDestination();
+        const wrongSound = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.0, release: 0.1 } }).toDestination();
         
-        // 정답 사운드 (상승하는 톤)
-        const correctSound = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.01, decay: 0.2, sustain: 0.0, release: 0.1 }
-        }).toDestination();
-        
-        // 오답 사운드 (낮은 톤)
-        const wrongSound = new Tone.Synth({
-            oscillator: { type: 'square' },
-            envelope: { attack: 0.01, decay: 0.3, sustain: 0.0, release: 0.1 }
-        }).toDestination();
-
-        // 보상 사운드 (팡파레)
-        const rewardSound = new Tone.Sampler().toDestination();
-        
-        // 사운드 재생 함수
         function playSound(synth, note, duration = "8n") {
             if (!soundsReady) return;
-            try {
-                synth.triggerAttackRelease(note, duration);
-            } catch (e) {
-                console.warn("Sound play failed:", e);
-            }
+            try { synth.triggerAttackRelease(note, duration); } catch (e) { console.warn("Sound play failed:", e); }
         }
         
-        // 오디오 컨텍스트 시작 (사용자 상호작용 시)
         function initializeAudio() {
             if (!soundsReady) {
                 Tone.start();
@@ -303,15 +285,36 @@
                 'stage_5_desc': '다음은 뭘까?',
                 'btn_back_to_map': '&larr; 월드맵',
                 'ui_blobs': '넘버블롭',
+                'ui_question_progress': '문제 {current}/{total}', // [추가]
                 'title_stickerbook': '스티커북 📔',
                 'feedback_title': '아쉬워요!',
                 'feedback_text_default': '다시 한번 생각해볼까요?',
                 'feedback_hint_shape': '이 모양은 변이 {sides}개예요.',
+                'feedback_hint_shape_no_corners': '이 모양은 모서리가 없어요.', // [추가]
                 'reward_title': '스테이지 클리어!',
                 'reward_text': '스티커를 획득했어요!',
                 'btn_go_to_stickerbook': '스티커북 가기',
                 'btn_close': '닫기',
-                'adaptive_speed_round': '🌟 슈퍼 스피드 라운드! 🌟\n다음 문제는 조금 더 어려워져요!'
+                'adaptive_speed_round': '🌟 슈퍼 스피드 라운드! 🌟\n다음 문제는 조금 더 어려워져요!',
+                // [추가] 도형 퀴즈 풀 (i18n)
+                'shape_q_name': '이 도형의 이름은 무엇일까요?',
+                'shape_q_find': '{shape}를 찾아보세요.',
+                'shape_q_sides': '변이 {sides}개인 도형은?',
+                'shape_q_no_corners': '모서리가 없는 도형은?',
+                'shape_triangle': '세모',
+                'shape_square': '네모',
+                'shape_circle': '동그라미',
+                'shape_rectangle': '직사각형',
+                'shape_star': '별',
+                'shape_heart': '하트',
+                // [추가] 수 세기 퀴즈 (i18n)
+                'counting_q': '{emoji}가 몇 개 있나요?',
+                // [추가] 곱셈 퀴즈 (i18n)
+                'multiplication_q': '{a} x {b} = ?',
+                // [추가] 제곱수 퀴즈 (i18n)
+                'square_q': '{a} x {a} = ?',
+                // [추가] 패턴 퀴즈 (i18n)
+                'pattern_q': '다음 순서는? {pattern} __',
             },
             'en': {
                 'title_main': 'Numberland',
@@ -332,93 +335,302 @@
                 'stage_5_desc': 'What comes next?',
                 'btn_back_to_map': '&larr; World Map',
                 'ui_blobs': 'Numberblobs',
+                'ui_question_progress': 'Question {current}/{total}', // [추가]
                 'title_stickerbook': 'Stickerbook 📔',
                 'feedback_title': 'Not quite!',
                 'feedback_text_default': 'Let\'s think again.',
                 'feedback_hint_shape': 'This shape has {sides} sides.',
+                'feedback_hint_shape_no_corners': 'This shape has no corners.', // [추가]
                 'reward_title': 'Stage Clear!',
                 'reward_text': 'You got a sticker!',
                 'btn_go_to_stickerbook': 'Go to Stickerbook',
                 'btn_close': 'Close',
-                'adaptive_speed_round': '🌟 Super Speed Round! 🌟\nThe next one is a bit trickier!'
+                'adaptive_speed_round': '🌟 Super Speed Round! 🌟\nThe next one is a bit trickier!',
+                // [추가] 도형 퀴즈 풀 (i18n)
+                'shape_q_name': 'What is this shape?',
+                'shape_q_find': 'Find the {shape}.',
+                'shape_q_sides': 'Which shape has {sides} sides?',
+                'shape_q_no_corners': 'Which shape has no corners?',
+                'shape_triangle': 'Triangle',
+                'shape_square': 'Square',
+                'shape_circle': 'Circle',
+                'shape_rectangle': 'Rectangle',
+                'shape_star': 'Star',
+                'shape_heart': 'Heart',
+                // [추가] 수 세기 퀴즈 (i18n)
+                'counting_q': 'How many {emoji}?',
+                // [추가] 곱셈 퀴즈 (i18n)
+                'multiplication_q': '{a} x {b} = ?',
+                // [추가] 제곱수 퀴즈 (i18n)
+                'square_q': '{a} x {a} = ?',
+                // [추가] 패턴 퀴즈 (i18n)
+                'pattern_q': 'What comes next? {pattern} __',
             }
         };
 
-        // --- 4. Quiz Data ---
+        // --- 4. Quiz Data & Generators ---
+
+        // [수정] 퀴즈 데이터를 '설정'과 '동적 생성기'로 분리
+        
+        // 스테이지 기본 설정
         const quizData = {
-            // 1구역: 도형 (약점 보완 - 시각 힌트 제공)
-            1: {
-                sticker: '🟨',
-                questions: [
-                    { type: 'visual', question: { ko: '이 도형의 이름은 무엇일까요?', en: 'What is this shape?' }, visual: '🔺', options: [{ ko: '세모', en: 'Triangle', correct: true, hint: { visual: '🔺', text_key: 'feedback_hint_shape', params: { sides: 3 } } }, { ko: '네모', en: 'Square', correct: false, hint: { visual: '🟥', text_key: 'feedback_hint_shape', params: { sides: 4 } } }] },
-                    { type: 'visual', question: { ko: '동그라미를 찾아보세요.', en: 'Find the circle.' }, visual: '', options: [{ ko: '🔵', en: '🔵', correct: true, hint: { visual: '🔵', text_key: 'feedback_text_default' } }, { ko: '⭐', en: '⭐', correct: false, hint: { visual: '⭐', text_key: 'feedback_text_default' } }] },
-                    { type: 'visual', question: { ko: '변이 4개인 도형은?', en: 'Which shape has 4 sides?' }, visual: '', options: [{ ko: '🟥', en: '🟥', correct: true, hint: { visual: '🟥', text_key: 'feedback_hint_shape', params: { sides: 4 } } }, { ko: '🔺', en: '🔺', correct: false, hint: { visual: '🔺', text_key: 'feedback_hint_shape', params: { sides: 3 } } }] },
-                ]
-            },
-            // 2구역: 수 세기
-            2: {
-                sticker: '1️⃣',
-                questions: [
-                    { type: 'visual', question: { ko: '사과가 몇 개 있나요?', en: 'How many apples?' }, visual: '🍎🍎🍎', options: [{ ko: '2', en: '2', correct: false }, { ko: '3', en: '3', correct: true }, { ko: '4', en: '4', correct: false }] },
-                    { type: 'text', question: { ko: '숫자 5를 고르세요.', en: 'Choose the number 5.' }, options: [{ ko: '3', en: '3', correct: false }, { ko: '5', en: '5', correct: true }] },
-                ]
-            },
-            // 3구역: 곱셈 (강점 심화)
-            3: {
-                sticker: '🚀',
-                questions: [
-                    { type: 'text', question: { ko: '2 x 3 = ?', en: '2 x 3 = ?' }, options: [{ ko: '5', en: '5', correct: false }, { ko: '6', en: '6', correct: true }] },
-                    { type: 'text', question: { ko: '5 x 2 = ?', en: '5 x 2 = ?' }, options: [{ ko: '10', en: '10', correct: true }, { ko: '7', en: '7', correct: false }] },
-                    // 스피드 라운드 문제 (연속 정답 시 등장)
-                    { type: 'text', question: { ko: '(스피드) 4 x 3 = ?', en: '(Speed) 4 x 3 = ?' }, options: [{ ko: '12', en: '12', correct: true }, { ko: '7', en: '7', correct: false }], speedRound: true },
-                ]
-            },
-            // 4구역: 제곱수 (강점 심화)
-            4: {
-                sticker: '🏰',
-                questions: [
-                    { type: 'text', question: { ko: '2 x 2 = ?', en: '2 x 2 = ?' }, options: [{ ko: '4', en: '4', correct: true }, { ko: '8', en: '8', correct: false }] },
-                    { type: 'text', question: { ko: '3 x 3 (스퀘어 클럽!) = ?', en: '3 x 3 (Square Club!) = ?' }, options: [{ ko: '6', en: '6', correct: false }, { ko: '9', en: '9', correct: true }] },
-                ]
-            },
-            // 5구역: 패턴
-            5: {
-                sticker: '🎵',
-                questions: [
-                    { type: 'visual', question: { ko: '다음 순서는?', en: 'What comes next?' }, visual: '🟥 🔵 🟥 🔵 __', options: [{ ko: '🟥', en: '🟥', correct: true }, { ko: '🔵', en: '🔵', correct: false }] },
-                    { type: 'text', question: { ko: '1, 2, 3, __, 5', en: '1, 2, 3, __, 5' }, options: [{ ko: '6', en: '6', correct: false }, { ko: '4', en: '4', correct: true }] },
-                ]
-            }
+            1: { sticker: '🟨', totalQuestions: 20 },
+            2: { sticker: '1️⃣', totalQuestions: 20 },
+            3: { sticker: '🚀', totalQuestions: 20 },
+            4: { sticker: '🏰', totalQuestions: 20 },
+            5: { sticker: '🎵', totalQuestions: 20 }
         };
+
+        // 도형 퀴즈 질문 풀 (약점 보완)
+        const shapeQuizPool = [
+            { 
+                type: 'find', 
+                shape: { visual: '🔺', name: 'shape_triangle' },
+                options: [ { visual: '🔺' }, { visual: '🔵' }, { visual: '🟥' } ],
+                hint: { visual: '🔺', text_key: 'feedback_hint_shape', params: { sides: 3 } }
+            },
+            { 
+                type: 'find', 
+                shape: { visual: '🟥', name: 'shape_square' },
+                options: [ { visual: '🟥' }, { visual: '⭐' }, { visual: '🔵' } ],
+                hint: { visual: '🟥', text_key: 'feedback_hint_shape', params: { sides: 4 } }
+            },
+            { 
+                type: 'find', 
+                shape: { visual: '🔵', name: 'shape_circle' },
+                options: [ { visual: '🔵' }, { visual: '🔺' }, { visual: '❤️' } ],
+                hint: { visual: '🔵', text_key: 'feedback_hint_shape_no_corners' }
+            },
+            { 
+                type: 'sides', 
+                sides: 4, 
+                options: [ { visual: '🟥' }, { visual: '🔺' }, { visual: '🔵' } ],
+                correctVisual: '🟥',
+                hint: { visual: '🟥', text_key: 'feedback_hint_shape', params: { sides: 4 } }
+            },
+            { 
+                type: 'sides', 
+                sides: 3, 
+                options: [ { visual: '🔺' }, { visual: '🟥' }, { visual: '⭐' } ],
+                correctVisual: '🔺',
+                hint: { visual: '🔺', text_key: 'feedback_hint_shape', params: { sides: 3 } }
+            },
+            { 
+                type: 'no_corners', 
+                options: [ { visual: '🔵' }, { visual: '🟥' }, { visual: '⭐' } ],
+                correctVisual: '🔵',
+                hint: { visual: '🔵', text_key: 'feedback_hint_shape_no_corners' }
+            },
+            { 
+                type: 'name', 
+                visual: '⭐', 
+                options: [ { name: 'shape_star' }, { name: 'shape_heart' }, { name: 'shape_square' } ],
+                correctName: 'shape_star',
+                hint: { visual: '⭐', text_key: 'feedback_text_default' }
+            }
+        ];
+
+        // 패턴 퀴즈 질문 풀
+        const patternQuizPool = [
+            { type: 'AB', items: ['🟥', '🔵'], length: 4 }, // 🟥 🔵 🟥 🔵 __
+            { type: 'AAB', items: ['🍎', '🍌'], length: 4 }, // 🍎 🍎 🍌 🍎 __
+            { type: 'ABC', items: ['🔺', '🔵', '⭐'], length: 3 }, // 🔺 🔵 ⭐ __
+            { type: 'ABB', items: ['🎵', '🎶'], length: 4 }, // 🎵 🎶 🎶 🎵 __
+            { type: '123', items: [1, 2, 3, 4, 5], length: 3 } // 1 2 3 __
+        ];
+
+        /**
+         * [신규] 헬퍼 함수: 배열 섞기 (Fisher-Yates)
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * [신규] 헬퍼 함수: min/max 사이의 랜덤 정수
+         */
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        /**
+         * [신규] 퀴즈 생성기
+         */
+        function generateQuestion(stageId) {
+            const lang = gameState.language;
+            let question = {
+                questionText: '',
+                options: [],
+                visual: ''
+            };
+
+            switch (stageId) {
+                // 1. 도형 (미리 정의된 풀에서 무작위 선택)
+                case 1: {
+                    const qTemplate = { ...shapeQuizPool[getRandomInt(0, shapeQuizPool.length - 1)] }; // 템플릿 복사
+                    
+                    if (qTemplate.type === 'find') {
+                        question.questionText = i18n[lang]['shape_q_find'].replace('{shape}', i18n[lang][qTemplate.shape.name]);
+                        question.options = shuffleArray(qTemplate.options.map(opt => ({
+                            text: opt.visual, // 옵션을 시각적 이모지로
+                            correct: (opt.visual === qTemplate.shape.visual),
+                            hint: (opt.visual === qTemplate.shape.visual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
+                        })));
+                    } else if (qTemplate.type === 'sides') {
+                        question.questionText = i18n[lang]['shape_q_sides'].replace('{sides}', qTemplate.sides);
+                        question.options = shuffleArray(qTemplate.options.map(opt => ({
+                            text: opt.visual,
+                            correct: (opt.visual === qTemplate.correctVisual),
+                            hint: (opt.visual === qTemplate.correctVisual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
+                        })));
+                    } else if (qTemplate.type === 'no_corners') {
+                        question.questionText = i18n[lang]['shape_q_no_corners'];
+                        question.options = shuffleArray(qTemplate.options.map(opt => ({
+                            text: opt.visual,
+                            correct: (opt.visual === qTemplate.correctVisual),
+                            hint: (opt.visual === qTemplate.correctVisual) ? qTemplate.hint : { visual: opt.visual, text_key: 'feedback_text_default' }
+                        })));
+                    } else if (qTemplate.type === 'name') {
+                        question.visual = qTemplate.visual;
+                        question.questionText = i18n[lang]['shape_q_name'];
+                        question.options = shuffleArray(qTemplate.options.map(opt => ({
+                            text: i18n[lang][opt.name], // 옵션을 텍스트 이름으로
+                            correct: (opt.name === qTemplate.correctName),
+                            hint: qTemplate.hint 
+                        })));
+                    }
+                    break;
+                }
+
+                // 2. 수 세기 (동적 생성)
+                case 2: {
+                    const emojis = ['🍎', '🍌', '🍓', '🔵', '⭐'];
+                    const emoji = emojis[getRandomInt(0, emojis.length - 1)];
+                    const count = getRandomInt(3, 9);
+                    question.visual = emoji.repeat(count);
+                    question.questionText = i18n[lang]['counting_q'].replace('{emoji}', emoji);
+                    
+                    const options = new Set([count]);
+                    while(options.size < 3) {
+                        options.add(getRandomInt(Math.max(1, count - 2), count + 2));
+                    }
+                    question.options = shuffleArray(Array.from(options).map(opt => ({
+                        text: opt.toString(),
+                        correct: (opt === count)
+                    })));
+                    break;
+                }
+
+                // 3. 곱셈 (동적 생성 + 적응형)
+                case 3: {
+                    let a, b;
+                    // 적응형: 2연속 정답 시 더 어려운 문제 (5~12단)
+                    if (gameState.consecutiveCorrectAnswers >= 2) {
+                        a = getRandomInt(5, 12);
+                        b = getRandomInt(2, 9);
+                    } else {
+                        a = getRandomInt(2, 9);
+                        b = getRandomInt(2, 5);
+                    }
+                    const answer = a * b;
+                    question.questionText = i18n[lang]['multiplication_q'].replace('{a}', a).replace('{b}', b);
+                    
+                    const options = new Set([answer]);
+                    while(options.size < 3) {
+                        options.add(getRandomInt(Math.max(1, answer - 5), answer + 5));
+                    }
+                    question.options = shuffleArray(Array.from(options).map(opt => ({
+                        text: opt.toString(),
+                        correct: (opt === answer)
+                    })));
+                    break;
+                }
+                
+                // 4. 제곱수 (동적 생성)
+                case 4: {
+                    const a = getRandomInt(2, 12);
+                    const answer = a * a;
+                    question.questionText = i18n[lang]['square_q'].replace('{a}', a);
+                    
+                    const options = new Set([answer]);
+                    while(options.size < 3) {
+                        const wrongA = getRandomInt(Math.max(2, a - 2), a + 2);
+                        options.add(a * wrongA);
+                    }
+                    question.options = shuffleArray(Array.from(options).map(opt => ({
+                        text: opt.toString(),
+                        correct: (opt === answer)
+                    })));
+                    break;
+                }
+
+                // 5. 패턴 (풀 + 동적 생성)
+                case 5: {
+                    const pTemplate = { ...patternQuizPool[getRandomInt(0, patternQuizPool.length - 1)] };
+                    let patternString = '';
+                    let answer = '';
+                    
+                    if(pTemplate.type === '123') {
+                        const start = getRandomInt(1, 10);
+                        const arr = Array.from({length: pTemplate.length}, (v, i) => start + i);
+                        patternString = arr.join(', ');
+                        answer = (start + pTemplate.length).toString();
+                    } else {
+                        const items = pTemplate.items;
+                        let sequence = [];
+                        if(pTemplate.type === 'AB') sequence = [items[0], items[1], items[0], items[1]];
+                        if(pTemplate.type === 'AAB') sequence = [items[0], items[0], items[1], items[0]];
+                        if(pTemplate.type === 'ABC') sequence = [items[0], items[1], items[2]];
+                        if(pTemplate.type === 'ABB') sequence = [items[0], items[1], items[1], items[0]];
+                        
+                        patternString = sequence.slice(0, pTemplate.length).join(' ');
+                        answer = sequence[pTemplate.length % sequence.length];
+                    }
+                    
+                    question.questionText = i18n[lang]['pattern_q'].replace('{pattern}', patternString);
+                    const options = new Set([answer]);
+                    while(options.size < 3) {
+                        if(pTemplate.type === '123') {
+                            options.add(getRandomInt(Math.max(1, parseInt(answer) - 2), parseInt(answer) + 2).toString());
+                        } else {
+                            options.add(pTemplate.items[getRandomInt(0, pTemplate.items.length - 1)]);
+                        }
+                    }
+                    question.options = shuffleArray(Array.from(options).map(opt => ({
+                        text: opt.toString(),
+                        correct: (opt === answer)
+                    })));
+                    break;
+                }
+            }
+            
+            gameState.currentQuestion = question; // [수정] 생성된 질문을 state에 저장
+            return question;
+        }
 
 
         // --- 5. Core Game Logic & UI Functions ---
 
-        /**
-         * 지정된 ID의 화면을 표시하고 나머지는 숨깁니다.
-         */
         function showScreen(screenId) {
             document.querySelectorAll('.game-screen').forEach(screen => {
                 screen.style.display = 'none';
             });
-            document.getElementById(screenId).style.display = 'flex'; // flex 레이아웃 사용
+            document.getElementById(screenId).style.display = 'flex';
             gameState.currentScreen = screenId;
         }
 
-        /**
-         * 지정된 ID의 모달(팝업)을 표시합니다.
-         */
         function showModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('hidden');
-                modal.classList.add('flex'); // flex로 표시
+                modal.classList.add('flex');
             }
         }
 
-        /**
-         * 지정된 ID의 모달(팝업)을 숨깁니다.
-         */
         function hideModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
@@ -427,10 +639,6 @@
             }
         }
 
-
-        /**
-         * 게임 언어를 업데이트하고 UI를 갱신합니다.
-         */
         function updateLanguage(lang) {
             gameState.language = lang;
             
@@ -447,28 +655,36 @@
             document.querySelectorAll('[data-i18n-key]').forEach(el => {
                 const key = el.dataset.i18nKey;
                 if (i18n[lang] && i18n[lang][key]) {
-                    el.innerHTML = i18n[lang][key];
+                    let text = i18n[lang][key];
+                    // [수정] 변수 치환 기능 (i18n-vars)
+                    if(el.dataset.i18nVars_current) {
+                        text = text.replace('{current}', el.dataset.i18nVars_current);
+                    }
+                    if(el.dataset.i18nVars_total) {
+                        text = text.replace('{total}', el.dataset.i18nVars_total);
+                    }
+                    el.innerHTML = text;
                 }
             });
 
-            if (gameState.currentScreen === 'screen-game-stage' && gameState.currentStage) {
+            // [수정] 화면 갱신 시 언어 재적용
+            if (gameState.currentScreen === 'screen-game-stage' && gameState.currentQuestion) {
+                // 현재 질문이 있다면, 질문 텍스트만 언어를 바꿔서 다시 렌더링
+                generateQuestion(gameState.currentStage); // 새 질문 생성 (언어 변경 시)
                 renderQuestion();
             }
             if (gameState.currentScreen === 'screen-world-map') {
                 updateWorldMapUI(); 
             }
+            if (gameState.currentScreen === 'screen-stickerbook') {
+                renderStickerbook();
+            }
         }
         
-        /**
-         * 현재 점수 UI를 갱신합니다.
-         */
         function updateScoreUI() {
             document.getElementById('score-value').textContent = gameState.numberblobs;
         }
         
-        /**
-         * 월드맵 UI를 갱신합니다 (스테이지 잠금/해제 및 텍스트)
-         */
         function updateWorldMapUI() {
             const lang = gameState.language;
             document.querySelectorAll('.stage-card').forEach((card, index) => {
@@ -487,9 +703,6 @@
             });
         }
         
-        /**
-         * 스티커북 UI를 갱신합니다.
-         */
         function renderStickerbook() {
             const grid = document.getElementById('stickerbook-grid');
             const lang = gameState.language;
@@ -513,9 +726,6 @@
             });
         }
 
-        /**
-         * 특정 스테이지의 게임을 시작합니다.
-         */
         function startGame(stageId) {
             gameState.currentStage = stageId;
             gameState.currentQuestionIndex = 0;
@@ -525,55 +735,44 @@
             showScreen('screen-game-stage');
         }
 
-        /**
-         * 현재 스테이지의 퀴즈를 로드하고 첫 번째 문제를 렌더링합니다.
-         */
         function loadQuiz() {
             updateScoreUI();
+            generateQuestion(gameState.currentStage); // [수정] 첫 번째 질문 생성
             renderQuestion();
         }
 
         /**
-         * 현재 질문을 화면에 렌더링합니다.
+         * [수정] 현재 생성된 질문(gameState.currentQuestion)을 화면에 렌더링
          */
         function renderQuestion() {
             const stage = quizData[gameState.currentStage];
-            let qIndex = gameState.currentQuestionIndex;
+            const question = gameState.currentQuestion;
 
-            // [오류 수정] 모든 문제를 풀었는지 *먼저* 확인
-            if (qIndex >= stage.questions.length) {
+            // [수정] 스테이지 클리어 확인
+            if (gameState.currentQuestionIndex >= stage.totalQuestions) {
                 stageClear();
                 return;
             }
-
-            // 스피드 라운드 스킵 로직
-            let question = stage.questions[qIndex];
-            if (question.speedRound && gameState.consecutiveCorrectAnswers < 2) {
-                gameState.currentQuestionIndex++;
-                qIndex = gameState.currentQuestionIndex;
-
-                // [오류 수정] 스킵한 후에도 문제 배열의 끝인지 다시 확인
-                if (qIndex >= stage.questions.length) {
-                    stageClear();
-                    return;
-                }
-                question = stage.questions[qIndex];
-            }
             
-            const lang = gameState.language;
             const questionTextEl = document.getElementById('quiz-question-text');
             const optionsContainer = document.getElementById('quiz-options-container');
             const progressTextEl = document.getElementById('quiz-progress-text');
             
             // 퀴즈 진행도 업데이트
-            const totalQuestions = stage.questions.filter(q => !q.speedRound || (q.speedRound && gameState.consecutiveCorrectAnswers >= 2)).length;
-            const currentQuestionNum = stage.questions.slice(0, qIndex + 1).filter(q => !q.speedRound || (q.speedRound && gameState.consecutiveCorrectAnswers >= 2)).length;
-            progressTextEl.textContent = `문제 ${currentQuestionNum}/${totalQuestions}`;
+            const currentNum = gameState.currentQuestionIndex + 1;
+            const totalNum = stage.totalQuestions;
+            progressTextEl.dataset.i18nVars_current = currentNum;
+            progressTextEl.dataset.i18nVars_total = totalNum;
+            progressTextEl.innerHTML = i18n[gameState.language]['ui_question_progress']
+                                        .replace('{current}', currentNum)
+                                        .replace('{total}', totalNum);
 
             // 질문 텍스트/시각 자료 업데이트
-            questionTextEl.textContent = question.question[lang];
-            if (question.type === 'visual' && question.visual) {
-                questionTextEl.innerHTML = `<span class="block text-7xl mb-4">${question.visual}</span>` + question.question[lang];
+            questionTextEl.textContent = question.questionText;
+            if (question.visual) {
+                questionTextEl.innerHTML = `<span class="block text-7xl mb-4">${question.visual}</span>` + question.questionText;
+            } else {
+                 questionTextEl.innerHTML = question.questionText;
             }
 
             // 선택지 업데이트
@@ -582,11 +781,12 @@
                 const button = document.createElement('button');
                 button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95";
                 
-                let optionContent = option[lang];
-                if (option[lang].match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u)) {
-                    optionContent = `<span class="text-6xl">${option[lang]}</span>`;
+                let optionContent = option.text;
+                // [수정] 옵션이 이모지인지 텍스트인지 판별
+                if (option.text.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u)) {
+                    optionContent = `<span class="text-6xl">${option.text}</span>`;
                 } else {
-                    optionContent = `<span class="block text-2xl font-bold text-gray-800">${option[lang]}</span>`;
+                    optionContent = `<span class="block text-2xl font-bold text-gray-800">${option.text}</span>`;
                 }
                 button.innerHTML = optionContent;
 
@@ -598,9 +798,6 @@
             });
         }
 
-        /**
-         * 사용자가 선택한 답을 확인합니다.
-         */
         function checkAnswer(selectedOption) {
             if (selectedOption.correct) {
                 // --- 정답 ---
@@ -609,12 +806,20 @@
                 gameState.consecutiveCorrectAnswers++;
                 updateScoreUI();
                 
+                // [수정] 적응형 학습 알림 (2연속 정답)
                 if (gameState.currentStage == 3 && gameState.consecutiveCorrectAnswers === 2) {
+                    // alert() 대신 커스텀 모달이나 간단한 알림을 사용하는 것이 좋으나,
+                    // 기획서 시연을 위해 임시로 alert 사용
                     alert(i18n[gameState.language]['adaptive_speed_round']);
                 }
 
-                gameState.currentQuestionIndex++;
-                setTimeout(renderQuestion, 500); 
+                gameState.currentQuestionIndex++; // [수정] 다음 문제 인덱스로
+                
+                // [수정] 다음 문제 생성 및 렌더링
+                setTimeout(() => {
+                    generateQuestion(gameState.currentStage);
+                    renderQuestion();
+                }, 500); 
                 
             } else {
                 // --- 오답 ---
@@ -624,9 +829,6 @@
             }
         }
         
-        /**
-         * 약점 보완 피드백 모달 (건설적 교정)
-         */
         function showFeedbackModal(hint) {
             const lang = gameState.language;
             const titleEl = document.getElementById('modal-feedback-title');
@@ -654,9 +856,6 @@
             showModal('modal-feedback');
         }
 
-        /**
-         * 스테이지 클리어 처리
-         */
         function stageClear() {
             const stageId = gameState.currentStage;
             const stage = quizData[stageId];
@@ -752,6 +951,7 @@
                 hideModal('modal-feedback');
             });
 
+            // [수정] 기본 언어로 UI 초기화
             updateLanguage(gameState.language); 
             updateWorldMapUI(); 
             updateScoreUI(); 
@@ -760,5 +960,4 @@
     </script>
 </body>
 </html>
-
 
