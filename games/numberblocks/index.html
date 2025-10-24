@@ -54,8 +54,8 @@
             <div class="flex gap-4 justify-center mb-4">
                 <!-- .lang-btn의 기본 스타일을 직접 적용 -->
                 <button id="lang-ko-btn" class="p-3 rounded-lg shadow-md transition-all" title="한국어">🇰🇷</button>
-                <button id="lang-en-btn" class="p-3 rounded-lg shadow-md transition-all" title="English">🇬🇧</button>
-            </div>
+        // --- Initialize Game ---
+        document.addEventListener('DOMContentLoaded', () => {
             
             <!-- .game-title 스타일 직접 적용 -->
             <h1 class="text-2xl p-5 md:text-3xl md:p-4 font-bold text-center text-blue-800" data-i18n-key="title">넘버블록스: 넘버랜드 축제 대모험</h1>
@@ -236,17 +236,17 @@
         }
 
         function hideModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-        
-        // --- 4.2. 언어 전환 기능 ---
-        function updateLanguage(lang) {
-// ... existing code ... -->
-            document.getElementById('back-to-map-btn').addEventListener('click', () => {
+            document.getElementById('lang-en-btn').addEventListener('click', () => updateLanguage('en'));
+            
+            // 네비게이션 버튼
+            // [수정] 주석 처리되어 있던 'start-game-btn' 이벤트 리스너의 주석을 해제합니다.
+            document.getElementById('start-game-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-world-map');
+                updateWorldMapUI(); // 월드맵 UI (잠금/해제) 업데이트
+            });
+            
+            document.getElementById('back-to-menu-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 showScreen('screen-world-map');
             });
@@ -305,4 +305,5 @@
 
         // 5.2. 스티커북 렌더링
 // ... existing code ... -->
+
 
