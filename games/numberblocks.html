@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>넘버블록스: 넘버랜드 축제 대모험</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 5.3. 사운드 라이브러리 (Tone.js) 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .game-screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .active-screen {
+            display: block;
+        }
+        .game-button {
+            @apply text-base p-5;
+            @apply md:text-lg md:p-4;
+            @apply bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 active:scale-95;
+        }
+        .game-card {
+            @apply p-5;
+            @apply md:p-4;
+            @apply bg-white rounded-lg shadow-lg;
+        }
+        .game-title {
+            @apply text-2xl p-5;
+            @apply md:text-3xl md:p-4;
+            @apply font-bold text-center text-blue-800;
+        }
+        
+        /* 3.1. / 5.2. 잠긴 스테이지 스타일 */
+        .stage-locked {
+            @apply filter grayscale opacity-50 cursor-not-allowed transform-none hover:scale-100;
+        }
+        
+        /* 4.2. 언어 선택 버튼 활성/비활성 스타일 */
+        .lang-btn {
+            @apply p-3 rounded-lg shadow-md transition-all;
+        }
+        .lang-btn.active {
+            @apply bg-blue-500 ring-4 ring-blue-200;
+        }
+        .lang-btn.inactive {
+            @apply bg-gray-200 hover:bg-gray-300;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-4xl mx-auto bg-white/70 rounded-lg shadow-2xl backdrop-blur-sm overflow-hidden">
+
+        <!-- 화면 1: 메인 메뉴 -->
+        <div id="screen-main-menu" class="game-screen active-screen p-4 md:p-8">
+            <!-- 4.2. 언어 전환 버튼 -->
+            <div class="flex gap-4 justify-center mb-4">
+                <button id="lang-ko-btn" class="lang-btn active" title="한국어">🇰🇷</button>
+                <button id="lang-en-btn" class="lang-btn inactive" title="English">🇬🇧</button>
+            </div>
+            
+            <h1 class="game-title" data-i18n-key="title">넘버블록스: 넘버랜드 축제 대모험</h1>
+            
+            <div class="flex flex-col items-center gap-4 mt-8">
+                <p class="text-base md:text-lg text-center text-gray-700 p-5 md:p-4" data-i18n-key="welcome">
+                    넘버랜드 축제에 오신 것을 환영합니다!
+                </p>
+                <button id="start-game-btn" class="game-button w-full md:w-1/2" data-i18n-key="start_game">
+                    게임 시작!
+                </button>
+            </div>
+        </div>
+
+        <!-- 화면 2: 월드맵 -->
+        <div id="screen-world-map" class="game-screen p-4 md:p-8">
+            <h1 class="game-title" data-i18n-key="world_map">월드맵: 넘버랜드 축제</h1>
+            
+            <div class="flex justify-between items-center mb-4 p-5 md:p-4">
+                <button id="back-to-menu-btn" class="game-button !text-sm !p-2 !md:p-3 !bg-gray-500" data-i18n-key="main_menu">
+                    &larr; 메인 메뉴
+                </button>
+                <div class="text-base md:text-lg bg-white px-4 py-2 rounded-lg shadow-inner">
+                    <span class="font-bold text-yellow-500">🟡</span>
+                    <span id="numberblobs-count" class="font-bold text-gray-700">0</span>
+                </div>
+                <button id="stickerbook-btn" class="game-button !text-sm !p-2 !md:p-3 !bg-purple-500" data-i18n-key="stickerbook">
+                    스티커북 📒
+                </button>
+            </div>
+
+            <!-- 3.1. / 5.2. 모든 5개 스테이지 -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+                <!-- 1구역 (활성화) -->
+                <button data-stage-id="1" class="game-card text-center transform hover:scale-105 transition-transform cursor-pointer">
+                    <div class="text-4xl md:text-6xl">1️⃣</div>
+                    <p class="text-base md:text-lg font-bold mt-2" data-i18n-key="stage1_title">도형 파티 전시관</p>
+                </button>
+                
+                <!-- 2구역 (비활성화) -->
+                <button data-stage-id="2" class="game-card text-center transform hover:scale-105 transition-transform cursor-pointer stage-locked">
+                    <div class="text-4xl md:text-6xl">2️⃣</div>
+                    <p class="text-base md:text-lg font-bold mt-2" data-i18n-key="stage2_title">수 세기 퍼레이드</p>
+                </button>
+
+                <!-- 3구역 (비활성화) -->
+                <button data-stage-id="3" class="game-card text-center transform hover:scale-105 transition-transform cursor-pointer stage-locked">
+                    <div class="text-4xl md:text-6xl">3️⃣</div>
+                    <p class="text-base md:text-lg font-bold mt-2" data-i18n-key="stage3_title">슈퍼 스피드 광장</p>
+                </button>
+                
+                <!-- 4구역 (비활성화) -->
+                <button data-stage-id="4" class="game-card text-center transform hover:scale-105 transition-transform cursor-pointer stage-locked">
+                    <div class="text-4xl md:text-6xl">4️⃣</div>
+                    <p class="text-base md:text-lg font-bold mt-2" data-i18n-key="stage4_title">스퀘어 클럽</p>
+                </button>
+                
+                <!-- 5구역 (비활성화) -->
+                <button data-stage-id="5" class="game-card text-center transform hover:scale-105 transition-transform cursor-pointer stage-locked">
+                    <div class="text-4xl md:text-6xl">5️⃣</div>
+                    <p class="text-base md:text-lg font-bold mt-2" data-i18n-key="stage5_title">패턴 팰리스</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- 화면 3: 게임 스테이지 -->
+        <div id="screen-game-stage" class="game-screen p-4 md:p-8">
+            <button id="back-to-map-btn" class="game-button !text-sm !p-2 !md:p-3 !bg-gray-500 mb-4" data-i18n-key="world_map_back">
+                &larr; 월드맵으로
+            </button>
+            <div class="game-card">
+                <h2 id="stage-title" class="game-title !text-xl !md:text-2xl !p-0 mb-4">
+                    <!-- 퀴즈 로딩 시 동적 변경 -->
+                </h2>
+                <div id="quiz-question-text" class="bg-gray-100 rounded-lg p-5 md:p-8 min-h-[200px] flex flex-col items-center justify-center">
+                    <!-- 퀴즈 질문 텍스트와 프롬프트가 여기에 삽입됩니다 -->
+                </div>
+                
+                <div id="quiz-options-container" class="grid grid-cols-2 gap-4 mt-6">
+                    <!-- 퀴즈 로딩 시 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 화면 4: 스티커북 -->
+        <div id="screen-stickerbook" class="game-screen p-4 md:p-8">
+            <button id="stickerbook-back-btn" class="game-button !text-sm !p-2 !md:p-3 !bg-gray-500 mb-4" data-i18n-key="world_map_back">
+                &larr; 월드맵으로
+            </button>
+            <div class="game-card">
+                <h2 class="game-title !text-xl !md:text-2xl !p-0 mb-4" data-i18n-key="stickerbook_title">
+                    나의 스티커북 📒
+                </h2>
+                <div id="stickerbook-grid" class="bg-gray-100 rounded-lg p-8 min-h-[300px] grid grid-cols-3 md:grid-cols-4 gap-4">
+                    <p id="empty-stickerbook-msg" class="text-base md:text-lg text-gray-500 col-span-full text-center" data-i18n-key="stickerbook_empty">
+                        (아직 수집한 스티커가 없어요!)
+                    </p>
+                    <!-- 수집한 스티커가 여기에 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- End of game-container -->
+
+    <!-- 모달: 건설적 교정 (4.1.) -->
+    <div id="modal-feedback" class="game-screen fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div class="game-card w-full max-w-md">
+            <h3 class="game-title !text-xl !md:text-2xl !p-0 mb-4" data-i18n-key="feedback_title">
+                다시 생각해 볼까요?
+            </h3>
+            <!-- 4.1. 시각적 힌트 영역 -->
+            <div id="feedback-hint-container" class="min-h-[150px] flex flex-col items-center justify-center bg-gray-100 rounded-lg p-4">
+                <div id="feedback-visual" class="text-6xl"></div>
+                <p id="feedback-text" class="text-base md:text-lg mt-4"></p>
+            </div>
+            <button id="close-feedback-modal-btn" class="game-button w-full mt-4 !bg-orange-500 hover:!bg-orange-600" data-i18n-key="feedback_confirm">
+                알겠어요!
+            </button>
+        </div>
+    </div>
+
+    <!-- 모달: 보상 -->
+    <div id="modal-reward" class="game-screen fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div class="game-card w-full max-w-md text-center">
+            <h3 id="reward-title" class="game-title !text-xl !md:text-2xl !p-0 mb-4" data-i18n-key="reward_clear">
+                스테이지 클리어!
+            </h3>
+            <div id="reward-visual" class="text-6xl md:text-8xl animate-pulse">🎉</div>
+            <p id="reward-sticker-text" class="text-base md:text-lg my-4"></p>
+            <button id="close-reward-modal-btn" class="game-button w-full mt-4" data-i18n-key="reward_confirm">
+                월드맵으로
+            </button>
+        </div>
+    </div>
+
+
+    <!-- JavaScript 로직 -->
+    <script>
+        // --- 1. Game State ---
+        let gameState = {
+            language: 'ko',
+            numberblobs: 0,
+            unlockedStages: [1],
+            collectedStickers: [],
+            currentStage: 1,
+            currentQuestionIndex: 0,
+            leoProfile: { weakness: 'geometry', strength: 'multiplication' },
+            stageAttempts: { stage1_wrong: 0, stage3_correct: 0 },
+            isSpeedRound: false // 4.1. 강점 심화
+        };
+
+        // --- 5.3. 사운드 이펙트 초기화 ---
+        let soundsReady = false;
+        let clickSound, correctSound, wrongSound, clearSound;
+        
+        // 사용자가 상호작용(클릭 등)을 해야 오디오 컨텍스트가 시작됨
+        function initAudio() {
+            if (soundsReady || typeof Tone === 'undefined') return;
+            Tone.start(); // 오디오 컨텍스트 시작
+            clickSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+            correctSound = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 } }).toDestination();
+            wrongSound = new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 } }).toDestination();
+            clearSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+            soundsReady = true;
+        }
+        
+        function playSound(sound, note, duration = "16n") {
+            if (soundsReady && sound) {
+                sound.triggerAttackRelease(note, duration);
+            }
+        }
+        
+        // --- 4.2. 언어 데이터 (i18n) ---
+        const i18n = {
+            'ko': {
+                'title': '넘버블록스: 넘버랜드 축제 대모험',
+                'welcome': '넘버랜드 축제에 오신 것을 환영합니다!',
+                'start_game': '게임 시작!',
+                'world_map': '월드맵: 넘버랜드 축제',
+                'main_menu': '&larr; 메인 메뉴',
+                'stickerbook': '스티커북 📒',
+                'stickerbook_title': '나의 스티커북 📒',
+                'stickerbook_empty': '(아직 수집한 스티커가 없어요!)',
+                'world_map_back': '&larr; 월드맵으로',
+                'stage1_title': '도형 파티 전시관',
+                'stage2_title': '수 세기 퍼레이드',
+                'stage3_title': '슈퍼 스피드 광장',
+                'stage4_title': '스퀘어 클럽',
+                'stage5_title': '패턴 팰리스',
+                'feedback_title': '다시 생각해 볼까요?',
+                'feedback_confirm': '알겠어요!',
+                'reward_clear': '스테이지 클리어!',
+                'reward_confirm': '월드맵으로',
+                'reward_speed_round_title': '슈퍼 스피드 라운드!',
+                'reward_speed_round_text': '곱셈 천재! 스피드 라운드 시작!',
+                'sticker_text': '스티커 획득!'
+            },
+            'en': {
+                'title': 'Numberblocks: The Numberland Fair Adventure',
+                'welcome': 'Welcome to the Numberland Fair!',
+                'start_game': 'Start Game!',
+                'world_map': 'World Map: Numberland Fair',
+                'main_menu': '&larr; Main Menu',
+                'stickerbook': 'Stickerbook 📒',
+                'stickerbook_title': 'My Stickerbook 📒',
+                'stickerbook_empty': '(No stickers collected yet!)',
+                'world_map_back': '&larr; To World Map',
+                'stage1_title': 'Shape Party Exhibition',
+                'stage2_title': 'Counting Parade',
+                'stage3_title': 'Super Speed Square',
+                'stage4_title': 'Square Club',
+                'stage5_title': 'Pattern Palace',
+                'feedback_title': "Let's think again!",
+                'feedback_confirm': 'Got it!',
+                'reward_clear': 'Stage Clear!',
+                'reward_confirm': 'To World Map',
+                'reward_speed_round_title': 'Super Speed Round!',
+                'reward_speed_round_text': 'Multiplication genius! Speed round starts!',
+                'sticker_text': 'Sticker Get!'
+            }
+        };
+
+        // --- 3.1. 퀴즈 데이터 확장 ---
+        const quizData = {
+            1: { // 도형 (약점)
+                title: "stage1_title",
+                sticker: "🔺",
+                questions: [
+                    { qKey: "q1_1", prompt: "🔺", options: ["o_square", "o_triangle", "o_circle"], correct: "o_triangle", feedbackKey: "f1_1", visual: "🔺" },
+                    { qKey: "q1_2", prompt: "🟦", options: ["n_3", "n_4", "n_5"], correct: "n_4", feedbackKey: "f1_2", visual: "4️⃣" }
+                ]
+            },
+            2: { // 수 세기
+                title: "stage2_title",
+                sticker: "2️⃣",
+                questions: [
+                    { qKey: "q2_1", prompt: "🟡🟡🟡", options: ["n_2", "n_3", "n_4"], correct: "n_3", feedbackKey: "f2_1", visual: "3️⃣" },
+                    { qKey: "q2_2", prompt: "🟡🟡🟡🟡🟡", options: ["n_4", "n_5", "n_6"], correct: "n_5", feedbackKey: "f2_2", visual: "5️⃣" }
+                ]
+            },
+            3: { // 곱셈 (강점)
+                title: "stage3_title",
+                sticker: "✖️",
+                questions: [
+                    { qKey: "q3_1", prompt: "2 x 3 = ?", options: ["n_5", "n_6", "n_7"], correct: "n_6", feedbackKey: "f3_1", visual: "2️⃣ ✖️ 3️⃣ = 6️⃣" },
+                    { qKey: "q3_2", prompt: "3 x 4 = ?", options: ["n_10", "n_12", "n_14"], correct: "n_12", feedbackKey: "f3_2", visual: "3️⃣ ✖️ 4️⃣ = 1️⃣2️⃣" }
+                ]
+            },
+            4: { // 제곱수 (강점)
+                title: "stage4_title",
+                sticker: "🟪", // 스퀘어 클럽
+                questions: [
+                    { qKey: "q4_1", prompt: "3 x 3 = ?", options: ["n_6", "n_8", "n_9"], correct: "n_9", feedbackKey: "f4_1", visual: "3️⃣ ✖️ 3️⃣ = 9️⃣" },
+                    { qKey: "q4_2", prompt: "4 x 4 = ?", options: ["n_12", "n_16", "n_8"], correct: "n_16", feedbackKey: "f4_2", visual: "4️⃣ ✖️ 4️⃣ = 1️⃣6️⃣" }
+                ]
+            },
+            5: { // 패턴
+                title: "stage5_title",
+                sticker: "🎨",
+                questions: [
+                    { qKey: "q5_1", prompt: "1, 3, 5, ... ?", options: ["n_6", "n_7", "n_8"], correct: "n_7", feedbackKey: "f5_1", visual: "+2" },
+                    { qKey: "q5_2", prompt: "10, 8, 6, ... ?", options: ["n_4", "n_5", "n_3"], correct: "n_4", feedbackKey: "f5_2", visual: "-2" }
+                ]
+            }
+        };
+
+        // 3.1. 퀴즈 텍스트 (i18n 분리)
+        const quizText = {
+            'ko': {
+                'q1_1': "이 도형의 이름은 무엇인가요?", 'o_square': "사각형", 'o_triangle': "삼각형", 'o_circle': "원", 'f1_1': "삼각형은 변이 3개예요!",
+                'q1_2': "이 도형은 몇 개의 변을 가지고 있나요?", 'n_3': "3개", 'n_4': "4개", 'n_5': "5개", 'f1_2': "사각형은 변이 4개! 넘버블록 4!",
+                'q2_1': "넘버블롭이 몇 개 있나요?", 'n_2': "2개", 'f2_1': "셋! 3이에요!",
+                'q2_2': "넘버블롭이 몇 개 있나요?", 'n_6': "6개", 'f2_2': "다섯! 5예요!",
+                'q3_1': "2 곱하기 3은?", 'n_7': "7", 'n_6': "6", 'f3_1': "2가 3번! 6!",
+                'q3_2': "3 곱하기 4는?", 'n_10': "10", 'n_12': "12", 'n_14': "14", 'f3_2': "3이 4번! 12!",
+                'q4_1': "스퀘어 클럽! 3 곱하기 3은?", 'n_8': "8", 'n_9': "9", 'f4_1': "3은 슈퍼 스퀘어! 9!",
+                'q4_2': "스퀘어 클럽! 4 곱하기 4는?", 'n_16': "16", 'f4_2': "4는 슈퍼 스퀘어! 16!",
+                'q5_1': "다음 숫자는 무엇일까요? 1, 3, 5, ... ?", 'n_7': "7", 'n_8': "8", 'f5_1': "2씩 커지고 있어요!",
+                'q5_2': "다음 숫자는 무엇일까요? 10, 8, 6, ... ?", 'n_4': "4", 'f5_2': "2씩 작아지고 있어요!"
+            },
+            'en': {
+                'q1_1': "What is the name of this shape?", 'o_square': "Square", 'o_triangle': "Triangle", 'o_circle': "Circle", 'f1_1': "A triangle has 3 sides!",
+                'q1_2': "How many sides does this shape have?", 'n_3': "3", 'n_4': "4", 'n_5': "5", 'f1_2': "A square has 4 sides! Numberblock 4!",
+                'q2_1': "How many Numberblobs?", 'n_2': "2", 'f2_1': "Three! It's 3!",
+                'q2_2': "How many Numberblobs?", 'n_6': "6", 'f2_2': "Five! It's 5!",
+                'q3_1': "What is 2 times 3?", 'n_7': "7", 'n_6': "6", 'f3_1': "2, three times! It's 6!",
+                'q3_2': "What is 3 times 4?", 'n_10': "10", 'n_12': "12", 'n_14': "14", 'f3_2': "3, four times! It's 12!",
+                'q4_1': "Square Club! What is 3 times 3?", 'n_8': "8", 'n_9': "9", 'f4_1': "3 is a Super Square! 9!",
+                'q4_2': "Square Club! What is 4 times 4?", 'n_16': "16", 'f4_2': "4 is a Super Square! 16!",
+                'q5_1': "What is the next number? 1, 3, 5, ... ?", 'n_7': "7", 'n_8': "8", 'f5_1': "It's growing by 2!",
+                'q5_2': "What is the next number? 10, 8, 6, ... ?", 'n_4': "4", 'f5_2': "It's shrinking by 2!"
+            }
+        };
+
+
+        // --- Core SPA Logic ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active-screen');
+            });
+            const activeScreen = document.getElementById(screenId);
+            if (activeScreen) {
+                activeScreen.classList.add('active-screen');
+            }
+        }
+        
+        // --- 4.2. 언어 전환 기능 ---
+        function updateLanguage(lang) {
+            if (!['ko', 'en'].includes(lang)) return;
+            
+            gameState.language = lang;
+            
+            // 버튼 활성/비활성
+            document.getElementById('lang-ko-btn').classList.toggle('active', lang === 'ko');
+            document.getElementById('lang-ko-btn').classList.toggle('inactive', lang !== 'ko');
+            document.getElementById('lang-en-btn').classList.toggle('active', lang === 'en');
+            document.getElementById('lang-en-btn').classList.toggle('inactive', lang !== 'en');
+
+            // 모든 텍스트 업데이트
+            document.querySelectorAll('[data-i18n-key]').forEach(el => {
+                const key = el.dataset.i18nKey;
+                if (i18n[lang][key]) {
+                    el.innerHTML = i18n[lang][key];
+                }
+            });
+            
+            // 월드맵 스테이지 제목 (특수 케이스)
+            document.querySelectorAll('[data-stage-id]').forEach(btn => {
+                const stageId = btn.dataset.stageId;
+                if (quizData[stageId] && quizData[stageId].title) {
+                    const titleKey = quizData[stageId].title;
+                    btn.querySelector('p').innerHTML = i18n[lang][titleKey] || titleKey;
+                }
+            });
+        }
+
+        // --- Initialize Game ---
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 맨 처음 클릭 시 오디오 컨텍스트 초기화
+            document.body.addEventListener('click', initAudio, { once: true });
+            
+            // 언어 버튼
+            document.getElementById('lang-ko-btn').addEventListener('click', ()d => updateLanguage('ko'));
+            document.getElementById('lang-en-btn').addEventListener('click', () => updateLanguage('en'));
+            
+            // 네비게이션 버튼
+            document.getElementById('start-game-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-world-map');
+                updateWorldMapUI();
+                updateUI();
+            });
+
+            document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-main-menu');
+            });
+
+            document.getElementById('stickerbook-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                renderStickerbook();
+                showScreen('screen-stickerbook');
+            });
+
+            document.getElementById('stickerbook-back-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-world-map');
+            });
+            
+            document.getElementById('back-to-map-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-world-map');
+            });
+            
+            // 모달 닫기 버튼
+            document.getElementById('close-feedback-modal-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-game-stage');
+            });
+            document.getElementById('close-reward-modal-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                showScreen('screen-world-map');
+            });
+            
+            // 5.2. 월드맵 스테이지 버튼 동적 생성
+            document.querySelectorAll('[data-stage-id]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const stageId = parseInt(button.dataset.stageId, 10);
+                    if (gameState.unlockedStages.includes(stageId)) {
+                        playSound(clickSound, "C4");
+                        loadQuiz(stageId);
+                    } else {
+                        playSound(wrongSound, "A2"); // 잠김 알림음
+                    }
+                });
+            });
+
+            // 초기 언어 및 UI 설정
+            updateLanguage(gameState.language);
+            showScreen('screen-main-menu');
+        });
+
+        // --- UI Update Functions ---
+        function updateUI() {
+            document.getElementById('numberblobs-count').innerText = gameState.numberblobs;
+        }
+        
+        // 5.2. 월드맵 잠금/해제 UI 업데이트
+        function updateWorldMapUI() {
+            document.querySelectorAll('[data-stage-id]').forEach(button => {
+                const stageId = parseInt(button.dataset.stageId, 10);
+                const isUnlocked = gameState.unlockedStages.includes(stageId);
+                button.classList.toggle('stage-locked', !isUnlocked);
+            });
+        }
+
+        // --- Quiz Logic ---
+        function loadQuiz(stageId) {
+            gameState.currentStage = stageId;
+            gameState.currentQuestionIndex = 0;
+            gameState.isSpeedRound = false; // 스피드 라운드 리셋
+            gameState.stageAttempts.stage3_correct = 0; // 3구역 시도 리셋
+
+            const stageData = quizData[stageId];
+            if (!stageData) return;
+
+            showScreen('screen-game-stage');
+            
+            const titleKey = stageData.title;
+            document.getElementById('stage-title').innerText = i18n[gameState.language][titleKey] || titleKey;
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const stageData = quizData[gameState.currentStage];
+            const question = stageData.questions[gameState.currentQuestionIndex];
+            if (!question) return;
+
+            const lang = gameState.language;
+            const qText = quizText[lang][question.qKey] || question.qKey;
+
+            const questionTextContainer = document.getElementById('quiz-question-text');
+            questionTextContainer.innerHTML = `
+                <p class="text-base md:text-lg text-gray-700 text-center font-bold mb-4">${qText}</p>
+                <div class="text-6xl md:text-8xl">${question.prompt}</div>
+            `;
+
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = ''; 
+
+            question.options.forEach(optionKey => {
+                const button = document.createElement('button');
+                button.className = 'game-button !bg-cyan-500 hover:!bg-cyan-600';
+                button.innerText = quizText[lang][optionKey] || optionKey;
+                
+                button.addEventListener('click', () => {
+                    const isCorrect = (optionKey === question.correct);
+                    const feedback = {
+                        text: quizText[lang][question.feedbackKey] || question.feedbackKey,
+                        visual: question.visual
+                    };
+                    checkAnswer(isCorrect, feedback);
+                });
+                
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(isCorrect, feedback) {
+            if (isCorrect) {
+                // 정답
+                playSound(correctSound, "C5");
+                gameState.numberblobs += (gameState.isSpeedRound ? 10 : 5); // 스피드 라운드 보너스
+                updateUI();
+                
+                // 4.1. 강점 심화 (3구역)
+                if (gameState.currentStage === 3 && !gameState.isSpeedRound) {
+                    gameState.stageAttempts.stage3_correct++;
+                    if (gameState.stageAttempts.stage3_correct >= 2) {
+                        gameState.isSpeedRound = true;
+                        showRewardModal(true); // 스피드 라운드 알림
+                        return; // 다음 문제로 바로 넘어가지 않고 모달 표시
+                    }
+                }
+                
+                // 다음 문제로
+                goToNextQuestion();
+
+            } else {
+                // 오답
+                playSound(wrongSound, "A3");
+                
+                // 4.1. 약점 보완 (1구역)
+                if (gameState.currentStage === 1) {
+                    gameState.stageAttempts.stage1_wrong++;
+                }
+                
+                // 4.1. 건설적 교정 모달 표시
+                showFeedbackModal(feedback.text, feedback.visual);
+            }
+        }
+        
+        function goToNextQuestion() {
+            gameState.currentQuestionIndex++;
+            const stageData = quizData[gameState.currentStage];
+            
+            if (gameState.currentQuestionIndex < stageData.questions.length) {
+                renderQuestion();
+            } else {
+                handleStageClear();
+            }
+        }
+        
+        // 4.1. 피드백 모달 표시
+        function showFeedbackModal(text, visual) {
+            document.getElementById('feedback-text').innerText = text;
+            document.getElementById('feedback-visual').innerText = visual;
+            showScreen('modal-feedback');
+        }
+
+        function handleStageClear() {
+            playSound(clearSound, "G5", "4n");
+            const stageData = quizData[gameState.currentStage];
+            
+            if (!gameState.collectedStickers.includes(stageData.sticker)) {
+                gameState.collectedStickers.push(stageData.sticker);
+            }
+            
+            const nextStage = gameState.currentStage + 1;
+            if (nextStage <= 5 && !gameState.unlockedStages.includes(nextStage)) {
+                gameState.unlockedStages.push(nextStage);
+                updateWorldMapUI(); // 월드맵 UI 업데이트
+            }
+
+            showRewardModal(false); // 일반 스테이지 클리어
+        }
+        
+        // 4.1. / 3.4. 보상 모달 (통합)
+        function showRewardModal(isSpeedRound) {
+            const lang = gameState.language;
+            
+            if (isSpeedRound) {
+                document.getElementById('reward-title').innerText = i18n[lang]['reward_speed_round_title'];
+                document.getElementById('reward-visual').innerText = '🚀';
+                document.getElementById('reward-sticker-text').innerText = i18n[lang]['reward_speed_round_text'];
+                // 스피드 라운드 모달 닫기 버튼은 다음 문제로 진행
+                document.getElementById('close-reward-modal-btn').onclick = () => {
+                    playSound(clickSound, "C4");
+                    showScreen('screen-game-stage');
+                    goToNextQuestion(); // 다음 문제로
+                };
+            } else {
+                const stageData = quizData[gameState.currentStage];
+                document.getElementById('reward-title').innerText = i18n[lang]['reward_clear'];
+                document.getElementById('reward-visual').innerText = '🎉';
+                document.getElementById('reward-sticker-text').innerText = `${i18n[lang]['sticker_text']} '${stageData.sticker}'`;
+                // 일반 클리어 모달 닫기 버튼은 월드맵으로
+                document.getElementById('close-reward-modal-btn').onclick = () => {
+                    playSound(clickSound, "C4");
+                    showScreen('screen-world-map');
+                };
+            }
+            showScreen('modal-reward');
+        }
+
+        // 5.2. 스티커북 렌더링
+        function renderStickerbook() {
+            const grid = document.getElementById('stickerbook-grid');
+            const emptyMsg = document.getElementById('empty-stickerbook-msg');
+            
+            grid.innerHTML = '';
+            
+            if (gameState.collectedStickers.length === 0) {
+                grid.appendChild(emptyMsg);
+            } else {
+                gameState.collectedStickers.forEach(stickerEmoji => {
+                    const stickerDiv = document.createElement('div');
+                    stickerDiv.className = 'game-card !p-2 text-4xl md:text-6xl text-center aspect-square flex items-center justify-center bg-white/50';
+                    stickerDiv.innerText = stickerEmoji; 
+                    grid.appendChild(stickerDiv);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
