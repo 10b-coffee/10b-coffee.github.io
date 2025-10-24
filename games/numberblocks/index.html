@@ -35,9 +35,7 @@
             display: block;
         }
         
-        /* @apply 규칙은 Tailwind CDN과 함께 사용할 수 없습니다. 
-        브라우저가 @apply를 표준 CSS로 인식하지 못해 스타일이 깨집니다.
-        모든 유틸리티 클래스를 HTML로 직접 이동했습니다.
+        /* 이전 오류의 원인이었던 잘못된 주석을 완전히 제거했습니다.
         */
 
         @keyframes fadeIn {
@@ -173,7 +171,8 @@
     </div> <!-- End of game-container -->
 
     <!-- 모달: 건설적 교정 (4.1.) -->
-    <div id="modal-feedback" class="game-screen fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <!-- 'game-screen' 클래스 제거, 'hidden' 클래스 추가 -->
+    <div id="modal-feedback" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <!-- .game-card 스타일 직접 적용 -->
         <div class="p-5 md:p-4 bg-white rounded-lg shadow-lg w-full max-w-md">
             <!-- .game-title 스타일 + override 스타일 직접 적용 -->
@@ -193,7 +192,8 @@
     </div>
 
     <!-- 모달: 보상 -->
-    <div id="modal-reward" class="game-screen fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <!-- 'game-screen' 클래스 제거, 'hidden' 클래스 추가 -->
+    <div id="modal-reward" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <!-- .game-card 스타일 직접 적용 -->
         <div class="p-5 md:p-4 bg-white rounded-lg shadow-lg w-full max-w-md text-center">
             <!-- .game-title 스타일 + override 스타일 직접 적용 -->
@@ -215,156 +215,94 @@
         // --- 1. Game State ---
         let gameState = {
 // ... existing code ... -->
+        // --- Core SPA Logic ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active-screen');
+            });
+            const activeScreen = document.getElementById(screenId);
+            if (activeScreen) {
+                activeScreen.classList.add('active-screen');
+            }
+        }
+        
+        // --- 모달 전용 함수 ---
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex'); // 'flex'를 사용하여 items-center, justify-center 적용
+            }
+        }
+
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        
         // --- 4.2. 언어 전환 기능 ---
         function updateLanguage(lang) {
-            if (!['ko', 'en'].includes(lang)) return;
-            
-            gameState.language = lang;
-            
-            // 버튼 활성/비활성 (Tailwind 클래스 직접 토글)
-            const koBtn = document.getElementById('lang-ko-btn');
-            const enBtn = document.getElementById('lang-en-btn');
-
-            // .active / .inactive 클래스 대신 Tailwind 클래스를 직접 토글
-            koBtn.classList.toggle('bg-blue-500', lang === 'ko');
-            koBtn.classList.toggle('ring-4', lang === 'ko');
-            koBtn.classList.toggle('ring-blue-200', lang === 'ko');
-            koBtn.classList.toggle('bg-gray-200', lang !== 'ko');
-            koBtn.classList.toggle('hover:bg-gray-300', lang !== 'ko');
-            
-            enBtn.classList.toggle('bg-blue-500', lang === 'en');
-            enBtn.classList.toggle('ring-4', lang === 'en');
-            enBtn.classList.toggle('ring-blue-200', lang === 'en');
-            enBtn.classList.toggle('bg-gray-200', lang !== 'en');
-            enBtn.classList.toggle('hover:bg-gray-300', lang !== 'en');
-
-
-            // 모든 텍스트 업데이트
-            document.querySelectorAll('[data-i18n-key]').forEach(el => {
 // ... existing code ... -->
-        // --- Initialize Game ---
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // 맨 처음 클릭 시 오디오 컨텍스트 초기화
-            document.body.addEventListener('click', initAudio, { once: true });
-            
-            // 언어 버튼
-            document.getElementById('lang-ko-btn').addEventListener('click', () => updateLanguage('ko')); // ()d => 오타 수정
-            document.getElementById('lang-en-btn').addEventListener('click', () => updateLanguage('en'));
-            
-            // 네비게이션 버튼
-            document.getElementById('start-game-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                showScreen('screen-world-map');
-                updateWorldMapUI();
-                updateUI();
-            });
-
-            document.getElementById('back-to-menu-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                showScreen('screen-main-menu');
-            });
-
-            document.getElementById('stickerbook-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                renderStickerbook();
-                showScreen('screen-stickerbook');
-            });
-
-            document.getElementById('stickerbook-back-btn').addEventListener('click', () => {
-                playSound(clickSound, "C4");
-                showScreen('screen-world-map');
-            });
-            
             document.getElementById('back-to-map-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 showScreen('screen-world-map');
             });
             
-            // 모달 닫기 버튼
+            // 모달 닫기 버튼 (hideModal 사용하도록 수정)
             document.getElementById('close-feedback-modal-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
-                showScreen('screen-game-stage');
+                hideModal('modal-feedback');
+                // showScreen('screen-game-stage'); // 모달은 화면을 가릴 뿐, 화면을 전환하지 않음
             });
             document.getElementById('close-reward-modal-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
-                showScreen('screen-world-map');
+                hideModal('modal-reward');
+                // showScreen('screen-world-map'); // 월드맵으로 가는 로직은 reward 모달 띄울 때 결정
             });
             
             // 5.2. 월드맵 스테이지 버튼 동적 생성
-            document.querySelectorAll('[data-stage-id]').forEach(button => {
-                button.addEventListener('click', () => {
-                    const stageId = parseInt(button.dataset.stageId, 10);
-                    if (gameState.unlockedStages.includes(stageId)) {
-                        playSound(clickSound, "C4");
-                        loadQuiz(stageId);
-                    } else {
-                        playSound(wrongSound, "A2"); // 잠김 알림음
-                    }
-                });
-            });
-
-            // 초기 언어 및 UI 설정
-            updateLanguage(gameState.language);
-            showScreen('screen-main-menu');
-        });
-
-        // --- UI Update Functions ---
 // ... existing code ... -->
-        function updateUI() {
-            document.getElementById('numberblobs-count').innerText = gameState.numberblobs;
-        }
-        
-        // 5.2. 월드맵 잠금/해제 UI 업데이트
-        function updateWorldMapUI() {
-            document.querySelectorAll('[data-stage-id]').forEach(button => {
-                const stageId = parseInt(button.dataset.stageId, 10);
-                const isUnlocked = gameState.unlockedStages.includes(stageId);
-                
-                // .stage-locked 클래스 대신 Tailwind 클래스를 직접 토글
-                const lockedClasses = ['filter', 'grayscale', 'opacity-50', 'cursor-not-allowed', 'transform-none', 'hover:scale-100'];
-                if (isUnlocked) {
-                    button.classList.remove(...lockedClasses);
-                } else {
-                    button.classList.add(...lockedClasses);
-                }
-            });
+        // 4.1. 피드백 모달 표시
+        function showFeedbackModal(text, visual) {
+            document.getElementById('feedback-text').innerText = text;
+            document.getElementById('feedback-visual').innerText = visual;
+            showModal('modal-feedback'); // showScreen 대신 showModal 사용
         }
 
-        // --- Quiz Logic ---
+        function handleStageClear() {
 // ... existing code ... -->
-            const optionsContainer = document.getElementById('quiz-options-container');
-            optionsContainer.innerHTML = ''; 
-
-            question.options.forEach(optionKey => {
-                const button = document.createElement('button');
-                // .game-button의 전체 스타일을 여기에 적용
-                button.className = 'text-base p-5 md:text-lg md:p-4 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 active:scale-95 !bg-cyan-500 hover:!bg-cyan-600';
-                button.innerText = quizText[lang][optionKey] || optionKey;
-                
-                button.addEventListener('click', () => {
+        // 4.1. / 3.4. 보상 모달 (통합)
+        function showRewardModal(isSpeedRound) {
+            const lang = gameState.language;
+            const closeButton = document.getElementById('close-reward-modal-btn');
+            
+            if (isSpeedRound) {
+                document.getElementById('reward-title').innerText = i18n[lang]['reward_speed_round_title'];
 // ... existing code ... -->
-        // 5.2. 스티커북 렌더링
-        function renderStickerbook() {
-            const grid = document.getElementById('stickerbook-grid');
-            const emptyMsg = document.getElementById('empty-stickerbook-msg');
-            
-            grid.innerHTML = '';
-            
-            if (gameState.collectedStickers.length === 0) {
-                grid.appendChild(emptyMsg);
+                document.getElementById('reward-sticker-text').innerText = i18n[lang]['reward_speed_round_text'];
+                // 스피드 라운드 모달 닫기 버튼은 다음 문제로 진행
+                closeButton.onclick = () => {
+                    playSound(clickSound, "C4");
+                    hideModal('modal-reward');
+                    goToNextQuestion(); // 다음 문제로
+                };
             } else {
-                gameState.collectedStickers.forEach(stickerEmoji => {
-                    const stickerDiv = document.createElement('div');
-                    // .game-card의 전체 스타일을 여기에 적용
-                    stickerDiv.className = 'p-5 md:p-4 bg-white rounded-lg shadow-lg !p-2 text-4xl md:text-6xl text-center aspect-square flex items-center justify-center bg-white/50';
-                    stickerDiv.innerText = stickerEmoji; 
-                    grid.appendChild(stickerDiv);
-                });
+// ... existing code ... -->
+                document.getElementById('reward-visual').innerText = '🎉';
+                document.getElementById('reward-sticker-text').innerText = `${i18n[lang]['sticker_text']} '${stageData.sticker}'`;
+                // 일반 클리어 모달 닫기 버튼은 월드맵으로
+                closeButton.onclick = () => {
+                    playSound(clickSound, "C4");
+                    hideModal('modal-reward');
+                    showScreen('screen-world-map'); // 월드맵으로 화면 전환
+                };
             }
+            showModal('modal-reward'); // showScreen 대신 showModal 사용
         }
-    </script>
-</body>
-</html>
 
+        // 5.2. 스티커북 렌더링
+// ... existing code ... -->
 
