@@ -67,6 +67,11 @@
         .fade-out {
             opacity: 0;
         }
+        
+        /* [신규] 타이머 바 트랜지션 */
+        #timer-bar {
+            transition: width 0.1s linear;
+        }
     </style>
 </head>
 <body class="bg-blue-100 w-screen h-screen flex items-center justify-center select-none">
@@ -93,9 +98,7 @@
 
 
         <!-- 2. 월드맵 화면 -->
-        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-world-map" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-green-200 to-green-400 overflow-y-auto">
-            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4 pr-16">
                 <button id="back-to-menu-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_menu">
                     &larr; Main Menu
@@ -173,15 +176,12 @@
         </div>
 
         <!-- 3. 게임 스테이지 화면 -->
-        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-game-stage" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-indigo-300 to-indigo-500">
-            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-4 pr-16">
                 <button id="back-to-map-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
                 </button>
                 <div class="flex items-center space-x-4">
-                    <!-- 퀴즈 진행도 UI -->
                     <span id="quiz-progress-text" class="text-lg font-bold text-white text-shadow" data-i18n-key="ui_question_count" data-i18n-vars_current="1">
                         Question 1
                     </span>
@@ -191,33 +191,35 @@
                 </div>
             </div>
 
-            <!-- 난이도 피드백 UI 추가 -->
+            <!-- 난이도 피드백 UI -->
             <div id="difficulty-indicator" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 bg-black/70 text-white rounded-lg shadow-xl text-lg font-bold z-10 hidden transition-opacity duration-300">
                 Super Speed Round! 🔥
             </div>
 
-            <!-- 퀴즈 컨텐츠 영역 (relative 추가) -->
-            <!-- [수정] overflow-y-auto 추가, justify-center 제거 -->
+            <!-- 퀴즈 컨텐츠 영역 -->
             <div id="quiz-content-area" class="relative flex-grow flex flex-col items-center p-4 bg-white/50 rounded-2xl shadow-inner overflow-y-auto">
                 <!-- API 로딩 시 스피너 -->
-                <div id="quiz-loader" class="hidden flex-col items-center justify-center">
+                <div id="quiz-loader" class="hidden flex-col items-center justify-center h-full">
                     <div class="loader"></div>
-                    <p class="mt-4 text-lg text-indigo-800 font-bold" data-i18n-key="ui_loading">Creating a new problem...</p>
+                    <p id="loader-text" class="mt-4 text-lg text-indigo-800 font-bold" data-i18n-key="ui_loading_set">Creating new questions...</p>
                 </div>
                 
                 <!-- 퀴즈 컨텐츠 (로딩 완료 시 표시) -->
-                <!-- [수정] h-full 제거 -->
-                <div id="quiz-main" class="w-full flex flex-col">
+                <div id="quiz-main" class="w-full flex flex-col hidden">
+                    
+                    <!-- [신규] 타이머 UI -->
+                    <div id="timer-container" class="w-full h-4 bg-gray-300 rounded-full overflow-hidden mb-4 shadow-inner">
+                        <div id="timer-bar" class="h-full bg-blue-500 rounded-full" style="width: 100%;"></div>
+                    </div>
+                    
                     <!-- 질문 -->
                     <div id="quiz-question-container" class="w-full mb-4 flex-shrink-0">
-                        <!-- break-all 추가하여 긴 이모지 줄바꿈 -->
                         <p id="quiz-question-text" class="text-center text-2xl md:text-3xl font-bold text-indigo-900 p-4 break-all">
                             What is this shape?
                         </p>
                     </div>
                     
                     <!-- 선택지 -->
-                    <!-- [수정] flex-grow 제거 -->
                     <div id="quiz-options-container" class="w-full grid grid-cols-2 gap-2 md:gap-4 px-2 items-start">
                         <!-- JavaScript로 선택지 동적 생성 -->
                     </div>
@@ -226,9 +228,7 @@
         </div>
         
         <!-- 4. 스티커북 화면 -->
-        <!-- UI 겹침 방지를 위해 상단 패딩 pt-16 적용 -->
         <div id="screen-stickerbook" class="game-screen flex flex-col w-full h-full px-6 pt-16 pb-6 bg-gradient-to-b from-yellow-200 to-yellow-400">
-            <!-- UI 겹침 방지: 우측 패딩 pr-16 추가 -->
             <div class="flex-shrink-0 flex items-center justify-between mb-6 pr-16">
                 <button id="stickerbook-back-btn" class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_back_to_map">
                     &larr; World Map
@@ -277,6 +277,18 @@
             </div>
         </div>
 
+        <!-- [신규] 8. 모달 (팝업창) - 시간 초과 -->
+        <div id="modal-timeout" class="hidden absolute inset-0 w-full h-full bg-black/50 z-30 items-center justify-center p-6">
+            <div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl flex flex-col items-center text-center">
+                <h3 id="modal-timeout-title" class="text-3xl font-bold text-orange-600 mb-4" data-i18n-key="feedback_timeout_title">Time's Up! ⏰</h3>
+                <p id="modal-timeout-text" class="text-xl text-gray-700 mb-6" data-i18n-key="feedback_timeout_text">Let's try the next one!</p>
+                <button id="modal-timeout-close-btn" class="w-full px-6 py-3 bg-orange-500 text-white text-xl font-bold rounded-lg shadow transition-transform duration-200 hover:scale-105 active:scale-95" data-i18n-key="btn_close">
+                    Close
+                </button>
+            </div>
+        </div>
+
+
     </div> <!-- E: game-container -->
 
     <script>
@@ -284,23 +296,24 @@
         const API_KEY = "AIzaSyCtH-Rri2EVg32XR5ney1fp0Ew1wsaub9Y"; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
         
-        // --- 2. Game State ---
+        // --- 2. Game State (로직 변경) ---
         const gameState = {
             currentScreen: 'screen-main-menu',
             currentStage: null,
-            currentQuestion: null, 
+            currentQuizSet: [], // [신규] 20개의 문제 배열
+            currentQuestionIndex: 0, // [신규] 현재 문제 인덱스
+            currentDifficulty: 'normal', // [신규] 현재 문제 세트 난이도
+            timerId: null, // [신규] 타이머 ID
             numberblobs: 0,
             unlockedStages: [1], 
             collectedStickers: [],
-            language: 'en', // 기본 언어 'en'
-            // 스테이지 내 문제 중복 방지를 위한 기록
-            currentQuestionHistory: [], 
-            stageStats: {
-                1: { total: 0, correct: 0, consecutive: 0 },
-                2: { total: 0, correct: 0, consecutive: 0 },
-                3: { total: 0, correct: 0, consecutive: 0 },
-                4: { total: 0, correct: 0, consecutive: 0 },
-                5: { total: 0, correct: 0, consecutive: 0 },
+            language: 'en',
+            stageStats: { // 스테이지별 누적 통계
+                1: { total: 0, correct: 0 },
+                2: { total: 0, correct: 0 },
+                3: { total: 0, correct: 0 },
+                4: { total: 0, correct: 0 },
+                5: { total: 0, correct: 0 },
             }
         };
 
@@ -309,6 +322,7 @@
         const clickSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination();
         const correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.0, release: 0.1 } }).toDestination();
         const wrongSound = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.0, release: 0.1 } }).toDestination();
+        const timeupSound = new Tone.Synth({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.1 } }).toDestination();
         
         function playSound(synth, note, duration = "8n") {
             if (!soundsReady) return;
@@ -328,7 +342,7 @@
         document.body.addEventListener('touchstart', initializeAudio, { once: true });
 
 
-        // --- 4. Language & i18n Data ---
+        // --- 4. Language & i18n Data (항목 추가) ---
         const i18n = {
             'ko': {
                 'title_main': '넘버랜드',
@@ -354,10 +368,13 @@
                 'stage_5_topic': '패턴 인식',
                 'btn_back_to_map': '&larr; 월드맵',
                 'ui_blobs': '넘버블롭',
-                'ui_question_count': '문제 {current}',
-                'ui_loading': '새로운 문제를 만들고 있어요...',
+                'ui_question_count': '문제 {current}/{total}',
+                'ui_loading_set': '문제 세트를 만들고 있어요...',
+                'ui_loading_adapt': '난이도를 조절하고 있어요...',
                 'title_stickerbook': '스티커북 📔',
                 'feedback_title': '아쉬워요!',
+                'feedback_timeout_title': '시간 초과! ⏰',
+                'feedback_timeout_text': '다음 문제를 풀어봐요!',
                 'feedback_text_default': '다시 한번 생각해볼까요?',
                 'reward_title': '스테이지 클리어!',
                 'reward_text': '스티커를 획득했어요!',
@@ -392,10 +409,13 @@
                 'stage_5_topic': 'Pattern Recognition',
                 'btn_back_to_map': '&larr; World Map',
                 'ui_blobs': 'Numberblobs',
-                'ui_question_count': 'Question {current}',
-                'ui_loading': 'Creating a new problem...',
+                'ui_question_count': 'Question {current}/{total}',
+                'ui_loading_set': 'Creating question set...',
+                'ui_loading_adapt': 'Adjusting difficulty...',
                 'title_stickerbook': 'Stickerbook 📔',
                 'feedback_title': 'Not quite!',
+                'feedback_timeout_title': 'Time\'s Up! ⏰',
+                'feedback_timeout_text': 'Let\'s try the next one!',
                 'feedback_text_default': 'Let\'s think again.',
                 'reward_title': 'Stage Clear!',
                 'reward_text': 'You got a sticker!',
@@ -408,20 +428,24 @@
             }
         };
 
-        // --- 5. Quiz Data (Static Fallback/Info) ---
+        // --- 5. Quiz Data (항목 추가) ---
         const quizData = {
-            1: { sticker: '🟨', totalQuestions: 10, topic_key: 'stage_1_topic' },
-            2: { sticker: '1️⃣', totalQuestions: 10, topic_key: 'stage_2_topic' },
-            3: { sticker: '🚀', totalQuestions: 10, topic_key: 'stage_3_topic' },
-            4: { sticker: '🏰', totalQuestions: 10, topic_key: 'stage_4_topic' },
-            5: { sticker: '🎵', totalQuestions: 10, topic_key: 'stage_5_topic' }
+            1: { sticker: '🟨', totalQuestions: 20, timeLimit: 20, topic_key: 'stage_1_topic' },
+            2: { sticker: '1️⃣', totalQuestions: 20, timeLimit: 15, topic_key: 'stage_2_topic' },
+            3: { sticker: '🚀', totalQuestions: 20, timeLimit: 15, topic_key: 'stage_3_topic' },
+            4: { sticker: '🏰', totalQuestions: 20, timeLimit: 10, topic_key: 'stage_4_topic' },
+            5: { sticker: '🎵', totalQuestions: 20, timeLimit: 15, topic_key: 'stage_5_topic' }
         };
 
-        // --- 6. Gemini API Core Logic ---
+        // --- 6. Gemini API Core Logic (로직 변경) ---
 
-        function toggleQuizLoading(isLoading) {
+        function toggleQuizLoading(isLoading, textKey = 'ui_loading_set') {
             const loader = document.getElementById('quiz-loader');
             const main = document.getElementById('quiz-main');
+            const loaderText = document.getElementById('loader-text');
+            
+            loaderText.textContent = i18n[gameState.language][textKey];
+
             if (isLoading) {
                 loader.classList.remove('hidden');
                 loader.classList.add('flex');
@@ -439,7 +463,6 @@
             showModal('modal-api-error');
         }
 
-        // 난이도 표시기 헬퍼 함수
         function showDifficultyIndicator(textKey) {
             const indicator = document.getElementById('difficulty-indicator');
             const lang = gameState.language;
@@ -451,88 +474,73 @@
             setTimeout(() => {
                 indicator.classList.add('fade-out');
                 setTimeout(() => indicator.classList.add('hidden'), 300);
-            }, 1500); // 1.5초간 표시
+            }, 1500);
         }
 
-        async function fetchAdaptiveQuestion() {
-            if (!API_KEY || API_KEY.startsWith("AIzaSyCtH-")) {
-                // (참고: 프로덕션에서는 이 키 검사를 더 안전하게 수행해야 합니다)
-            }
-
-            toggleQuizLoading(true);
-
+        // [신규] 퀴즈 묶음(Set) 생성 API 함수
+        async function fetchAdaptiveQuizSet(count, difficulty, history = []) {
             const stageId = gameState.currentStage;
-            const stats = gameState.stageStats[stageId];
             const lang = gameState.language;
-            const topic = i18n['en'][quizData[stageId].topic_key]; // API에는 항상 영어 주제 전달
+            const topic = i18n['en'][quizData[stageId].topic_key];
             
-            let difficultyInstruction = "normal difficulty.";
-            const accuracy = stats.total > 0 ? (stats.correct / stats.total) : 0;
-            
-            if (stats.consecutive >= 2 && accuracy > 0.7) {
-                difficultyInstruction = "a bit harder than the last one (Super Speed Round!).";
-                showDifficultyIndicator('difficulty_hard'); // UI 피드백
-            } else if (accuracy < 0.4 && stats.total > 3) {
-                difficultyInstruction = "a bit easier than the last one, with a simple visual hint.";
-                showDifficultyIndicator('difficulty_easy'); // UI 피드백
-            }
+            gameState.currentDifficulty = difficulty; // 현재 난이도 저장
+            if (difficulty === 'hard') showDifficultyIndicator('difficulty_hard');
+            if (difficulty === 'easy') showDifficultyIndicator('difficulty_easy');
 
-            const systemPrompt = `You are a creative math quiz designer for a 4-6 year old child playing a 'Numberblocks' themed game.
-Your role is to generate ONE single, engaging, visual, and fun math problem.
-The output MUST strictly be a JSON object matching the requested schema.
-The problem must be in ${lang}.
-The options array must contain exactly 3 unique strings.
-The 'visual' field should contain a single large emoji or a simple string of emojis if relevant (e.g., '🍎🍎🍎'). Use 'null' if not needed.
-The 'hint' field must be a short, encouraging text for a child who got the answer wrong.`;
+            const systemPrompt = `You are a creative math quiz designer for a 4-6 year old child.
+Your role is to generate an ARRAY of ${count} unique, engaging, visual, and fun math problems.
+The output MUST strictly be a JSON ARRAY containing ${count} JSON objects matching the requested schema.
+All problems must be in ${lang}.
+Each 'options' array must contain exactly 3 unique strings.
+Each 'visual' field should contain a single large emoji or a simple string of emojis if relevant (e.g., '🍎🍎🍎'). Use 'null' if not needed.
+Each 'hint' field must be a short, encouraging text.
+IMPORTANT: All ${count} problems in the array MUST be unique and different from each other.`;
 
-            // 스테이지 내 문제 중복 방지를 위해 'historyString' 추가
             let historyString = "None yet.";
-            if (gameState.currentQuestionHistory.length > 0) {
-                historyString = gameState.currentQuestionHistory.map((q, i) => `${i + 1}. ${q.text} (Visual: ${q.visual || 'none'})`).join('\n');
+            if (history.length > 0) {
+                historyString = history.map((q, i) => `${i + 1}. ${q.questionText} (Visual: ${q.visual || 'none'})`).join('\n');
             }
 
-            const userPrompt = `Player status for topic '${topic}':
-- Total questions answered: ${stats.total}
-- Correct answers: ${stats.correct}
-- Current accuracy: ${Math.round(accuracy * 100)}%
-- Consecutive correct answers: ${stats.consecutive}
+            const userPrompt = `Player Topic: '${topic}'
+Difficulty Level: '${difficulty}'
+Number of questions to generate: ${count}
+Language: ${lang}
 
 Questions already asked in this stage (AVOID THESE):
 ${historyString}
 
-Instruction: Generate the next question with ${difficultyInstruction}
-Ensure the question is related to the topic: '${topic}'.
-Ensure the 3 options are simple text or single emojis.
-Ensure the 'answerIndex' (0, 1, or 2) correctly points to the right answer in the 'options' array.
-Provide a very simple, encouraging 'hint' in ${lang}.
-IMPORTANT: The new question MUST be different from ALL questions listed in the "Questions already asked" section.`;
+Instruction: Generate an array of ${count} new, unique problems.
+Ensure each problem is related to the topic: '${topic}'.
+Ensure each problem has 3 simple options.
+Ensure each 'answerIndex' (0, 1, or 2) is correct.
+Ensure each problem has a simple, encouraging 'hint' in ${lang}.`;
 
             const payload = {
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                contents: [
-                    { parts: [{ text: userPrompt }] }
-                ],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ parts: [{ text: userPrompt }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            "questionText": { "type": "STRING" },
-                            "visual": { "type": "STRING", "nullable": true },
-                            "options": {
-                                "type": "ARRAY",
-                                "items": { "type": "STRING" }
+                        type: "ARRAY", // [수정] 응답 타입이 배열
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "questionText": { "type": "STRING" },
+                                "visual": { "type": "STRING", "nullable": true },
+                                "options": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                },
+                                "answerIndex": { "type": "INTEGER" },
+                                "hint": { "type": "STRING" }
                             },
-                            "answerIndex": { "type": "INTEGER" },
-                            "hint": { "type": "STRING" }
-                        },
-                        required: ["questionText", "options", "answerIndex", "hint"]
+                            required: ["questionText", "options", "answerIndex", "hint"]
+                        }
                     }
                 }
             };
             
+            // API 호출 (재시도 로직 포함)
             try {
                 let response;
                 let retries = 3;
@@ -545,10 +553,7 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                         body: JSON.stringify(payload)
                     });
 
-                    if (response.ok) {
-                        break; 
-                    }
-
+                    if (response.ok) break;
                     if (response.status === 429 || response.status >= 500) {
                         console.warn(`API call failed with status ${response.status}. Retrying in ${delay}ms...`);
                         await new Promise(resolve => setTimeout(resolve, delay));
@@ -558,10 +563,7 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                     }
                 }
 
-                if (!response.ok) {
-                    throw new Error(`API call failed after ${retries} retries.`);
-                }
-
+                if (!response.ok) throw new Error(`API call failed after ${retries} retries.`);
                 const result = await response.json();
                 
                 if (!result.candidates || !result.candidates[0].content.parts[0].text) {
@@ -570,27 +572,63 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
 
                 const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
                 
-                if (!jsonResponse.options || jsonResponse.options.length !== 3 || jsonResponse.answerIndex === undefined) {
-                     throw new Error("API response did not match the required schema (options length or answerIndex missing).");
+                if (!Array.isArray(jsonResponse) || jsonResponse.length === 0) {
+                     throw new Error("API response was not a valid array.");
                 }
                 
-                // 새 문제를 기록 (반복 방지용)
-                gameState.currentQuestionHistory.push({
-                    text: jsonResponse.questionText,
-                    visual: jsonResponse.visual
-                });
-
-                renderQuestion(jsonResponse);
+                return jsonResponse; // 퀴즈 배열 반환
 
             } catch (error) {
                 showApiError(error);
-            } finally {
-                toggleQuizLoading(false);
+                return null; // 오류 발생 시 null 반환
             }
         }
 
 
-        // --- 7. Core Game Logic & UI Functions ---
+        // --- 7. Core Game Logic & UI Functions (로직 변경) ---
+
+        // [신규] 타이머 함수들
+        function startTimer() {
+            stopTimer(); // 기존 타이머 중지
+            const stageId = gameState.currentStage;
+            const timeLimit = quizData[stageId].timeLimit * 1000; // 밀리초
+            let timeLeft = timeLimit;
+            const timerBar = document.getElementById('timer-bar');
+            const timerContainer = document.getElementById('timer-container');
+            
+            timerBar.style.width = '100%';
+            timerBar.style.transitionDuration = '0.1s'; // 리셋
+            timerContainer.classList.remove('hidden');
+
+            // 100ms 간격으로 타이머 업데이트
+            const intervalDuration = 100;
+            gameState.timerId = setInterval(() => {
+                timeLeft -= intervalDuration;
+                const percentLeft = (timeLeft / timeLimit) * 100;
+                
+                if (percentLeft <= 0) {
+                    timerBar.style.width = '0%';
+                    handleTimeOut();
+                } else {
+                    timerBar.style.width = `${percentLeft}%`;
+                }
+            }, intervalDuration);
+        }
+
+        function stopTimer() {
+            if (gameState.timerId) {
+                clearInterval(gameState.timerId);
+                gameState.timerId = null;
+            }
+        }
+
+        function handleTimeOut() {
+            stopTimer();
+            playSound(timeupSound, "G3", "4n");
+            showModal('modal-timeout');
+            // 오답(-1)으로 처리
+            checkAnswer(-1); 
+        }
 
         function showScreen(screenId) {
             document.querySelectorAll('.game-screen').forEach(screen => {
@@ -634,17 +672,23 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                 if (i18n[lang] && i18n[lang][key]) {
                     let text = i18n[lang][key];
                     if(el.dataset.i18nVars_current) {
-                        text = text.replace('{current}', el.dataset.i18nVars_current);
+                        const total = quizData[gameState.currentStage]?.totalQuestions || 20;
+                        text = text.replace('{current}', el.dataset.i18nVars_current)
+                                   .replace('{total}', total);
                     }
                     el.innerHTML = text;
                 }
             });
             
-            if (gameState.currentScreen === 'screen-world-map') {
-                updateWorldMapUI(); 
-            }
-            if (gameState.currentScreen === 'screen-stickerbook') {
-                renderStickerbook();
+            if (gameState.currentScreen === 'screen-world-map') updateWorldMapUI(); 
+            if (gameState.currentScreen === 'screen-stickerbook') renderStickerbook();
+            if (gameState.currentScreen === 'screen-game-stage') {
+                // 게임 중 언어 변경 시, 현재 문제 다시 렌더링 (텍스트만)
+                // (이상적으로는 API를 다시 호출해야 하나, 여기서는 단순 텍스트만 업데이트)
+                const total = quizData[gameState.currentStage]?.totalQuestions || 20;
+                document.getElementById('quiz-progress-text').innerHTML = i18n[lang]['ui_question_count']
+                    .replace('{current}', gameState.currentQuestionIndex + 1)
+                    .replace('{total}', total);
             }
         }
         
@@ -693,37 +737,56 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
             });
         }
 
-        function startGame(stageId) {
+        // [수정] startGame - 초기 퀴즈 세트 로딩
+        async function startGame(stageId) {
             gameState.currentStage = stageId;
-            if (!gameState.stageStats[stageId]) {
-                 gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
-            }
-            
-            // 스테이지 시작 시 문제 기록 초기화
-            gameState.currentQuestionHistory = [];
+            gameState.currentQuizSet = [];
+            gameState.currentQuestionIndex = 0;
+            gameState.currentDifficulty = 'normal';
+            // 통계 초기화
+            gameState.stageStats[stageId] = { total: 0, correct: 0 }; 
             
             showScreen('screen-game-stage');
-            loadQuiz();
-        }
-
-        async function loadQuiz() {
             updateScoreUI();
-            await fetchAdaptiveQuestion();
+            
+            // 초기 퀴즈 세트 로드
+            toggleQuizLoading(true, 'ui_loading_set');
+            const initialQuizSet = await fetchAdaptiveQuizSet(quizData[stageId].totalQuestions, 'normal', []);
+            toggleQuizLoading(false);
+
+            if (initialQuizSet) {
+                gameState.currentQuizSet = initialQuizSet;
+                renderNextQuestion();
+            } else {
+                showApiError(new Error("Failed to load initial quiz set."));
+            }
         }
 
-        function renderQuestion(question) {
-            gameState.currentQuestion = question;
+        // [신규] renderNextQuestion - 퀴즈 세트에서 다음 문제 렌더링
+        function renderNextQuestion() {
+            stopTimer(); // 이전 타이머 중지
             
+            const stageId = gameState.currentStage;
+            const total = quizData[stageId].totalQuestions;
+            const currentNum = gameState.currentQuestionIndex + 1;
+
+            // 스테이지 클리어 확인
+            if (gameState.currentQuestionIndex >= gameState.currentQuizSet.length) {
+                stageClear();
+                return;
+            }
+            
+            const question = gameState.currentQuizSet[gameState.currentQuestionIndex];
+            
+            // UI 업데이트
             const questionTextEl = document.getElementById('quiz-question-text');
             const optionsContainer = document.getElementById('quiz-options-container');
             const progressTextEl = document.getElementById('quiz-progress-text');
             
-            const stats = gameState.stageStats[gameState.currentStage];
-            const currentNum = stats.total + 1; 
-            
             progressTextEl.dataset.i18nVars_current = currentNum;
             progressTextEl.innerHTML = i18n[gameState.language]['ui_question_count']
-                                        .replace('{current}', currentNum);
+                                        .replace('{current}', currentNum)
+                                        .replace('{total}', total);
 
             questionTextEl.textContent = question.questionText;
             if (question.visual && question.visual !== 'null') {
@@ -735,15 +798,12 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
             optionsContainer.innerHTML = ''; 
             question.options.forEach((optionText, index) => {
                 const button = document.createElement('button');
-                // 버튼 크기: aspect-square (정사각형), flex, items-center, justify-center 추가
                 button.className = "quiz-option p-4 bg-white rounded-2xl shadow-lg transition-transform duration-200 active:scale-95 aspect-square flex items-center justify-center";
                 
                 let optionContent = optionText;
                 if (optionText.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/u) && optionText.length < 5) {
-                    // 버튼 크기: 이모지 크기 조정
                     optionContent = `<span class="text-5xl md:text-6xl">${optionText}</span>`;
                 } else {
-                    // 버튼 크기: 텍스트 크기, 정렬 조정
                     optionContent = `<span class="block text-xl md:text-2xl font-bold text-gray-800 text-center">${optionText}</span>`;
                 }
                 button.innerHTML = optionContent;
@@ -754,36 +814,94 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                 };
                 optionsContainer.appendChild(button);
             });
+            
+            // 새 타이머 시작
+            startTimer();
         }
 
+        // [수정] checkAnswer - 체크포인트 로직 추가
         function checkAnswer(selectedIndex) {
-            const question = gameState.currentQuestion;
-            const stats = gameState.stageStats[gameState.currentStage];
-
+            stopTimer(); // 정답/오답 확인 시 타이머 즉시 중지
+            
+            const stageId = gameState.currentStage;
+            const question = gameState.currentQuizSet[gameState.currentQuestionIndex];
+            const stats = gameState.stageStats[stageId];
+            const isCorrect = (selectedIndex === question.answerIndex);
+            
             stats.total++; 
 
-            if (selectedIndex === question.answerIndex) {
+            if (isCorrect) {
                 // --- 정답 ---
                 playSound(correctSound, "C5", "4n");
                 gameState.numberblobs += 5; 
                 stats.correct++; 
-                stats.consecutive++; 
                 updateScoreUI();
-                
-                if (stats.total >= quizData[gameState.currentStage].totalQuestions) {
-                    stageClear();
-                } else {
-                    setTimeout(() => {
-                        fetchAdaptiveQuestion();
-                    }, 500); 
-                }
-                
             } else {
-                // --- 오답 ---
-                playSound(wrongSound, "C3", "4n");
-                stats.consecutive = 0; 
-                showFeedbackModal(question.hint);
+                // --- 오답 (시간 초과 포함) ---
+                if (selectedIndex !== -1) { // -1은 시간 초과
+                    playSound(wrongSound, "C3", "4n");
+                    showFeedbackModal(question.hint);
+                }
             }
+            
+            gameState.currentQuestionIndex++; // 다음 문제로 인덱스 이동
+            
+            // 체크포인트 (5, 10, 15) 확인
+            const checkpoints = [5, 10, 15];
+            if (checkpoints.includes(gameState.currentQuestionIndex)) {
+                // 5문제 단위로 평가 및 적응
+                evaluateAndAdaptQuizSet(); // 이 함수가 끝나고 다음 문제를 렌더링함
+            } else if (gameState.currentQuestionIndex >= quizData[stageId].totalQuestions) {
+                // 스테이지 클리어
+                setTimeout(stageClear, 500);
+            } else {
+                // 다음 문제로 (정답 시 0.5초, 오답 시 모달 닫힐 때까지 대기)
+                if (isCorrect) {
+                    setTimeout(renderNextQuestion, 500); 
+                } else {
+                    // 오답/타임아웃 모달이 닫힐 때 다음 문제로 이동
+                    // (이벤트 리스너에서 처리)
+                }
+            }
+        }
+        
+        // [신규] 5문제 단위 평가 및 적응
+        async function evaluateAndAdaptQuizSet() {
+            const stageId = gameState.currentStage;
+            const stats = gameState.stageStats[stageId];
+            const accuracy = stats.correct / stats.total;
+            let newDifficulty = gameState.currentDifficulty;
+
+            // 난이도 평가
+            if (accuracy > 0.8) newDifficulty = 'hard'; // 80% 이상
+            else if (accuracy < 0.4) newDifficulty = 'easy'; // 40% 미만
+            else newDifficulty = 'normal';
+            
+            // 난이도가 변경되었을 경우에만 API 호출
+            if (newDifficulty !== gameState.currentDifficulty) {
+                const remainingQuestions = quizData[stageId].totalQuestions - gameState.currentQuestionIndex;
+                if (remainingQuestions > 0) {
+                    
+                    toggleQuizLoading(true, 'ui_loading_adapt');
+                    
+                    // 현재까지 푼 문제들을 history로 전달
+                    const history = gameState.currentQuizSet.slice(0, gameState.currentQuestionIndex);
+                    const newQuizSet = await fetchAdaptiveQuizSet(remainingQuestions, newDifficulty, history);
+                    
+                    toggleQuizLoading(false);
+                    
+                    if (newQuizSet) {
+                        // 남은 문제 세트를 새 것으로 교체
+                        gameState.currentQuizSet = [...history, ...newQuizSet];
+                    } else {
+                        showApiError(new Error("Failed to adapt quiz set."));
+                        // 실패 시 기존 문제로 계속 진행
+                    }
+                }
+            }
+            
+            // 다음 문제 렌더링
+            renderNextQuestion();
         }
         
         function showFeedbackModal(hintText) {
@@ -801,6 +919,7 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
         }
 
         function stageClear() {
+            stopTimer();
             const stageId = gameState.currentStage;
             const stage = quizData[stageId];
             
@@ -813,20 +932,15 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                 gameState.unlockedStages.push(nextStageId);
             }
             
-            // 스테이지 클리어 시 스탯 초기화
-            gameState.stageStats[stageId] = { total: 0, correct: 0, consecutive: 0 };
-            // [중요] 스테이지 클리어 시 문제 기록도 초기화
-            gameState.currentQuestionHistory = [];
+            // 통계/진행도 초기화
+            gameState.stageStats[stageId] = { total: 0, correct: 0 };
+            gameState.currentQuizSet = [];
+            gameState.currentQuestionIndex = 0;
             
             const lang = gameState.language;
             document.getElementById('modal-reward-title').textContent = i18n[lang]['reward_title'];
             document.getElementById('modal-reward-sticker').textContent = stage.sticker;
-            
-            if (stageId == Object.keys(quizData).length) {
-                document.getElementById('modal-reward-text').textContent = i18n[lang]['reward_text'];
-            } else {
-                document.getElementById('modal-reward-text').textContent = i18n[lang]['reward_text'];
-            }
+            document.getElementById('modal-reward-text').textContent = i18n[lang]['reward_text'];
             
             const closeButton = document.getElementById('modal-reward-close-btn');
             closeButton.textContent = i18n[lang]['btn_go_to_stickerbook'];
@@ -842,7 +956,7 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
         }
 
 
-        // --- 8. Event Listeners ---
+        // --- 8. Event Listeners (항목 추가) ---
         document.addEventListener('DOMContentLoaded', () => {
             
             document.getElementById('lang-ko-btn').addEventListener('click', () => {
@@ -878,6 +992,7 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
             
             document.getElementById('back-to-map-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
+                stopTimer(); // 맵으로 나갈 때 타이머 중지
                 showScreen('screen-world-map');
                 updateWorldMapUI();
             });
@@ -887,14 +1002,25 @@ IMPORTANT: The new question MUST be different from ALL questions listed in the "
                     const stageId = index + 1;
                     if (gameState.unlockedStages.includes(stageId)) {
                         playSound(clickSound, "C5"); 
-                        startGame(stageId);
+                        startGame(stageId); // [수정] startGame은 이제 async
                     }
                 });
             });
             
+            // [수정] 오답 모달 닫기
             document.getElementById('modal-feedback-close-btn').addEventListener('click', () => {
                 playSound(clickSound, "C4");
                 hideModal('modal-feedback');
+                // 모달이 닫히면 다음 문제로
+                setTimeout(renderNextQuestion, 200);
+            });
+            
+            // [신규] 시간 초과 모달 닫기
+            document.getElementById('modal-timeout-close-btn').addEventListener('click', () => {
+                playSound(clickSound, "C4");
+                hideModal('modal-timeout');
+                // 모달이 닫히면 다음 문제로
+                setTimeout(renderNextQuestion, 200);
             });
             
             document.getElementById('modal-api-error-close-btn').addEventListener('click', () => {
