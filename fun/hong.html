@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대한민국 축구 대표팀 퍼포먼스 분석</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Pretendard Web Font CDN -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <!-- Chosen Palette: Cool & Neutral (Blue, Red, Teal accents on Gray/White) -->
+    <!-- Application Structure Plan: A single-page dashboard structure is chosen for easy, top-down analysis. It starts with a high-level interactive "Manager Style Comparison" using a Radar Chart, allowing users to toggle between Bento, Hong, and a hypothetical Poyet. This directly addresses the comparative analysis request. This is followed by a "Detailed Tactical Breakdown" section, which digitizes the provided table for in-depth reference. Finally, a "Summary of Match Impact" section lists the key consequences from the table. This flow guides the user from a high-level visual comparison to detailed textual analysis, optimizing for usability and clear information hierarchy. -->
+    <!-- Visualization & Content Choices: 1. Report Info: Tactical philosophies, strengths, weaknesses from table. Goal: Compare manager stylistic profiles. Viz: Radar Chart. Interaction: Checkboxes to toggle manager datasets (Bento, Hong, Poyet-hypothetical). Justification: Ideal for multi-dimensional qualitative comparison. Library: Chart.js. 2. Report Info: Entire source table. Goal: Provide detailed reference. Viz: Responsive HTML Table. Interaction: None. Justification: Faithful data presentation. Library: HTML/Tailwind. 3. Report Info: "Match Impact" column. Goal: Summarize consequences. Viz: Styled Key Findings List. Interaction: None. Justification: Highlights key takeaways. Library: HTML/Tailwind. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            /* Apply Pretendard as the primary font */
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 768px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 py-8 md:p-12">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 mb-4 tracking-tight">대한민국 축구 대표팀 퍼포먼스 분석</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                데이터 및 전문가 분석을 기반으로 현 대표팀의 퍼포먼스를 파울루 벤투 감독 시절 및 주요 후보군과 비교 분석합니다.
+            </p>
+        </header>
+
+        <main class="space-y-16">
+
+            <section id="comparison-chart" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg transition-all hover:shadow-xl">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4 tracking-tight">감독별 전술 스타일 비교</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    본 섹션에서는 차트와 데이터를 통해 벤투, 홍명보 감독 및 주요 후보군(가상)의 전술적 스타일을 시각적으로 비교 분석합니다. 각 감독의 핵심 철학을 다각도로 평가하여 팀에 미칠 영향을 예측해볼 수 있습니다. 토글 버튼을 클릭하여 비교할 감독을 선택하세요.
+                </p>
+
+                <div class="flex flex-wrap justify-center gap-4 mb-6" id="chart-controls">
+                    <label class="flex items-center space-x-2 p-3 bg-blue-50 text-blue-800 rounded-lg cursor-pointer shadow-sm hover:bg-blue-100 transition-colors">
+                        <input type="checkbox" id="bentoToggle" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
+                        <span class="font-medium">파울루 벤투</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-3 bg-red-50 text-red-800 rounded-lg cursor-pointer shadow-sm hover:bg-red-100 transition-colors">
+                        <input type="checkbox" id="hongToggle" class="form-checkbox h-5 w-5 text-red-600 rounded border-gray-300 focus:ring-red-500" checked>
+                        <span class="font-medium">홍명보</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-3 bg-teal-50 text-teal-800 rounded-lg cursor-pointer shadow-sm hover:bg-teal-100 transition-colors">
+                        <input type="checkbox" id="poyetToggle" class="form-checkbox h-5 w-5 text-teal-600 rounded border-gray-300 focus:ring-teal-500" checked>
+                        <span class="font-medium">거스 포옛 (가상)</span>
+                    </label>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="managerRadarChart"></canvas>
+                </div>
+            </section>
+
+            <section id="impact-summary" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4 tracking-tight">전술 차이가 경기에 미치는 영향 (요약)</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    분석표의 '경기에 미치는 영향' 항목을 요약한 내용입니다. 두 감독의 전술적 차이가 실제 경기력과 팀 운영에 어떤 구체적인 결과로 이어지는지 핵심 사항을 정리했습니다.
+                </p>
+                <ul class="list-none space-y-4">
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↓</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">패턴 안정성 및 자동화 수준 저하</h3>
+                            <p class="text-gray-600 mt-1">홍명보 체제는 '선수 판단' 비중 증가로 일관성 있는 자동화 패턴이 감소합니다.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↑</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">공격 전개 불안정성 증가</h3>
+                            <p class="text-gray-600 mt-1">공격 전개가 일정하지 않고 개인 판단에 따라 흔들릴 가능성이 발생합니다.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↑</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">역습 대비 및 미드필드 공간 노출</h3>
+                            <p class="text-gray-600 mt-1">전환 속도와 우선순위에 따른 다소 높은 라인으로 역습 시 공간 노출 위험이 있습니다.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↑</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">수비 불안정 및 압박 실패 위험</h3>
+                            <p class="text-gray-600 mt-1">느슨한 라인 규칙으로 역습 시 간격이 벌어지며, 전방 압박 실패 시 위험 부담이 증가합니다.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↓</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">집중력 저하 및 세트피스 반복 실수</h3>
+                            <p class="text-gray-600 mt-1">경기마다 바뀌는 세트피스 전략으로 집중력이 저하되고 반복 실수가 나올 수 있습니다.</p>
+                        </div>
+                    </li>
+                     <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↑</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">개인 의존도 증가 및 팀 조직력 약화</h3>
+                            <p class="text-gray-600 mt-1">팀이 흔들릴수록 개인 능력에 의존하는 경향이 강해질 수 있습니다.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span class="text-red-500 font-bold text-xl mr-3 mt-0.5">↓</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">후반 집중력 저하</h3>
+                            <p class="text-gray-600 mt-1">전술적으로 '뛸 일'이 많아 체력 소모가 크며, 이는 후반 집중력 저하로 연결될 수 있습니다.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="tactical-table" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4 tracking-tight">세부 전술 비교표</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    다음은 전문가 분석표를 기반으로 벤투 감독과 홍명보 감독의 전술적 세부 항목을 일대일로 비교한 표입니다.
+                </p>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">구분</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-blue-600 uppercase tracking-wider whitespace-nowrap">벤투호</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-red-600 uppercase tracking-wider whitespace-nowrap">홍명보호</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider min-w-[200px]">차이가 경기에 미치는 영향</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">전술 철학</td>
+                                <td class="px-6 py-4 text-gray-600">포지셔널 플레이(점유 기반), 구조 우선</td>
+                                <td class="px-6 py-4 text-gray-600">현실적 유연성, 상황 대응 중시</td>
+                                <td class="px-6 py-4 text-gray-600">홍명보 체제는 구조보다 '선수 판단' 비중 증가 → 일관성 저하</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">전술 프레임(틀)</td>
+                                <td class="px-6 py-4 text-gray-600">매우 정교하게 고정됨</td>
+                                <td class="px-6 py-4 text-gray-600">틀은 존재하나 상대·상황 따라 변동 많음</td>
+                                <td class="px-6 py-4 text-gray-600">자동화 수준 ↓, 패턴 안정성 ↓</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">빌드업 구조</td>
+                                <td class="px-6 py-4 text-gray-600">후방 3선 중앙 점유 패턴 세밀한 자동화</td>
+                                <td class="px-6 py-4 text-gray-600">단계적 빌드업보다 개인·즉흥적 선택 허용</td>
+                                <td class="px-6 py-4 text-gray-600">공격 전개가 일정하지 않고 흔들림 발생</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">트랜지션(전환)</td>
+                                <td class="px-6 py-4 text-gray-600">볼 잃은 즉시 라인 유지·압박 규칙 명확</td>
+                                <td class="px-6 py-4 text-gray-600">전환 속도·우선순위가 상황에 따라 다름</td>
+                                <td class="px-6 py-4 text-gray-600">역습 대비 불안 + 미드필드 공간 노출</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">수비 라인 운영</td>
+                                <td class="px-6 py-4 text-gray-600">라인 간격 20~30m 유지 규칙 엄격</td>
+                                <td class="px-6 py-4 text-gray-600">라인 유지 규칙이 느슨하고 가변적</td>
+                                <td class="px-6 py-4 text-gray-600">역습 시 간격이 벌어져 불안정</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">전방 압박</td>
+                                <td class="px-6 py-4 text-gray-600">압박 트리거 명확(패턴화)</td>
+                                <td class="px-6 py-4 text-gray-600">상대 빌드업에 따라 즉흥 대응</td>
+                                <td class="px-6 py-4 text-gray-600">압박 실패 → 위험 노출 증가</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">세트피스(수비)</td>
+                                <td class="px-6 py-4 text-gray-600">역할·동선 고정</td>
+                                <td class="px-6 py-4 text-gray-600">경기마다 조금씩 변화</td>
+                                <td class="px-6 py-4 text-gray-600">집중력 저하 시 실수 반복 가능성 ↑</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">공격 패턴</td>
+                                <td class="px-6 py-4 text-gray-600">중앙·하프스페이스 중심 패턴화</td>
+                                <td class="px-6 py-4 text-gray-600">측면 활용·개인 돌파 비중 증가</td>
+                                <td class="px-6 py-4 text-gray-600">패턴 일관성 저하 → 약체 상대로도 난항</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">주요 득점 방식</td>
+                                <td class="px-6 py-4 text-gray-600">빌드업·점유 기반 침투</td>
+                                <td class="px-6 py-4 text-gray-600">빠른 전개·개인 능력 (손흥민, 황희찬)</td>
+                                <td class="px-6 py-4 text-gray-600">팀이 흔들릴수록 개인 의존 ↑</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">선수 역할 정의</td>
+                                <td class="px-6 py-4 text-gray-600">매우 명확(정해진 위치·루틴)</td>
+                                <td class="px-6 py-4 text-gray-600">유연(상황에 따라 역할 변경 가능)</td>
+                                <td class="px-6 py-4 text-gray-600">상황 판단이 많아져 실수 가능 ↑</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">체력 운용</td>
+                                <td class="px-6 py-4 text-gray-600">효율적-불필요한 러닝 최소화</td>
+                                <td class="px-6 py-4 text-gray-600">전술적으로 뛸 일이 많아 체력 소모 ↑</td>
+                                <td class="px-6 py-4 text-gray-600">후반 집중력 저하로 연결</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">장점</td>
+                                <td class="px-6 py-4 text-gray-600">안정성, 일관성, 구조 강화</td>
+                                <td class="px-6 py-4 text-gray-600">빠른 전개·창의성·팔방미인형 전술</td>
+                                <td class="px-6 py-4 text-gray-600">상대 강점/약점에 따라 성능 변화</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">단점</td>
+                                <td class="px-6 py-4 text-gray-600">플랜 B 부족, 지나친 고정성</td>
+                                <td class="px-6 py-4 text-gray-600">조직 완성도 낮아 '출렁임'이 큼</td>
+                                <td class="px-6 py-4 text-gray-600">경기력 기복 발생</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 border-b-0">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700 bg-gray-50">[K]대표 약점 유형</td>
+                                <td class="px-6 py-4 text-gray-600 bg-gray-50">강팀 상대 강한 압박 대응 어려움</td>
+                                <td class="px-6 py-4 text-gray-600 bg-gray-50">약팀 상대로 패턴 없는 공격·전환 불안</td>
+                                <td class="px-6 py-4 text-gray-600 bg-gray-50">현재 대표팀의 핵심 약점이 홍명보 체제에서 두드러짐</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set font family for Chart.js to match the page
+            Chart.defaults.font.family = "'Pretendard', sans-serif";
+
+            const managerData = {
+                labels: ['구조화 (Structure)', '유연성 (Flexibility)', '공격성 (Aggressiveness)', '안정성 (Stability)', '선수 의존도 (Player Dependency)'],
+                datasets: [
+                    {
+                        label: '파울루 벤투 (Paulo Bento)',
+                        data: [9, 3, 7, 8, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)', // Blue-600 with opacity
+                        borderColor: 'rgb(37, 99, 235)', // Blue-600
+                        pointBackgroundColor: 'rgb(37, 99, 235)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(37, 99, 235)'
+                    },
+                    {
+                        label: '홍명보 (Hong Myung-bo)',
+                        data: [4, 8, 8, 4, 9],
+                        fill: true,
+                        backgroundColor: 'rgba(220, 38, 38, 0.2)', // Red-600 with opacity
+                        borderColor: 'rgb(220, 38, 38)', // Red-600
+                        pointBackgroundColor: 'rgb(220, 38, 38)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(220, 38, 38)'
+                    },
+                    {
+                        label: '거스 포옛 (Gus Poyet - 가상)',
+                        data: [7, 6, 5, 9, 6],
+                        fill: true,
+                        backgroundColor: 'rgba(13, 148, 136, 0.2)', // Teal-600 with opacity
+                        borderColor: 'rgb(13, 148, 136)', // Teal-600
+                        pointBackgroundColor: 'rgb(13, 148, 136)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(13, 148, 136)'
+                    }
+                ]
+            };
+
+            const originalDatasets = [...managerData.datasets];
+
+            const ctx = document.getElementById('managerRadarChart').getContext('2d');
+            const config = {
+                type: 'radar',
+                data: managerData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3,
+                            tension: 0.3 // Slightly smoother lines
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            pointLabels: {
+                                font: {
+                                    size: 13,
+                                    weight: '600',
+                                    family: "'Pretendard', sans-serif"
+                                },
+                                color: '#374151' // Gray-700
+                            },
+                            ticks: {
+                                stepSize: 2,
+                                backdropColor: 'rgba(255, 255, 255, 0.9)',
+                                font: {
+                                    family: "'Pretendard', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Pretendard', sans-serif",
+                                    weight: '500'
+                                },
+                                padding: 20,
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)', // Gray-900
+                            titleFont: {
+                                family: "'Pretendard', sans-serif",
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: "'Pretendard', sans-serif",
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            const myRadarChart = new Chart(ctx, config);
+
+            const bentoToggle = document.getElementById('bentoToggle');
+            const hongToggle = document.getElementById('hongToggle');
+            const poyetToggle = document.getElementById('poyetToggle');
+
+            function updateChart() {
+                const datasetsToShow = [];
+                if (bentoToggle.checked) {
+                    datasetsToShow.push(originalDatasets[0]);
+                }
+                if (hongToggle.checked) {
+                    datasetsToShow.push(originalDatasets[1]);
+                }
+                if (poyetToggle.checked) {
+                    datasetsToShow.push(originalDatasets[2]);
+                }
+                myRadarChart.data.datasets = datasetsToShow;
+                myRadarChart.update();
+            }
+
+            bentoToggle.addEventListener('change', updateChart);
+            hongToggle.addEventListener('change', updateChart);
+            poyetToggle.addEventListener('change', updateChart);
+        });
+    </script>
+</body>
+</html>
