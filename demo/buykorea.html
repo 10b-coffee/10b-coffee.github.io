@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-Buy Agent (Gemini Style)</title>
+    <title>K-Buy Agent (Gemini Dynamic)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -22,28 +22,27 @@
                             input: '#f0f4f9',
                             text: '#1f1f1f',
                             secondary: '#444746',
-                            accent: '#1a73e8', // Google Blue
-                            purple: '#8e24aa'  // Google Purple-ish
+                            blue: '#1a73e8',
+                            purple: '#d96570' // Gradient point color
                         }
                     },
                     animation: {
-                        'gradient-x': 'gradient-x 3s ease infinite',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'blink': 'blink 1s step-end infinite',
                     },
                     keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'left center'
-                            },
-                            '50%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'right center'
-                            },
-                        },
                         fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
                         }
                     }
                 }
@@ -54,7 +53,6 @@
         body { font-family: 'Google Sans', sans-serif; background-color: white; color: #1f1f1f; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         
-        /* Gemini Gradient Text */
         .text-gradient {
             background: linear-gradient(to right, #4285f4, #9b72cb, #d96570);
             -webkit-background-clip: text;
@@ -62,22 +60,25 @@
             display: inline-block;
         }
 
-        /* Sparkle Icon Gradient */
-        .icon-gradient {
-            color: transparent;
-            background: linear-gradient(135deg, #4285f4, #d96570);
-            -webkit-background-clip: text;
-        }
-
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #e1e3e1; border-radius: 4px; }
+
+        /* Typing Cursor */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: #1a73e8;
+            margin-left: 2px;
+            vertical-align: middle;
+            border-radius: 1px;
+        }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden bg-white">
 
-    <!-- Sidebar (Gemini Style: Light Gray) -->
+    <!-- Sidebar -->
     <aside class="hidden md:flex w-[280px] bg-gemini-sidebar flex-col p-4 space-y-4 transition-all duration-300">
         <div class="flex items-center gap-2 px-2 py-1 mb-2">
             <i class="fas fa-bars text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-200"></i>
@@ -93,9 +94,6 @@
             <p class="text-xs font-medium text-gray-500 px-4 py-2 mt-2">Recent</p>
             <button class="w-full flex items-center gap-3 px-4 py-2 rounded-full hover:bg-[#e0e4e9] transition text-sm text-gray-700 truncate text-left">
                 <i class="far fa-comment-alt text-gray-500 text-xs"></i> WayV Album Order
-            </button>
-            <button class="w-full flex items-center gap-3 px-4 py-2 rounded-full hover:bg-[#e0e4e9] transition text-sm text-gray-700 truncate text-left">
-                <i class="far fa-comment-alt text-gray-500 text-xs"></i> Shipping to Canada
             </button>
         </div>
 
@@ -113,15 +111,15 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative h-full bg-white">
         <!-- Mobile Header -->
-        <header class="md:hidden flex items-center justify-between p-4 bg-white sticky top-0 z-10">
+        <header class="md:hidden flex items-center justify-between p-4 bg-white sticky top-0 z-10 shadow-sm">
             <span class="text-xl font-medium text-gray-600">Gemini</span>
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-red-400"></div>
         </header>
 
         <!-- Chat Area -->
         <div id="chat-container" class="flex-1 overflow-y-auto pb-40 w-full max-w-4xl mx-auto px-4 scrollbar-hide pt-8">
-            <!-- Welcome Screen (Gemini Style) -->
-            <div id="welcome-screen" class="flex flex-col h-full justify-center items-start space-y-8 pb-20 fade-in">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="flex flex-col h-full justify-center items-start space-y-8 pb-20 animate-fade-in">
                 <div class="space-y-2">
                     <h1 class="text-5xl md:text-6xl font-medium tracking-tight">
                         <span class="text-gradient font-bold">Hello, Stranger</span>
@@ -129,8 +127,7 @@
                     <h2 class="text-4xl md:text-5xl font-medium text-[#c4c7c5]">How can I help you shop?</h2>
                 </div>
 
-                <!-- Suggestion Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full mt-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-8">
                     <button onclick="fillInput('https://smtownandstore.com/product/wayv-winter-album...')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
                         <span class="text-sm font-medium text-gray-700 group-hover:text-black">Buy K-Pop Album</span>
                         <div class="self-end bg-white p-2 rounded-full shadow-sm">
@@ -143,7 +140,7 @@
                             <i class="fas fa-plane text-blue-500"></i>
                         </div>
                     </button>
-                    <button onclick="fillInput('How does the payment work?')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
+                    <button onclick="fillInput('Payment Guide for foreigners')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
                         <span class="text-sm font-medium text-gray-700 group-hover:text-black">Payment Guide</span>
                         <div class="self-end bg-white p-2 rounded-full shadow-sm">
                             <i class="far fa-credit-card text-green-500"></i>
@@ -153,7 +150,7 @@
             </div>
         </div>
 
-        <!-- Input Area (Fixed Bottom, Pill Shape) -->
+        <!-- Input Area -->
         <div class="fixed bottom-0 left-0 md:left-[280px] right-0 bg-white/90 backdrop-blur-sm pb-6 pt-2 px-4 md:px-0">
             <div class="max-w-3xl mx-auto">
                 <div class="relative flex items-center w-full bg-gemini-input rounded-full hover:bg-[#e0e4e9] transition-colors group border border-transparent focus-within:bg-white focus-within:border-gray-300 focus-within:shadow-md">
@@ -165,7 +162,7 @@
                         placeholder="Enter URL or ask a question..." 
                         onkeypress="if(event.key === 'Enter') sendMessage()">
                     <button onclick="sendMessage()" class="absolute right-2 p-2 rounded-full hover:bg-gray-200 transition">
-                        <i class="fas fa-paper-plane text-blue-600 transform rotate-0"></i>
+                        <i class="fas fa-paper-plane text-blue-600"></i>
                     </button>
                 </div>
                 <p class="text-center text-[10px] text-gray-500 mt-2">
@@ -187,81 +184,110 @@
         }
 
         function scrollToBottom() {
-            // 부드럽게 스크롤
             chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
         }
 
-        // 제미나이 스타일 메시지 (아이콘 + 텍스트 블록)
-        function addMessage(sender, htmlContent) {
-            if (welcomeScreen.style.display !== 'none') {
-                welcomeScreen.style.display = 'none';
-                chatContainer.classList.remove('pt-8'); // 상단 여백 조정
-            }
+        // 스트리밍 타이핑 효과 함수
+        async function typeWriter(element, text) {
+            // 커서 추가
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor animate-blink';
+            element.appendChild(cursor);
 
-            const wrapper = document.createElement('div');
-            wrapper.className = `w-full animate-fade-in mb-6`;
+            for (let i = 0; i < text.length; i++) {
+                cursor.before(text[i]); // 커서 앞에 글자 추가
+                scrollToBottom();
+                
+                // 타이핑 속도 조절 (랜덤성을 주어 자연스럽게)
+                const delay = Math.random() * 20 + 10; 
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
             
-            // 아이콘: 봇은 제미나이 스파클, 유저는 이니셜
+            cursor.remove(); // 타이핑 끝나면 커서 제거
+        }
+
+        // 메시지 컨테이너 생성
+        function createMessageContainer(sender) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `w-full mb-6 ${sender === 'bot' ? '' : 'animate-slide-up'}`;
+
             const iconHtml = sender === 'bot' 
                 ? `<div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm"><i class="fas fa-wand-magic-sparkles text-blue-500 text-sm"></i></div>`
                 : `<div class="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold">U</div>`;
 
-            // 내용: 유저는 우측 정렬 느낌, 봇은 좌측. (Gemini Web Style: 둘다 좌측 아이콘 + 텍스트지만 유저는 배경이 있기도 함. 여기선 깔끔하게 리스트형으로)
             wrapper.innerHTML = `
                 <div class="max-w-3xl mx-auto flex gap-4 ${sender === 'user' ? 'flex-row-reverse' : ''}">
                     ${sender === 'bot' ? iconHtml : ''}
-                    <div class="${sender === 'user' ? 'bg-[#f0f4f9] px-5 py-3 rounded-[20px] rounded-tr-sm' : 'pt-1'} text-[15px] leading-7 text-gray-800 flex-1 overflow-hidden">
-                        ${sender === 'user' ? '' : '<span class="text-sm font-semibold text-gray-900 block mb-1">K-Buy Agent</span>'}
-                        ${htmlContent}
+                    <div class="message-content ${sender === 'user' ? 'bg-[#f0f4f9] px-5 py-3 rounded-[20px] rounded-tr-sm' : 'pt-1'} text-[15px] leading-7 text-gray-800 flex-1 overflow-hidden min-w-0">
+                        ${sender === 'bot' ? '<span class="text-sm font-semibold text-gray-900 block mb-1">K-Buy Agent</span>' : ''}
+                        <div class="text-body"></div>
                     </div>
                 </div>
             `;
-            
             chatContainer.appendChild(wrapper);
-            scrollToBottom();
-            return wrapper;
+            return wrapper.querySelector('.text-body');
         }
 
-        // 제미나이 로딩 (반짝이는 스피너)
+        // 로딩 UI
         function showLoading() {
             const id = 'loading-' + Date.now();
-            const html = `
+            const wrapper = createMessageContainer('bot');
+            wrapper.innerHTML = `
                 <div id="${id}" class="flex items-center gap-2 h-6">
                      <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
                      <span class="text-gray-400 text-sm animate-pulse">Thinking...</span>
                 </div>
             `;
-            addMessage('bot', html);
-            return id;
+            return { id, wrapper };
         }
 
         function removeLoading(id) {
             const el = document.getElementById(id);
-            if (el) el.closest('.w-full').remove();
+            if (el) {
+                // 로딩 메시지 전체 래퍼 제거 (부모의 부모의 부모...)
+                const messageWrapper = el.closest('.w-full'); 
+                if(messageWrapper) messageWrapper.remove();
+            }
         }
 
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
 
-            userInput.value = '';
-            addMessage('user', text);
-            const loadingId = showLoading();
+            if (welcomeScreen.style.display !== 'none') {
+                welcomeScreen.style.display = 'none';
+                chatContainer.classList.remove('pt-8');
+            }
 
+            userInput.value = '';
+            
+            // 유저 메시지는 즉시 표시
+            const userMsgBody = createMessageContainer('user');
+            userMsgBody.innerText = text;
+            scrollToBottom();
+
+            // 로딩 표시
+            const { id } = showLoading();
+
+            // 1~2초 "Thinking" 딜레이 후 봇 답변 시작
             setTimeout(() => {
-                removeLoading(loadingId);
+                removeLoading(id);
                 processScenario(text);
-            }, 1200);
+            }, 1500);
         }
 
-        // --- 시나리오 (Gemini UI에 맞는 카드 스타일로 변경) ---
-        function processScenario(text) {
+        // 시나리오 처리 (스트리밍 + 컴포넌트 렌더링)
+        async function processScenario(text) {
+            const botMsgBody = createMessageContainer('bot');
+
             if (currentStep === 0) {
                 if (text.includes('smtown') || text.includes('http')) {
-                    const productHtml = `
-                        <p class="mb-4">I found the following product from the URL provided. Does this look correct?</p>
-                        <!-- Gemini Card Style -->
-                        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm max-w-md">
+                    // 1. 텍스트 타이핑
+                    await typeWriter(botMsgBody, "I've analyzed the URL provided. Here is the product information I found:");
+                    
+                    // 2. 카드 페이드인 (HTML 삽입)
+                    const cardHtml = `
+                        <div class="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm max-w-md animate-slide-up">
                             <img src="https://img.youtube.com/vi/F5nmWoWpvTU/maxresdefault.jpg" class="w-full h-48 object-cover">
                             <div class="p-4">
                                 <div class="flex items-start justify-between">
@@ -273,28 +299,31 @@
                                 </div>
                                 <div class="mt-4 flex gap-2 text-xs text-gray-600">
                                     <span class="px-2 py-1 bg-gray-100 rounded">Weight: ~0.8kg</span>
-                                    <span class="px-2 py-1 bg-gray-100 rounded">Domestic Ship: ₩3,000</span>
+                                    <span class="px-2 py-1 bg-gray-100 rounded">Ship: ₩3,000</span>
                                 </div>
                             </div>
                             <div class="bg-[#f0f4f9] p-3 flex gap-3">
                                 <button onclick="triggerNextStep(1)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-full text-sm font-medium transition shadow-sm">
                                     <i class="fas fa-calculator mr-1"></i> Calculate All
                                 </button>
-                                <button class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-full text-sm transition">Wrong Item</button>
+                                <button class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-full text-sm transition">Wrong</button>
                             </div>
                         </div>
                     `;
-                    addMessage('bot', productHtml);
+                    // 약간의 딜레이 후 카드 추가
+                    await new Promise(r => setTimeout(r, 200));
+                    botMsgBody.insertAdjacentHTML('beforeend', cardHtml);
+                    scrollToBottom();
                     currentStep = 1;
                 } else {
-                    addMessage('bot', `I couldn't identify the product. Please paste a valid URL starting with 'http'.`);
+                    await typeWriter(botMsgBody, "I couldn't identify a valid product URL. Please make sure the link starts with 'http' or 'https' and is from a supported store.");
                 }
-            } 
+            }
             else if (currentStep === 3) {
-                const calculationHtml = `
-                    <p>Here is the estimated cost breakdown for shipping to <strong>United States</strong>.</p>
-                    
-                    <div class="bg-white border border-gray-200 rounded-2xl p-6 mt-4 max-w-lg shadow-sm">
+                await typeWriter(botMsgBody, "Based on the address in the United States, here is the estimated total cost:");
+                
+                const tableHtml = `
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 mt-4 max-w-lg shadow-sm animate-slide-up">
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex justify-between">
                                 <span>Item Price</span>
@@ -317,70 +346,76 @@
                             <span class="font-medium text-lg">Total</span>
                             <span class="font-bold text-2xl text-blue-600">$ 52.58</span>
                         </div>
-                        <div class="text-xs text-gray-400 mb-4 bg-yellow-50 p-2 rounded text-yellow-800">
-                            <i class="fas fa-exclamation-circle"></i> Customs duties may apply upon arrival.
-                        </div>
                         <button onclick="triggerNextStep(4)" class="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition flex items-center justify-center gap-2">
                             Pay with Shopify <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
                 `;
-                addMessage('bot', calculationHtml);
-                currentStep = 4;
+                 await new Promise(r => setTimeout(r, 300));
+                 botMsgBody.insertAdjacentHTML('beforeend', tableHtml);
+                 scrollToBottom();
+                 currentStep = 4;
             }
         }
 
-        function triggerNextStep(stepIndex) {
-            const loadingId = showLoading();
-            setTimeout(() => {
-                removeLoading(loadingId);
-                
+        async function triggerNextStep(stepIndex) {
+            // 버튼 클릭 시 로딩 표시
+            const { id } = showLoading();
+            scrollToBottom();
+
+            setTimeout(async () => {
+                removeLoading(id);
+                const botMsgBody = createMessageContainer('bot');
+
                 if (stepIndex === 1) {
-                    const authHtml = `
-                        <p>Would you like to continue as a member or guest?</p>
-                        <div class="flex gap-3 mt-3">
-                            <button onclick="triggerNextStep(2)" class="px-5 py-2 border border-gray-300 rounded-full hover:bg-gray-50 text-sm font-medium text-blue-600 transition">
-                                Log In
-                            </button>
-                            <button onclick="triggerNextStep(2)" class="px-5 py-2 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 text-sm font-medium transition">
-                                Guest Checkout
-                            </button>
+                    await typeWriter(botMsgBody, "Would you like to proceed as a member or check out as a guest?");
+                    const buttonsHtml = `
+                        <div class="flex gap-3 mt-3 animate-slide-up">
+                            <button onclick="triggerNextStep(2)" class="px-5 py-2 border border-gray-300 rounded-full hover:bg-gray-50 text-sm font-medium text-blue-600 transition">Log In</button>
+                            <button onclick="triggerNextStep(2)" class="px-5 py-2 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 text-sm font-medium transition">Guest Checkout</button>
                         </div>
                     `;
-                    addMessage('bot', authHtml);
+                    botMsgBody.insertAdjacentHTML('beforeend', buttonsHtml);
                     currentStep = 2;
                 } 
                 else if (stepIndex === 2) {
-                    const addressFormHtml = `
-                        <p>Where should we ship this item?</p>
-                        <div class="mt-3 grid grid-cols-1 gap-3 max-w-sm">
-                            <select class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option>United States</option>
-                                <option>Canada</option>
-                                <option>United Kingdom</option>
-                            </select>
-                            <input type="text" placeholder="Zip Code" class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button onclick="submitAddress()" class="bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition mt-2">
-                                Calculate Shipping
-                            </button>
+                    await typeWriter(botMsgBody, "Please select the destination country and enter the zip code for accurate shipping calculation.");
+                    const formHtml = `
+                        <div class="mt-3 grid grid-cols-1 gap-3 max-w-sm animate-slide-up">
+                            <select class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm outline-none"><option>United States</option><option>Canada</option></select>
+                            <input type="text" placeholder="Zip Code" class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm outline-none">
+                            <button onclick="submitAddress()" class="bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition mt-2">Calculate Shipping</button>
                         </div>
                     `;
-                    addMessage('bot', addressFormHtml);
+                    botMsgBody.insertAdjacentHTML('beforeend', formHtml);
                     currentStep = 3;
                 }
                 else if (stepIndex === 4) {
-                    addMessage('bot', `I've created your checkout link. You can proceed with the payment securely below.<br><br><a href="#" class="text-blue-600 underline font-medium">Click here to Pay</a>`);
+                    await typeWriter(botMsgBody, "I've generated a secure checkout link for you. Click the link below to complete your payment.");
+                     const linkHtml = `
+                        <div class="mt-3 animate-slide-up">
+                            <a href="#" class="inline-flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition font-medium">
+                                <i class="fas fa-lock"></i> Secure Payment Link
+                            </a>
+                        </div>
+                    `;
+                    botMsgBody.insertAdjacentHTML('beforeend', linkHtml);
                 }
+                scrollToBottom();
             }, 1000);
         }
 
         function submitAddress() {
-            addMessage('user', 'Shipping to United States, Zip 10001');
-            const loadingId = showLoading();
+            // 유저 응답 표시
+            const userMsgBody = createMessageContainer('user');
+            userMsgBody.innerText = "Shipping to United States, Zip 10001";
+            scrollToBottom();
+
+            const { id } = showLoading();
             setTimeout(() => {
-                removeLoading(loadingId);
-                processScenario('calc');
-            }, 1000);
+                removeLoading(id);
+                processScenario(''); // step 3 logic 실행
+            }, 1200);
         }
     </script>
 </body>
