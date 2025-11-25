@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-Buy Agent (Pro Version)</title>
+    <title>K-Buy Agent (Persistent Key)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -21,7 +21,6 @@
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                         'slide-up': 'slideUp 0.5s ease-out forwards',
                         'blink': 'blink 1s step-end infinite',
-                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -38,7 +37,6 @@
         .text-gradient { background: linear-gradient(to right, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
         .cursor { display: inline-block; width: 6px; height: 16px; background-color: #1a73e8; margin-left: 2px; vertical-align: middle; animation: blink 1s step-end infinite; }
         
-        /* Markdown Table Style */
         .invoice-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .invoice-table th { text-align: left; color: #6b7280; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: 500; }
         .invoice-table td { padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #374151; }
@@ -49,7 +47,7 @@
 
     <!-- Version Badge -->
     <div class="fixed z-50 top-3 right-16 md:top-4 md:right-6 bg-gray-100/80 backdrop-blur text-gray-400 text-[10px] px-2 py-0.5 rounded border border-gray-200 font-mono pointer-events-none">
-        v0.2.0 (Pro)
+        v0.2.1 (Storage)
     </div>
 
     <!-- Settings Modal -->
@@ -58,7 +56,7 @@
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                 <i class="fas fa-robot text-blue-600"></i> Agent Setup
             </h2>
-            <p class="text-sm text-gray-500 mb-4">Gemini API Key를 입력하면 AI 쇼핑 에이전트가 활성화됩니다.</p>
+            <p class="text-sm text-gray-500 mb-4">Gemini API Key를 입력하세요. 키는 브라우저에 안전하게 저장됩니다.</p>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Gemini API Key</label>
@@ -84,7 +82,6 @@
             <i class="fas fa-plus text-blue-500"></i> New Chat
         </button>
 
-        <!-- Persistent Shortcuts in Sidebar -->
         <div class="space-y-1 pt-4">
             <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Quick Actions</p>
             <button onclick="fillInput('https://smtownandstore.com/product/wayv-winter-special-album')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-gray-200/50 transition text-sm text-gray-600 text-left">
@@ -110,16 +107,12 @@
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative h-full bg-white">
-        <!-- Mobile Header -->
         <header class="md:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur sticky top-0 z-10 border-b border-gray-100">
             <span class="font-bold text-gray-700">K-Buy Agent</span>
             <button onclick="openSettings()"><i class="fas fa-cog text-gray-400"></i></button>
         </header>
 
-        <!-- Chat Container -->
         <div id="chat-container" class="flex-1 overflow-y-auto pb-48 w-full max-w-4xl mx-auto px-4 scrollbar-hide pt-6">
-            
-            <!-- Welcome Screen -->
             <div id="welcome-screen" class="flex flex-col h-full justify-center items-center text-center space-y-8 pb-20 animate-fade-in">
                 <div class="w-16 h-16 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center mb-4">
                     <i class="fas fa-robot text-3xl text-blue-500"></i>
@@ -133,14 +126,10 @@
                     </p>
                 </div>
             </div>
-
         </div>
 
-        <!-- Input Area & Quick Chips -->
         <div class="fixed bottom-0 left-0 md:left-[260px] right-0 bg-gradient-to-t from-white via-white to-transparent pb-6 pt-10 px-4">
             <div class="max-w-3xl mx-auto relative">
-                
-                <!-- Quick Chips (Persistent) -->
                 <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide py-1">
                     <button onclick="fillInput('https://smtownandstore.com/product/wayv-winter-special-album')" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-blue-300 transition shadow-sm whitespace-nowrap">
                         <i class="fas fa-link text-blue-500"></i> Paste Example URL
@@ -153,7 +142,6 @@
                     </button>
                 </div>
 
-                <!-- Input Box -->
                 <div class="relative flex items-center w-full bg-gemini-input rounded-2xl border border-transparent focus-within:bg-white focus-within:border-blue-200 focus-within:shadow-lg transition-all duration-300">
                     <div class="pl-4 text-gray-400">
                         <i class="fas fa-search"></i>
@@ -171,9 +159,9 @@
     </main>
 
     <script>
-        // --- Configuration ---
+        // --- Configuration & State ---
         const config = {
-            geminiKey: '', // User input
+            geminiKey: localStorage.getItem('gemini_api_key') || '', // 로컬 스토리지에서 로드
             shopUrl: 'aigent-kim.myshopify.com',
             shopToken: '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' 
         };
@@ -183,27 +171,40 @@
         const welcomeScreen = document.getElementById('welcome-screen');
         const modal = document.getElementById('settings-modal');
         
-        // State
-        let currentStep = 0; // 0: Idle, 1: Product Found, 2: Address Input, 3: Calculating
         let selectedProduct = null;
         let customerInfo = {};
 
-        // --- Settings ---
-        function openSettings() { document.getElementById('input-gemini-key').value = config.geminiKey; modal.classList.remove('hidden'); }
+        // --- Settings (Local Storage Logic) ---
+        function openSettings() { 
+            document.getElementById('input-gemini-key').value = config.geminiKey; 
+            modal.classList.remove('hidden'); 
+        }
+        
         function saveSettings() {
             const key = document.getElementById('input-gemini-key').value.trim();
             if (!key) return alert('API Key is required.');
+            
+            // 키 저장 (Persistence)
             config.geminiKey = key;
+            localStorage.setItem('gemini_api_key', key);
+            
             modal.classList.add('hidden');
+            
+            // 첫 접속 시 환영 메시지
+            if (chatContainer.children.length <= 1) { 
+                 const botMsg = createMessageContainer('bot');
+                 typeWriter(botMsg, "Agent activated! I'm ready to help you shop.");
+            }
         }
+        
+        // 키가 없을 때만 모달 표시 (새로고침 시 키가 있으면 패스)
         window.onload = () => { if (!config.geminiKey) setTimeout(openSettings, 600); };
 
-        // --- UI Core ---
+        // --- UI Utils ---
         function fillInput(text) { userInput.value = text; userInput.focus(); }
         function scrollToBottom() { chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }); }
         
         async function typeWriter(element, text, speed = 15) {
-            // Remove any existing cursor in the element just in case
             const existingCursor = element.querySelector('.cursor');
             if(existingCursor) existingCursor.remove();
 
@@ -211,18 +212,14 @@
             cursor.className = 'cursor';
             element.appendChild(cursor);
             
-            // Allow HTML tags in text? Simple implementation treats as string, 
-            // but for complex HTML we append chunks. 
-            // Here we assume text is plain text. For HTML, we render immediately.
             if (text.includes('<')) {
-                element.innerHTML = text; // Direct render for HTML content
+                element.innerHTML = text; 
                 return;
             }
 
             for (let i = 0; i < text.length; i++) {
                 cursor.before(text[i]);
                 scrollToBottom();
-                // Randomize speed slightly for human feel
                 await new Promise(r => setTimeout(r, speed + Math.random() * 10));
             }
             cursor.remove();
@@ -267,11 +264,7 @@
 
         function removeLoading(id) {
             const el = document.getElementById(`wrapper-${id}`);
-            if (el) {
-                // Remove the spinner content but keep the container if we want to reuse it, 
-                // OR remove entire container. Here, remove entire container for cleaner flow.
-                el.closest('.w-full').remove();
-            }
+            if (el) el.closest('.w-full').remove();
         }
 
         // --- Logic ---
@@ -300,11 +293,10 @@
         async function processScenario(text) {
             const botMsg = createMessageContainer('bot');
 
-            // 1. URL Analysis Phase
+            // 1. URL Analysis
             if (text.includes('http')) {
                 await typeWriter(botMsg, "I'm analyzing the product page...");
                 
-                // Mock Data Logic based on URL
                 let pData = { title: "Product", priceNum: 0, weightNum: 0.5, category: "General" };
                 
                 if (text.includes('luxboy')) {
@@ -317,7 +309,6 @@
                 
                 selectedProduct = pData;
                 
-                // Show Product Card
                 const card = document.createElement('div');
                 card.className = "mt-4 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm max-w-sm animate-slide-up";
                 card.innerHTML = `
@@ -342,9 +333,8 @@
                 return;
             }
             
-            // 2. Default Chat / Recommendation
-            // Call Gemini API
-            const response = await fetchGemini(text); // Assume returns array of products
+            // 2. Recommendation
+            const response = await fetchGemini(text); 
             await typeWriter(botMsg, `I found some interesting items related to "${text}".`);
             
             const grid = document.createElement('div');
@@ -368,10 +358,8 @@
                 `;
                 item.onclick = () => {
                     selectedProduct = p;
-                    // Simulate selecting product then showing card
                     const bMsg = createMessageContainer('bot');
                     bMsg.innerHTML = `<div class="font-medium text-gray-800">You selected: <b>${p.title}</b>.</div>`;
-                    
                     setTimeout(() => {
                          const card = document.createElement('div');
                          card.innerHTML = `<button onclick="requestAddress()" class="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow-md animate-slide-up">Start Calculation <i class="fas fa-arrow-right ml-1"></i></button>`;
@@ -383,7 +371,7 @@
             botMsg.appendChild(grid);
         }
 
-        // --- Step 2: Address Input Form ---
+        // --- Step 2: Address Input ---
         function requestAddress() {
             const botMsg = createMessageContainer('bot');
             typeWriter(botMsg, "To give you an exact quote, I need your shipping details.");
@@ -420,27 +408,24 @@
             botMsg.appendChild(form);
         }
 
-        // --- Step 3: Calculation Logic (Simulating Shopify) ---
+        // --- Step 3: Calculation ---
         async function calculateFinalPrice() {
-            // Get inputs
             const country = document.getElementById('addr-country').value;
             const zip = document.getElementById('addr-zip').value;
             
-            // UI Feedback
             const loadingId = showLoading("Connecting to Shopify Store...");
-            await new Promise(r => setTimeout(r, 1500)); // Simulate network
+            await new Promise(r => setTimeout(r, 1500)); 
             
             removeLoading(loadingId);
             const loadingId2 = showLoading("Calculating duties & taxes...");
-            await new Promise(r => setTimeout(r, 1500)); // Simulate calculation
+            await new Promise(r => setTimeout(r, 1500)); 
             removeLoading(loadingId2);
 
-            // Calculation Logic
-            const exRate = 1400; // KRW to USD
+            // Calculation
+            const exRate = 1400; 
             const itemPriceUsd = selectedProduct.priceNum / exRate;
             const weight = selectedProduct.weightNum || 1.0;
             
-            // Dynamic Shipping based on Zone (Mock)
             let shipRatePerKg = 25; 
             if (country === 'US') shipRatePerKg = 22;
             if (country === 'SG') shipRatePerKg = 15;
@@ -448,21 +433,15 @@
             const shippingCost = weight * shipRatePerKg;
             const subtotal = itemPriceUsd + shippingCost;
             
-            // Tax / Duty (Mock)
-            const dutyRate = 0.05; // 5%
-            const taxRate = 0.08; // 8%
+            const dutyRate = 0.05; 
+            const taxRate = 0.08; 
             const duty = subtotal * dutyRate;
             const tax = subtotal * taxRate;
-            
-            // Shopify Transaction Fee (Mock - internal cost, maybe passed to user or absorbed)
-            const serviceFee = subtotal * 0.10; // 10% Service Fee from plan
+            const serviceFee = subtotal * 0.10; 
             
             const total = subtotal + duty + tax + serviceFee;
-            
-            // Store for checkout
             customerInfo = { country, zip, total: total.toFixed(2) };
 
-            // Render Invoice
             const botMsg = createMessageContainer('bot');
             await typeWriter(botMsg, `Calculation complete for <b>${country}</b>. Here is your breakdown:`);
             
@@ -474,26 +453,11 @@
                     <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">DRAFT</span>
                 </div>
                 <table class="invoice-table">
-                    <tr>
-                        <th>Item</th>
-                        <td class="text-right">$${itemPriceUsd.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <th>Int'l Shipping (${weight}kg)</th>
-                        <td class="text-right">$${shippingCost.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <th>Est. Duties & Taxes</th>
-                        <td class="text-right">$${(duty + tax).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <th>Service Fee (10%)</th>
-                        <td class="text-right">$${serviceFee.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <th>Total (USD)</th>
-                        <td class="text-right text-blue-600">$${total.toFixed(2)}</td>
-                    </tr>
+                    <tr><th>Item</th><td class="text-right">$${itemPriceUsd.toFixed(2)}</td></tr>
+                    <tr><th>Int'l Shipping (${weight}kg)</th><td class="text-right">$${shippingCost.toFixed(2)}</td></tr>
+                    <tr><th>Est. Duties & Taxes</th><td class="text-right">$${(duty + tax).toFixed(2)}</td></tr>
+                    <tr><th>Service Fee (10%)</th><td class="text-right">$${serviceFee.toFixed(2)}</td></tr>
+                    <tr><th>Total (USD)</th><td class="text-right text-blue-600">$${total.toFixed(2)}</td></tr>
                 </table>
                 <div class="mt-4 bg-gray-50 p-3 rounded-lg text-xs text-gray-500 flex gap-2">
                     <i class="fas fa-info-circle mt-0.5"></i>
@@ -510,17 +474,10 @@
         async function createOrder() {
             const loadingId = showLoading("Generating Shopify Checkout Link...");
             
-            // Mock Shopify Draft Order Creation
-            const payload = {
-                // ... payload construction ...
-            };
-            
-            // Simulate API Call
             setTimeout(async () => {
                 removeLoading(loadingId);
                 const botMsg = createMessageContainer('bot');
                 
-                // Actual CORS workaround logic would go here, we mock success
                 const checkoutUrl = `https://${config.shopUrl}/checkouts/cn/c1-${Math.random().toString(36).substr(2,9)}`;
                 
                 const successCard = document.createElement('div');
@@ -540,7 +497,6 @@
             }, 2000);
         }
 
-        // --- Utils ---
         async function fetchGemini(query) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${config.geminiKey}`;
             const prompt = `Recommend 3 popular Korean products related to "${query}". Return JSON Array: [{title, category, priceKrw, priceNum, weight}]. No markdown.`;
@@ -549,7 +505,6 @@
                 const data = await res.json();
                 return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
             } catch(e) {
-                // Fallback mock data if API fails or empty key
                 return [
                     { title: "BTS - Proof (Standard Ed.)", category: "K-Pop", priceKrw: "₩55,000", priceNum: 55000 },
                     { title: "Innisfree Green Tea Serum", category: "Beauty", priceKrw: "₩24,000", priceNum: 24000 },
