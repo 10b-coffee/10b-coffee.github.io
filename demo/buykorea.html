@@ -177,6 +177,58 @@
         const userInput = document.getElementById('user-input');
         const welcomeScreen = document.getElementById('welcome-screen');
         let currentStep = 0;
+        
+        // 현재 선택된 상품 정보를 저장할 변수
+        let selectedProduct = null;
+
+        // 가상 상품 데이터베이스
+        const productDatabase = {
+            'smtown': {
+                title: "WayV - Winter Special Album",
+                category: "CD/DVD > Album",
+                img: "https://img.youtube.com/vi/F5nmWoWpvTU/maxresdefault.jpg",
+                priceKrw: "₩ 27,800",
+                weight: "~0.8kg",
+                shipKrw: "₩ 3,000",
+                
+                // 견적서용 데이터 (USD)
+                priceUsd: "$ 21.00",
+                domShipUsd: "$ 2.30",
+                intShipUsd: "$ 24.50",
+                feeUsd: "$ 4.78",
+                totalUsd: "$ 52.58"
+            },
+            'luxboy': {
+                title: "[Prada] Saffiano Leather Mini Bag",
+                category: "Luxury > Bags",
+                img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                priceKrw: "₩ 2,450,000",
+                weight: "~1.2kg",
+                shipKrw: "Free",
+                
+                // 견적서용 데이터 (USD)
+                priceUsd: "$ 1,850.00",
+                domShipUsd: "$ 0.00",
+                intShipUsd: "$ 45.00", // 보험료 포함 가정
+                feeUsd: "$ 189.50",
+                totalUsd: "$ 2,084.50"
+            },
+            'kurly': {
+                title: "[Kurly Only] Gangnam Galbi Tang",
+                category: "Food > Instant",
+                img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                priceKrw: "₩ 15,000",
+                weight: "~1.5kg",
+                shipKrw: "₩ 3,000",
+                
+                // 견적서용 데이터 (USD)
+                priceUsd: "$ 11.50",
+                domShipUsd: "$ 2.30",
+                intShipUsd: "$ 35.00", // 무게/부피 반영
+                feeUsd: "$ 4.88",
+                totalUsd: "$ 53.68"
+            }
+        };
 
         function fillInput(text) {
             userInput.value = text;
@@ -281,25 +333,36 @@
             const botMsgBody = createMessageContainer('bot');
 
             if (currentStep === 0) {
-                if (text.includes('smtown') || text.includes('http')) {
+                // 1. URL 분석 및 데이터 매칭
+                let pKey = null;
+                if (text.includes('smtown')) pKey = 'smtown';
+                else if (text.includes('luxboy')) pKey = 'luxboy';
+                else if (text.includes('kurly')) pKey = 'kurly';
+                
+                // 기본값 (http가 있지만 매칭 안될 경우 smtown으로 fallback하거나 에러 처리)
+                if (!pKey && text.includes('http')) pKey = 'smtown'; 
+
+                if (pKey) {
+                    selectedProduct = productDatabase[pKey]; // 선택된 상품 저장
+
                     // 1. 텍스트 타이핑
                     await typeWriter(botMsgBody, "I've analyzed the URL provided. Here is the product information I found:");
                     
                     // 2. 카드 페이드인 (HTML 삽입)
                     const cardHtml = `
                         <div class="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm max-w-md animate-slide-up">
-                            <img src="https://img.youtube.com/vi/F5nmWoWpvTU/maxresdefault.jpg" class="w-full h-48 object-cover">
+                            <img src="${selectedProduct.img}" class="w-full h-48 object-cover">
                             <div class="p-4">
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <h3 class="font-google-sans font-medium text-lg text-gray-900">WayV - Winter Special Album</h3>
-                                        <p class="text-sm text-gray-500 mt-1">CD/DVD > Album</p>
+                                        <h3 class="font-google-sans font-medium text-lg text-gray-900">${selectedProduct.title}</h3>
+                                        <p class="text-sm text-gray-500 mt-1">${selectedProduct.category}</p>
                                     </div>
-                                    <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">₩ 27,800</span>
+                                    <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">${selectedProduct.priceKrw}</span>
                                 </div>
                                 <div class="mt-4 flex gap-2 text-xs text-gray-600">
-                                    <span class="px-2 py-1 bg-gray-100 rounded">Weight: ~0.8kg</span>
-                                    <span class="px-2 py-1 bg-gray-100 rounded">Ship: ₩3,000</span>
+                                    <span class="px-2 py-1 bg-gray-100 rounded">Weight: ${selectedProduct.weight}</span>
+                                    <span class="px-2 py-1 bg-gray-100 rounded">Ship: ${selectedProduct.shipKrw}</span>
                                 </div>
                             </div>
                             <div class="bg-[#f0f4f9] p-3 flex gap-3">
@@ -320,6 +383,9 @@
                 }
             }
             else if (currentStep === 3) {
+                // 선택된 상품이 없으면 기본값(smtown) 사용 (방어 코드)
+                const product = selectedProduct || productDatabase['smtown'];
+
                 await typeWriter(botMsgBody, "Based on the address in the United States, here is the estimated total cost:");
                 
                 const tableHtml = `
@@ -327,24 +393,24 @@
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex justify-between">
                                 <span>Item Price</span>
-                                <span>$ 21.00</span>
+                                <span>${product.priceUsd}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>KR Domestic Shipping</span>
-                                <span>$ 2.30</span>
+                                <span>${product.domShipUsd}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Int'l Shipping (EMS)</span>
-                                <span>$ 24.50</span>
+                                <span>${product.intShipUsd}</span>
                             </div>
                             <div class="flex justify-between text-gray-500">
                                 <span>Service Fee (10%)</span>
-                                <span>$ 4.78</span>
+                                <span>${product.feeUsd}</span>
                             </div>
                         </div>
                         <div class="border-t border-gray-200 my-4 pt-3 flex justify-between items-center">
                             <span class="font-medium text-lg">Total</span>
-                            <span class="font-bold text-2xl text-blue-600">$ 52.58</span>
+                            <span class="font-bold text-2xl text-blue-600">${product.totalUsd}</span>
                         </div>
                         <button onclick="triggerNextStep(4)" class="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition flex items-center justify-center gap-2">
                             Pay with Shopify <i class="fas fa-arrow-right"></i>
@@ -420,5 +486,3 @@
     </script>
 </body>
 </html>
-
-
