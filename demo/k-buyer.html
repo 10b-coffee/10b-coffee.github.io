@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Buy Agent (Gemini Dynamic)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Google Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        gemini: {
+                            bg: '#ffffff',
+                            sidebar: '#f0f4f9',
+                            input: '#f0f4f9',
+                            text: '#1f1f1f',
+                            secondary: '#444746',
+                            blue: '#1a73e8',
+                            purple: '#d96570'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'blink': 'blink 1s step-end infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Google Sans', sans-serif; background-color: white; color: #1f1f1f; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #4285f4, #9b72cb, #d96570);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #e1e3e1; border-radius: 4px; }
+
+        /* Typing Cursor */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: #1a73e8;
+            margin-left: 2px;
+            vertical-align: middle;
+            border-radius: 1px;
+        }
+        
+        /* Markdown Style for Gemini Response */
+        .prose strong { color: #1a73e8; font-weight: 600; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden bg-white">
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex w-[280px] bg-gemini-sidebar flex-col p-4 space-y-4 transition-all duration-300">
+        <div class="flex items-center gap-2 px-2 py-1 mb-2">
+            <i class="fas fa-bars text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-200"></i>
+            <span class="font-medium text-gray-600 text-lg">K-Buy Agent</span>
+        </div>
+        
+        <button onclick="location.reload()" class="flex items-center gap-3 px-4 py-3 rounded-full bg-[#dde3ea] hover:bg-white text-sm text-gemini-text font-medium transition shadow-sm hover:shadow">
+            <i class="fas fa-plus text-gray-600"></i>
+            New chat
+        </button>
+        
+        <div class="flex-1 overflow-y-auto custom-scroll space-y-1">
+            <p class="text-xs font-medium text-gray-500 px-4 py-2 mt-2">Recent</p>
+            <button class="w-full flex items-center gap-3 px-4 py-2 rounded-full hover:bg-[#e0e4e9] transition text-sm text-gray-700 truncate text-left">
+                <i class="far fa-comment-alt text-gray-500 text-xs"></i> WayV Album Order
+            </button>
+        </div>
+
+        <div class="mt-auto px-2 space-y-1">
+            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#e0e4e9] transition text-xs text-gray-600 font-medium">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+            <div class="flex items-center gap-2 px-3 py-2 mt-2 text-xs text-gray-500">
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <span>Seoul, South Korea</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative h-full bg-white">
+        <!-- Mobile Header -->
+        <header class="md:hidden flex items-center justify-between p-4 bg-white sticky top-0 z-10 shadow-sm">
+            <span class="text-xl font-medium text-gray-600">Gemini</span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-red-400"></div>
+        </header>
+
+        <!-- Chat Area -->
+        <div id="chat-container" class="flex-1 overflow-y-auto pb-40 w-full max-w-4xl mx-auto px-4 scrollbar-hide pt-8">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="flex flex-col h-full justify-center items-start space-y-8 pb-20 animate-fade-in">
+                <div class="space-y-2">
+                    <h1 class="text-5xl md:text-6xl font-medium tracking-tight">
+                        <span class="text-gradient font-bold">Hello, Stranger</span>
+                    </h1>
+                    <h2 class="text-4xl md:text-5xl font-medium text-[#c4c7c5]">How can I help you shop?</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-8">
+                    <button onclick="fillInput('https://smtownandstore.com/product/wayv-winter-album...')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-black">Buy K-Pop Album</span>
+                        <div class="self-end bg-white p-2 rounded-full shadow-sm">
+                            <i class="fas fa-compact-disc text-gemini-purple"></i>
+                        </div>
+                    </button>
+                    <button onclick="fillInput('BTS 앨범 추천해줘')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-black">Recommend Items</span>
+                        <div class="self-end bg-white p-2 rounded-full shadow-sm">
+                            <i class="fas fa-wand-magic-sparkles text-blue-500"></i>
+                        </div>
+                    </button>
+                    <button onclick="fillInput('한국 과자 추천해줘')" class="text-left bg-gemini-sidebar hover:bg-[#e0e4e9] p-4 rounded-xl h-40 flex flex-col justify-between transition group">
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-black">Find Snacks</span>
+                        <div class="self-end bg-white p-2 rounded-full shadow-sm">
+                            <i class="fas fa-cookie-bite text-orange-500"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="fixed bottom-0 left-0 md:left-[280px] right-0 bg-white/90 backdrop-blur-sm pb-6 pt-2 px-4 md:px-0">
+            <div class="max-w-3xl mx-auto">
+                <div class="relative flex items-center w-full bg-gemini-input rounded-full hover:bg-[#e0e4e9] transition-colors group border border-transparent focus-within:bg-white focus-within:border-gray-300 focus-within:shadow-md">
+                    <div class="pl-4 text-gray-500 group-hover:text-gray-700 cursor-pointer">
+                        <i class="fas fa-plus-circle text-xl"></i>
+                    </div>
+                    <input id="user-input" type="text" 
+                        class="w-full bg-transparent text-gray-800 border-0 focus:ring-0 h-14 pl-4 pr-12 outline-none text-base" 
+                        placeholder="Enter URL or ask for recommendation..." 
+                        onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()" class="absolute right-2 p-2 rounded-full hover:bg-gray-200 transition">
+                        <i class="fas fa-paper-plane text-blue-600"></i>
+                    </button>
+                </div>
+                <p class="text-center text-[10px] text-gray-500 mt-2">
+                    K-Buy Agent displays inaccurate info, including about people, so double-check its responses.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GEMINI_API_KEY = "AIzaSyD-s6EE7oeeHsVEAkoSw8lv4aKJ0MBdKaY";
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        let currentStep = 0;
+        
+        // 현재 선택된 상품 정보를 저장할 변수
+        let selectedProduct = null;
+
+        // 가상 상품 데이터베이스 (URL 직접 입력 시 사용)
+        const productDatabase = {
+            'smtown': {
+                title: "WayV - Winter Special Album",
+                category: "CD/DVD > Album",
+                img: "https://img.youtube.com/vi/F5nmWoWpvTU/maxresdefault.jpg",
+                priceKrw: "₩ 27,800",
+                priceNum: 27800,
+                weight: "~0.8kg",
+                weightNum: 0.8,
+                shipKrw: "₩ 3,000",
+            },
+            'luxboy': {
+                title: "[Prada] Saffiano Leather Mini Bag",
+                category: "Luxury > Bags",
+                img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                priceKrw: "₩ 2,450,000",
+                priceNum: 2450000,
+                weight: "~1.2kg",
+                weightNum: 1.2,
+                shipKrw: "Free",
+            },
+            'kurly': {
+                title: "[Kurly Only] Gangnam Galbi Tang",
+                category: "Food > Instant",
+                img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                priceKrw: "₩ 15,000",
+                priceNum: 15000,
+                weight: "~1.5kg",
+                weightNum: 1.5,
+                shipKrw: "₩ 3,000",
+            }
+        };
+
+        function fillInput(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+        }
+
+        async function typeWriter(element, text) {
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor animate-blink';
+            element.appendChild(cursor);
+
+            const chunkSize = 2; // 한 번에 출력할 글자 수
+            for (let i = 0; i < text.length; i += chunkSize) {
+                cursor.before(text.substring(i, i + chunkSize));
+                scrollToBottom();
+                await new Promise(resolve => setTimeout(resolve, 15));
+            }
+            cursor.remove();
+        }
+
+        function createMessageContainer(sender) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `w-full mb-6 ${sender === 'bot' ? '' : 'animate-slide-up'}`;
+            const iconHtml = sender === 'bot' 
+                ? `<div class="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm"><i class="fas fa-wand-magic-sparkles text-blue-500 text-sm"></i></div>`
+                : `<div class="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center flex-shrink-0 mt-1 text-xs font-bold">U</div>`;
+
+            wrapper.innerHTML = `
+                <div class="max-w-3xl mx-auto flex gap-4 ${sender === 'user' ? 'flex-row-reverse' : ''}">
+                    ${sender === 'bot' ? iconHtml : ''}
+                    <div class="message-content ${sender === 'user' ? 'bg-[#f0f4f9] px-5 py-3 rounded-[20px] rounded-tr-sm' : 'pt-1'} text-[15px] leading-7 text-gray-800 flex-1 overflow-hidden min-w-0 prose">
+                        ${sender === 'bot' ? '<span class="text-sm font-semibold text-gray-900 block mb-1">K-Buy Agent</span>' : ''}
+                        <div class="text-body"></div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(wrapper);
+            return wrapper.querySelector('.text-body');
+        }
+
+        function showLoading() {
+            const id = 'loading-' + Date.now();
+            const wrapper = createMessageContainer('bot');
+            wrapper.innerHTML = `
+                <div id="${id}" class="flex items-center gap-2 h-6">
+                     <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                     <span class="text-gray-400 text-sm animate-pulse">Thinking...</span>
+                </div>
+            `;
+            return { id, wrapper };
+        }
+
+        function removeLoading(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const messageWrapper = el.closest('.w-full'); 
+                if(messageWrapper) messageWrapper.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            if (welcomeScreen.style.display !== 'none') {
+                welcomeScreen.style.display = 'none';
+                chatContainer.classList.remove('pt-8');
+            }
+
+            userInput.value = '';
+            const userMsgBody = createMessageContainer('user');
+            userMsgBody.innerText = text;
+            scrollToBottom();
+
+            const { id } = showLoading();
+            
+            // 실제 API 호출 또는 로직 처리
+            try {
+                await processScenario(text, id);
+            } catch (error) {
+                removeLoading(id);
+                const errBody = createMessageContainer('bot');
+                errBody.innerText = "Error processing request: " + error.message;
+            }
+        }
+
+        // --- Gemini API Call ---
+        async function fetchGeminiRecommendation(query) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const prompt = `
+                You are a helpful Korean shopping assistant. The user wants to find: "${query}".
+                Please recommend 3 popular Korean products available for online purchase.
+                
+                Return the response in this EXACT JSON array format (no markdown):
+                [
+                    {
+                        "title": "Product Name (English/Korean)",
+                        "category": "Category",
+                        "priceKrw": "₩ 00,000",
+                        "priceNum": 00000,
+                        "weight": "0.0kg",
+                        "weightNum": 0.0,
+                        "desc": "Short description (1 sentence)"
+                    }
+                ]
+                Do not include \`\`\`json or \`\`\` markers. Just the raw array.
+                If the user asks for something weird, politely recommend a related popular Korean item.
+            `;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            const data = await response.json();
+            const textResponse = data.candidates[0].content.parts[0].text;
+            
+            // JSON 파싱 (마크다운 제거)
+            const cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleanJson);
+        }
+
+        // --- Core Logic ---
+        async function processScenario(text, loadingId) {
+            // 1. URL 감지 (기존 로직)
+            let isUrl = text.includes('http');
+            
+            if (isUrl) {
+                removeLoading(loadingId);
+                const botMsgBody = createMessageContainer('bot');
+
+                let pKey = null;
+                if (text.includes('smtown')) pKey = 'smtown';
+                else if (text.includes('luxboy')) pKey = 'luxboy';
+                else if (text.includes('kurly')) pKey = 'kurly';
+                if (!pKey) pKey = 'smtown'; // Fallback
+
+                selectedProduct = productDatabase[pKey];
+                await renderProductCard(botMsgBody, selectedProduct, "I've analyzed the URL provided. Here is the product found:");
+                currentStep = 1;
+            } 
+            // 2. 일반 텍스트 -> 추천 로직 (Gemini API)
+            else if (currentStep === 0) {
+                const products = await fetchGeminiRecommendation(text);
+                removeLoading(loadingId);
+                const botMsgBody = createMessageContainer('bot');
+
+                await typeWriter(botMsgBody, `I found some great Korean products matching "${text}". Which one would you like to calculate?`);
+                
+                // 추천 상품 카드 렌더링
+                const gridDiv = document.createElement('div');
+                gridDiv.className = "grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-slide-up";
+                
+                products.forEach((prod, index) => {
+                    // 이미지 생성 (Pollinations AI) - 키워드 추출
+                    const keyword = prod.title.split(' ').slice(0, 2).join(' ');
+                    const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(keyword + ' product studio shot clean background')}?width=400&height=300&nologo=true`;
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition";
+                    card.innerHTML = `
+                        <img src="${imgUrl}" class="w-full h-32 object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=Product'">
+                        <div class="p-3">
+                            <h3 class="font-medium text-gray-900 text-sm truncate">${prod.title}</h3>
+                            <p class="text-xs text-gray-500 mb-2">${prod.category}</p>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-blue-600 font-bold text-sm">${prod.priceKrw}</span>
+                                <span class="text-xs bg-gray-100 px-1 rounded text-gray-600">${prod.weight}</span>
+                            </div>
+                            <button class="select-btn w-full bg-blue-50 text-blue-600 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
+                                Select & Calculate
+                            </button>
+                        </div>
+                    `;
+                    
+                    // 버튼 클릭 이벤트 바인딩
+                    card.querySelector('.select-btn').onclick = () => selectRecommendedProduct(prod);
+                    gridDiv.appendChild(card);
+                });
+                
+                botMsgBody.appendChild(gridDiv);
+                scrollToBottom();
+            }
+            // 3. Step 3 (Calculation)
+            else if (currentStep === 3) {
+                removeLoading(loadingId);
+                const botMsgBody = createMessageContainer('bot');
+                await renderCalculation(botMsgBody);
+            }
+        }
+
+        // 추천 상품 선택 시 동작
+        async function selectRecommendedProduct(prod) {
+            const { id } = showLoading();
+            setTimeout(async () => {
+                removeLoading(id);
+                const botMsgBody = createMessageContainer('bot');
+                
+                // 데이터 정규화
+                selectedProduct = {
+                    title: prod.title,
+                    category: prod.category,
+                    img: `https://image.pollinations.ai/prompt/${encodeURIComponent(prod.title)}?width=400&height=300&nologo=true`,
+                    priceKrw: prod.priceKrw,
+                    priceNum: prod.priceNum,
+                    weight: prod.weight,
+                    weightNum: prod.weightNum || 1.0,
+                    shipKrw: "₩ 3,000" // 기본값
+                };
+
+                await renderProductCard(botMsgBody, selectedProduct, "Great choice! I've loaded the product details. Shall we calculate the full cost?");
+                currentStep = 1;
+            }, 800);
+        }
+
+        // 상품 카드 단일 렌더링 (공통)
+        async function renderProductCard(container, product, introText) {
+            await typeWriter(container, introText);
+            const cardHtml = `
+                <div class="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm max-w-md animate-slide-up">
+                    <img src="${product.img}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-google-sans font-medium text-lg text-gray-900">${product.title}</h3>
+                                <p class="text-sm text-gray-500 mt-1">${product.category}</p>
+                            </div>
+                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">${product.priceKrw}</span>
+                        </div>
+                        <div class="mt-4 flex gap-2 text-xs text-gray-600">
+                            <span class="px-2 py-1 bg-gray-100 rounded">Weight: ${product.weight}</span>
+                            <span class="px-2 py-1 bg-gray-100 rounded">Ship: ${product.shipKrw}</span>
+                        </div>
+                    </div>
+                    <div class="bg-[#f0f4f9] p-3 flex gap-3">
+                        <button onclick="triggerNextStep(1)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-full text-sm font-medium transition shadow-sm">
+                            <i class="fas fa-calculator mr-1"></i> Calculate All
+                        </button>
+                        <button onclick="location.reload()" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-full text-sm transition">Cancel</button>
+                    </div>
+                </div>
+            `;
+            await new Promise(r => setTimeout(r, 200));
+            container.insertAdjacentHTML('beforeend', cardHtml);
+            scrollToBottom();
+        }
+
+        // 견적서 렌더링 (동적 계산)
+        async function renderCalculation(container) {
+            // 환율 및 비용 상수
+            const EX_RATE = 1400; // 1 USD = 1400 KRW
+            const KRW_PRICE = selectedProduct.priceNum;
+            const WEIGHT = selectedProduct.weightNum;
+
+            // 계산 로직
+            const priceUsd = (KRW_PRICE / EX_RATE).toFixed(2);
+            const domShipUsd = (3000 / EX_RATE).toFixed(2);
+            const intShipUsd = (WEIGHT * 20).toFixed(2); // kg당 $20 가정
+            const subTotal = parseFloat(priceUsd) + parseFloat(domShipUsd) + parseFloat(intShipUsd);
+            const feeUsd = (subTotal * 0.1).toFixed(2); // 10% 수수료
+            const totalUsd = (subTotal + parseFloat(feeUsd)).toFixed(2);
+
+            await typeWriter(container, "Based on the address in the United States, here is the estimated total cost:");
+            
+            const tableHtml = `
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 mt-4 max-w-lg shadow-sm animate-slide-up">
+                    <div class="space-y-3 text-sm text-gray-700">
+                        <div class="flex justify-between">
+                            <span>Item Price</span>
+                            <span>$ ${priceUsd}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>KR Domestic Shipping</span>
+                            <span>$ ${domShipUsd}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Int'l Shipping (EMS, ${WEIGHT}kg)</span>
+                            <span>$ ${intShipUsd}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-500">
+                            <span>Service Fee (10%)</span>
+                            <span>$ ${feeUsd}</span>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-200 my-4 pt-3 flex justify-between items-center">
+                        <span class="font-medium text-lg">Total</span>
+                        <span class="font-bold text-2xl text-blue-600">$ ${totalUsd}</span>
+                    </div>
+                    <button onclick="triggerNextStep(4)" class="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition flex items-center justify-center gap-2">
+                        Pay with Shopify <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            `;
+            await new Promise(r => setTimeout(r, 300));
+            container.insertAdjacentHTML('beforeend', tableHtml);
+            scrollToBottom();
+            currentStep = 4;
+        }
+
+        async function triggerNextStep(stepIndex) {
+            const { id } = showLoading();
+            scrollToBottom();
+
+            setTimeout(async () => {
+                removeLoading(id);
+                const botMsgBody = createMessageContainer('bot');
+
+                if (stepIndex === 1) {
+                    await typeWriter(botMsgBody, "Would you like to proceed as a member or check out as a guest?");
+                    const buttonsHtml = `
+                        <div class="flex gap-3 mt-3 animate-slide-up">
+                            <button onclick="triggerNextStep(2)" class="px-5 py-2 border border-gray-300 rounded-full hover:bg-gray-50 text-sm font-medium text-blue-600 transition">Log In</button>
+                            <button onclick="triggerNextStep(2)" class="px-5 py-2 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 text-sm font-medium transition">Guest Checkout</button>
+                        </div>
+                    `;
+                    botMsgBody.insertAdjacentHTML('beforeend', buttonsHtml);
+                    currentStep = 2;
+                } 
+                else if (stepIndex === 2) {
+                    await typeWriter(botMsgBody, "Please select the destination country and enter the zip code for accurate shipping calculation.");
+                    const formHtml = `
+                        <div class="mt-3 grid grid-cols-1 gap-3 max-w-sm animate-slide-up">
+                            <select class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm outline-none"><option>United States</option><option>Canada</option></select>
+                            <input type="text" placeholder="Zip Code" class="w-full bg-[#f0f4f9] border-none rounded-lg p-3 text-sm outline-none">
+                            <button onclick="submitAddress()" class="bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition mt-2">Calculate Shipping</button>
+                        </div>
+                    `;
+                    botMsgBody.insertAdjacentHTML('beforeend', formHtml);
+                    currentStep = 3;
+                }
+                else if (stepIndex === 4) {
+                    await typeWriter(botMsgBody, "I've generated a secure checkout link for you. Click the link below to complete your payment.");
+                     const linkHtml = `
+                        <div class="mt-3 animate-slide-up">
+                            <a href="#" class="inline-flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition font-medium">
+                                <i class="fas fa-lock"></i> Secure Payment Link
+                            </a>
+                        </div>
+                    `;
+                    botMsgBody.insertAdjacentHTML('beforeend', linkHtml);
+                }
+                scrollToBottom();
+            }, 1000);
+        }
+
+        function submitAddress() {
+            const userMsgBody = createMessageContainer('user');
+            userMsgBody.innerText = "Shipping to United States, Zip 10001";
+            scrollToBottom();
+
+            const { id } = showLoading();
+            setTimeout(() => {
+                // Step 3 (Calculation)으로 이동
+                processScenario('', id);
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
