@@ -42,7 +42,7 @@
 
     <!-- Development Version Badge -->
     <div class="fixed z-50 top-4 right-14 md:top-4 md:right-4 bg-gray-100/80 backdrop-blur text-gray-400 text-[10px] px-2 py-0.5 rounded border border-gray-200 font-mono pointer-events-none">
-        v0.1.5 (Dev)
+        v0.1.6 (Dev)
     </div>
 
     <!-- Settings Modal (Only for Gemini Key) -->
@@ -338,15 +338,40 @@
             if (currentStep === 0) {
                 // URL 입력 감지
                 if (text.includes('http')) {
-                     // URL Mock Data
-                    selectedProduct = {
-                        title: "WayV - Winter Special Album",
-                        priceKrw: "₩ 27,800",
-                        priceNum: 27800,
-                        weight: "0.8kg",
-                        weightNum: 0.8,
-                        category: "Album"
-                    };
+                     // URL Mock Data Logic
+                    let productData = {};
+                    
+                    if (text.includes('luxboy')) {
+                        productData = {
+                            title: "[Prada] Saffiano Leather Mini Bag",
+                            priceKrw: "₩ 2,450,000",
+                            priceNum: 2450000,
+                            weight: "1.2kg",
+                            weightNum: 1.2,
+                            category: "Luxury > Bags"
+                        };
+                    } else if (text.includes('kurly')) {
+                        productData = {
+                            title: "[Kurly Only] Gangnam Galbi Tang",
+                            priceKrw: "₩ 15,000",
+                            priceNum: 15000,
+                            weight: "1.5kg",
+                            weightNum: 1.5,
+                            category: "Food > Instant"
+                        };
+                    } else {
+                        // Default (SM Town)
+                        productData = {
+                            title: "WayV - Winter Special Album",
+                            priceKrw: "₩ 27,800",
+                            priceNum: 27800,
+                            weight: "0.8kg",
+                            weightNum: 0.8,
+                            category: "Album"
+                        };
+                    }
+
+                    selectedProduct = productData;
                     await typeWriter(botMsg, "I analyzed the URL. Here is the product:");
                     renderProductCard(botMsg, selectedProduct);
                     return;
