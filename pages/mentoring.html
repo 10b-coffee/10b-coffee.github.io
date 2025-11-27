@@ -5,27 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>멘토링 대시보드 | 박요한 멘토 & 이창현 멘티</title>
     
-    <!-- React & ReactDOM -->
+    <!-- React & ReactDOM (필수 라이브러리 로드) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel (for JSX) -->
+    <!-- Babel (JSX 변환용) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (스타일링) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Pretendard Web Font (프리텐다드 적용) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; }
+        /* Pretendard 폰트 전역 적용 */
+        body { 
+            font-family: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+        }
+        
         .animate-fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Custom Scrollbar */
+        /* 스크롤바 커스텀 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -33,26 +37,27 @@
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
+    <!-- React가 렌더링될 루트 엘리먼트 -->
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Icons (Inline SVG for Zero Dependency) ---
+        // --- 아이콘 컴포넌트 (외부 라이브러리 의존성 제거) ---
         const Icon = ({ name, size = 20, className = "" }) => {
             const icons = {
-                user: <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>,
-                target: <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>,
+                user: <g><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g>,
+                target: <g><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></g>,
                 message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>,
-                check: <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>,
-                lightbulb: <path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M5.6 5.6l.7.7"/><path d="M18.4 5.6l-.7.7"/><path d="M8.5 16.5a6 6 0 0 1 11 0"/><path d="M9 18a3 3 0 0 0 6 0"/>, // Simplified bulb
-                clock: <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>,
-                menu: <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>,
-                x: <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>,
-                arrowRight: <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>,
+                check: <g><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></g>,
+                lightbulb: <g><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M12 2v1"/><path d="M5.6 5.6l.7.7"/><path d="M18.4 5.6l-.7.7"/><path d="M8.5 16.5a6 6 0 0 1 11 0"/><path d="M9 18a3 3 0 0 0 6 0"/></g>,
+                clock: <g><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g>,
+                menu: <g><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></g>,
+                x: <g><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></g>,
+                arrowRight: <g><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></g>,
                 chevronRight: <polyline points="9 18 15 12 9 6"/>,
-                briefcase: <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>,
-                bulbFull: <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.2-2.7-6-6-6S6 4.6 6 7.7c0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>
+                briefcase: <g><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></g>,
+                bulbFull: <g><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.2-2.7-6-6-6S6 4.6 6 7.7c0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></g>
             };
 
             return (
@@ -73,7 +78,7 @@
             );
         };
 
-        // --- Main Application ---
+        // --- 메인 애플리케이션 ---
         const App = () => {
             const [activeTab, setActiveTab] = useState('intro');
             const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -94,7 +99,7 @@
                         <Icon name="bulbFull" className="text-yellow-500" />
                         <span>Mentor's Insight (박요한)</span>
                     </div>
-                    <div className="text-slate-700 text-sm md:text-base leading-relaxed">
+                    <div className="text-slate-700 text-sm md:text-base leading-relaxed tracking-normal">
                         {children}
                     </div>
                 </div>
@@ -102,7 +107,7 @@
 
             const SectionTitle = ({ title, subTitle }) => (
                 <div className="mb-8 border-b border-slate-200 pb-4">
-                    <h2 className="text-2xl md:text-3xl font-bold text-slate-800">{title}</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">{title}</h2>
                     {subTitle && <div className="flex items-center gap-2 mt-2 text-slate-500 font-medium"><Icon name="clock" size={16}/> {subTitle}</div>}
                 </div>
             );
@@ -297,7 +302,7 @@
 
             return (
                 <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row">
-                    {/* Mobile Header */}
+                    {/* 모바일 헤더 */}
                     <div className="md:hidden bg-white p-4 border-b flex justify-between items-center sticky top-0 z-20 shadow-sm">
                         <div className="font-bold text-lg text-slate-800 flex items-center gap-2">
                             <Icon name="briefcase" className="text-blue-600" /> 멘토링 대시보드
@@ -307,7 +312,7 @@
                         </button>
                     </div>
 
-                    {/* Sidebar */}
+                    {/* 사이드바 */}
                     <div className={`
                         fixed md:sticky md:top-0 h-screen w-64 bg-slate-900 text-slate-300 transition-transform duration-300 z-30 flex-shrink-0 shadow-2xl
                         ${isMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -352,7 +357,7 @@
                         </div>
                     </div>
 
-                    {/* Overlay for mobile menu */}
+                    {/* 모바일 메뉴 오버레이 */}
                     {isMenuOpen && (
                         <div 
                             className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
@@ -360,7 +365,7 @@
                         ></div>
                     )}
 
-                    {/* Main Content */}
+                    {/* 메인 콘텐츠 영역 */}
                     <div className="flex-1 p-4 md:p-8 lg:p-12 w-full max-w-5xl mx-auto">
                         <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6">
                             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -418,4 +423,5 @@
     </script>
 </body>
 </html>
+
 
