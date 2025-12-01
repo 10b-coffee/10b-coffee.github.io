@@ -253,7 +253,7 @@
                                                 <div class="flex justify-between" x-show="pay.deductions.health > 0"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
                                                 <div class="flex justify-between" x-show="pay.deductions.care > 0"><span>장기요양</span><span x-text="formatCurrency(pay.deductions.care)"></span></div>
                                                 <div class="flex justify-between" x-show="pay.deductions.employ > 0"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
-                                                <div class="flex justify-between"><span>소득세</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
+                                                <div class="flex justify-between"><span>소득세(지방세)</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
                                             </div>
                                         </div>
                                         <button @click="showDetail = !showDetail" class="w-full flex items-center justify-center gap-1 text-sm text-toss-grey600 py-2 border border-toss-grey200 rounded-xl hover:bg-toss-grey50 transition"><span x-text="showDetail?'접기':'상세보기'"></span><i data-lucide="chevron-down"></i></button>
@@ -288,6 +288,15 @@
                 <div><label class="block text-sm font-bold mb-1">주소</label><div class="flex gap-2"><input x-model="newEmp.address" class="flex-1 toss-input" readonly><button type="button" @click="searchAddress()" class="px-4 bg-toss-blue text-white rounded-xl font-bold">검색</button></div></div>
                 <div class="p-4 border border-toss-grey200 rounded-xl space-y-4"><div class="flex gap-2"><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">4대보험</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">프리랜서</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">고용·산재</div></label></div><div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
                 <div><label class="block text-sm font-bold mb-2">근무 일정 계약</label><div class="space-y-2"><template x-for="day in ['월', '화', '수', '목', '금', '토', '일']"><div class="flex items-center gap-3 p-3 rounded-xl border" :class="newEmp.schedule[day]?.active ? 'border-toss-blue bg-toss-blueLight/30' : 'bg-white'"><label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold" x-text="day"></span></label><div class="flex-1 flex gap-2" x-show="newEmp.schedule[day]?.active"><input type="time" x-model="newEmp.schedule[day].start" class="p-1.5 text-xs bg-white rounded border"><span class="self-center">~</span><input type="time" x-model="newEmp.schedule[day].end" class="p-1.5 text-xs bg-white rounded border"></div></div></template></div></div>
+                
+                <!-- 급여 계좌 정보 (복구 완료) -->
+                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 pt-4">급여 계좌</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm font-bold mb-1">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div>
+                    <div><label class="block text-sm font-bold mb-1">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input"></div>
+                    <div><label class="block text-sm font-bold mb-1">예금주</label><input x-model="newEmp.accountHolder" class="toss-input"></div>
+                </div>
+
                 <button type="submit" class="w-full bg-toss-blue text-white py-4 rounded-xl font-bold shadow-toss text-lg">저장하기</button>
             </form>
         </div>
@@ -323,7 +332,12 @@
                     this.loading = true;
                     try {
                         const [empRes, shiftRes] = await Promise.all([ fetchAPI('getEmployees', 'GET'), fetchAPI('getShifts', 'GET') ]);
-                        if (empRes.status === 'success') this.employees = empRes.data.map(e => { if(typeof e.schedule==='string'){try{e.schedule=JSON.parse(e.schedule)}catch(err){e.schedule={}}} return e; });
+                        if (empRes.status === 'success') this.employees = empRes.data.map(e => { 
+                            // 입사일 날짜 포맷팅
+                            if (e.joinDate && e.joinDate.includes('T')) e.joinDate = e.joinDate.split('T')[0];
+                            if(typeof e.schedule==='string'){try{e.schedule=JSON.parse(e.schedule)}catch(err){e.schedule={}}} 
+                            return e; 
+                        });
                         if (shiftRes.status === 'success') this.shifts = shiftRes.data;
                     } catch (e) { console.error(e); } finally { this.loading = false; }
                 },
