@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레스토지니 파트너센터 v3.5 (API 통신 수정)</title>
+    <title>레스토지니 파트너센터 v3.7 (리스트 갱신 Fix)</title>
     
     <!-- 스타일 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -32,16 +32,12 @@
 
         const API_URL = 'https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec'; 
 
-        // [수정됨] API 통신 함수: GET/POST 분기 처리 강화
         async function fetchAPI(action, method = 'GET', payload = null) {
             try {
-                // 1. GET 요청 (데이터 조회)
                 if (method === 'GET') {
                     const res = await fetch(`${API_URL}?action=${action}`);
                     return await res.json();
-                } 
-                // 2. POST 요청 (데이터 변경)
-                else {
+                } else {
                     const options = {
                         method: 'POST',
                         redirect: "follow",
@@ -62,11 +58,6 @@
                 oncomplete: function(data) { callback(data.address, data.zonecode); }
             }).open();
         }
-        
-        // 전역 에러 핸들러
-        window.onerror = function(msg) {
-            // alert('오류 발생: ' + msg); // 디버깅용 (필요시 주석 해제)
-        };
     </script>
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #F2F4F6; color: #191F28; user-select: none; }
@@ -91,6 +82,7 @@
 
 <body class="antialiased select-none" x-data="hrApp()" x-init="initApp()" @mouseup.window="endDrag()">
 
+    <!-- 로딩 화면 -->
     <div class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50" x-show="loading" x-transition.opacity>
         <div class="w-10 h-10 border-4 border-toss-blue border-t-transparent rounded-full animate-spin mb-4"></div>
         <div class="text-xl font-bold text-toss-grey900">데이터를 불러오는 중...</div>
@@ -98,6 +90,7 @@
     </div>
 
     <div class="flex min-h-screen">
+        <!-- LNB -->
         <aside class="w-64 bg-white border-r border-toss-grey200 fixed h-full z-20 hidden md:flex flex-col">
             <div class="p-6">
                 <div class="flex items-center gap-2 mb-8">
@@ -113,8 +106,13 @@
                     </template>
                 </nav>
             </div>
+            <div class="mt-auto p-6 border-t border-toss-grey100 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-toss-grey100 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
+                <div><div class="text-sm font-bold">김사장님</div><div class="text-xs text-toss-grey500">강남점</div></div>
+            </div>
         </aside>
 
+        <!-- Mobile Header -->
         <header class="md:hidden fixed w-full bg-white border-b border-toss-grey200 z-30 px-4 h-14 flex items-center justify-between">
             <span class="font-bold text-lg">RestoGenie</span>
             <button @click="mobileMenuOpen = !mobileMenuOpen"><i data-lucide="menu"></i></button>
@@ -126,7 +124,7 @@
         <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 bg-toss-grey100 min-h-screen" x-cloak>
             <div class="max-w-6xl mx-auto">
                 <header class="flex justify-between items-end mb-8">
-                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.5 (API 통신 수정)</p></div>
+                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.7 (리스트 갱신 Fix)</p></div>
                     <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition"><i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span></button>
                 </header>
 
