@@ -3,26 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레스토지니 파트너센터 v3.3 (서비스 안정화)</title>
+    <title>레스토지니 파트너센터 v3.4 (완전 복구)</title>
     
     <!-- 스타일 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
-    
-    <!-- 카카오 주소 API -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
     <script>
-        // [안전장치] 전역 에러 핸들링
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert('시스템 오류가 발생했습니다:\n' + msg);
-            document.getElementById('loading-screen').style.display = 'none'; // 로딩 강제 종료
-            return false;
-        };
-
-        // Tailwind 설정
         tailwind.config = {
             theme: {
                 extend: {
@@ -40,10 +30,8 @@
             }
         }
 
-        // Google Apps Script URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec'; 
 
-        // API 통신 함수
         async function fetchAPI(action, method = 'GET', payload = null) {
             try {
                 const options = {
@@ -52,7 +40,6 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({ action, payload })
                 };
-               
                 const res = await fetch(API_URL, options);
                 return await res.json();
             } catch (error) {
@@ -61,12 +48,9 @@
             }
         }
         
-        // 카카오 주소찾기
         function openDaumPostcode(callback) {
             new daum.Postcode({
-                oncomplete: function(data) {
-                    callback(data.address, data.zonecode);
-                }
+                oncomplete: function(data) { callback(data.address, data.zonecode); }
             }).open();
         }
     </script>
@@ -80,11 +64,8 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .toss-table th { background-color: #F9FAFB; color: #4E5968; padding: 12px 16px; text-align: left; border-bottom: 1px solid #E5E8EB; }
         .toss-table td { padding: 16px; border-bottom: 1px solid #F2F4F6; color: #333D4B; }
-        /* Input Style */
         .toss-input { width: 100%; padding: 12px; background-color: #F9FAFB; border-radius: 12px; border: none; font-weight: 500; transition: all 0.2s; }
         .toss-input:focus { background-color: #fff; box-shadow: 0 0 0 2px #3182F6; outline: none; }
-        
-        /* 주간 뷰 그리드 스타일 */
         .time-slot { height: 48px; border-bottom: 1px solid #F2F4F6; box-sizing: border-box; }
         .week-col { position: relative; border-right: 1px solid #F2F4F6; }
         .week-col:last-child { border-right: none; }
@@ -96,15 +77,13 @@
 
 <body class="antialiased select-none" x-data="hrApp()" x-init="initApp()" @mouseup.window="endDrag()">
 
-    <!-- 로딩 화면 -->
-    <div id="loading-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50" x-show="loading" x-transition.opacity>
+    <div class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50" x-show="loading" x-transition.opacity>
         <div class="w-10 h-10 border-4 border-toss-blue border-t-transparent rounded-full animate-spin mb-4"></div>
         <div class="text-xl font-bold text-toss-grey900">데이터를 불러오는 중...</div>
         <div class="text-sm text-toss-grey500 mt-2">잠시만 기다려주세요</div>
     </div>
 
     <div class="flex min-h-screen">
-        <!-- LNB -->
         <aside class="w-64 bg-white border-r border-toss-grey200 fixed h-full z-20 hidden md:flex flex-col">
             <div class="p-6">
                 <div class="flex items-center gap-2 mb-8">
@@ -120,70 +99,35 @@
                     </template>
                 </nav>
             </div>
-            <div class="mt-auto p-6 border-t border-toss-grey100 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-toss-grey100 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
-                <div><div class="text-sm font-bold">김사장님</div><div class="text-xs text-toss-grey500">강남점</div></div>
-            </div>
         </aside>
 
-        <!-- Mobile Header -->
         <header class="md:hidden fixed w-full bg-white border-b border-toss-grey200 z-30 px-4 h-14 flex items-center justify-between">
             <span class="font-bold text-lg">RestoGenie</span>
             <button @click="mobileMenuOpen = !mobileMenuOpen"><i data-lucide="menu"></i></button>
         </header>
-
-        <!-- Mobile Menu -->
         <div x-show="mobileMenuOpen" class="fixed inset-0 z-40 bg-white pt-14 md:hidden" x-transition>
-            <nav class="p-4 space-y-2">
-                <template x-for="item in menuItems">
-                    <a href="#" @click.prevent="activeTab = item.id; mobileMenuOpen = false" class="block px-4 py-3 rounded-xl text-lg font-medium" :class="activeTab === item.id ? 'bg-toss-blueLight text-toss-blue' : 'text-toss-grey700'">
-                        <span x-text="item.label"></span>
-                    </a>
-                </template>
-            </nav>
+            <nav class="p-4 space-y-2"><template x-for="item in menuItems"><a href="#" @click.prevent="activeTab = item.id; mobileMenuOpen = false" class="block px-4 py-3 rounded-xl text-lg font-medium" :class="activeTab === item.id ? 'bg-toss-blueLight text-toss-blue' : 'text-toss-grey700'"><span x-text="item.label"></span></a></template></nav>
         </div>
 
-        <!-- Main Content -->
         <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 bg-toss-grey100 min-h-screen" x-cloak>
             <div class="max-w-6xl mx-auto">
                 <header class="flex justify-between items-end mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1>
-                        <p class="text-toss-grey600 text-sm">v3.3 (서비스 안정화)</p>
-                    </div>
-                    <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition">
-                        <i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span>
-                    </button>
+                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.4 (기능 복구 완료)</p></div>
+                    <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition"><i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span></button>
                 </header>
 
                 <!-- 1. 직원 관리 -->
                 <div x-show="activeTab === 'employees'" class="animate-fade-in space-y-6">
                     <div class="bg-white rounded-3xl shadow-toss overflow-hidden border border-toss-grey200">
-                        <div class="p-8 text-center text-toss-grey500" x-show="employees.length === 0">
-                            등록된 직원이 없습니다. 우측 상단 버튼을 눌러 추가해주세요.
-                        </div>
+                        <div class="p-8 text-center text-toss-grey500" x-show="employees.length === 0">데이터 로딩중이거나 등록된 직원이 없습니다.</div>
                         <div class="overflow-x-auto" x-show="employees.length > 0">
                             <table class="w-full toss-table">
                                 <thead><tr><th>이름/직책</th><th>계약형태</th><th>급여조건</th><th>근무일정</th><th>입사일</th><th class="text-right">관리</th></tr></thead>
                                 <tbody>
                                     <template x-for="emp in employees" :key="emp.id">
                                         <tr class="hover:bg-toss-grey50 transition">
-                                            <td>
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-10 h-10 rounded-full bg-toss-blueLight text-toss-blue flex items-center justify-center font-bold" x-text="emp.name ? emp.name[0] : '-'"></div>
-                                                    <div><div class="font-bold" x-text="emp.name"></div><div class="text-xs text-toss-grey500" x-text="formatRole(emp.role)"></div></div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="px-2 py-1 rounded text-xs font-medium" 
-                                                      :class="{
-                                                          'bg-green-100 text-green-700': emp.contractType==='insurance4',
-                                                          'bg-toss-orangeLight text-toss-orange': emp.contractType==='freelancer',
-                                                          'bg-blue-100 text-blue-700': emp.contractType==='insurance2'
-                                                      }" 
-                                                      x-text="getContractLabel(emp.contractType)">
-                                                </span>
-                                            </td>
+                                            <td><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-toss-blueLight text-toss-blue flex items-center justify-center font-bold" x-text="emp.name ? emp.name[0] : '-'"></div><div><div class="font-bold" x-text="emp.name"></div><div class="text-xs text-toss-grey500" x-text="formatRole(emp.role)"></div></div></div></td>
+                                            <td><span class="px-2 py-1 rounded text-xs font-medium" :class="{'bg-green-100 text-green-700': emp.contractType==='insurance4','bg-toss-orangeLight text-toss-orange': emp.contractType==='freelancer','bg-blue-100 text-blue-700': emp.contractType==='insurance2'}" x-text="getContractLabel(emp.contractType)"></span></td>
                                             <td><div class="font-medium" x-text="formatCurrency(emp.basePay)"></div><div class="text-xs text-toss-grey500" x-text="emp.role==='parttime'?'시급':'월급'"></div></td>
                                             <td><div class="flex gap-1"><template x-for="(s,d) in (emp.schedule || {})"><span x-show="s.active" class="text-xs bg-toss-grey100 px-1.5 py-0.5 rounded" x-text="d"></span></template></div></td>
                                             <td class="text-sm text-toss-grey600" x-text="emp.joinDate"></td>
@@ -199,39 +143,36 @@
                 <!-- 2. 근무 일정 -->
                 <div x-show="activeTab === 'calendar'" class="animate-fade-in h-full flex flex-col">
                     <div class="bg-white rounded-3xl shadow-toss p-6 border border-toss-grey200 flex-1 flex flex-col min-h-[600px]">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-lg flex items-center gap-2">
-                                <span x-text="viewType === 'month' ? '12월 근무 현황' : getWeekRangeString()"></span>
-                            </h3>
-                            <div class="flex items-center gap-3">
-                                <div class="bg-toss-grey100 p-1 rounded-xl flex text-sm font-medium">
-                                    <button @click="viewType = 'month'" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'month' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">월간</button>
-                                    <button @click="viewType = 'week'" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'week' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">주간</button>
-                                </div>
-                                <div class="flex items-center bg-toss-grey100 rounded-xl px-1">
-                                    <button @click="changeDate(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                                    <button @click="changeDate(1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                        </div>
+                         <div class="flex justify-between items-center mb-6">
+                             <h3 class="font-bold text-lg flex items-center gap-2"><span x-text="viewType === 'month' ? '12월 근무 현황' : getWeekRangeString()"></span></h3>
+                             <div class="flex items-center gap-3">
+                                 <div class="bg-toss-grey100 p-1 rounded-xl flex text-sm font-medium">
+                                     <button @click="viewType = 'month'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'month' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">월간</button>
+                                     <button @click="viewType = 'week'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'week' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">주간</button>
+                                 </div>
+                                 <div class="flex items-center bg-toss-grey100 rounded-xl px-1">
+                                     <button @click="changeDate(-1)" class="w-8 h-8 flex items-center justify-center"><i data-lucide="chevron-left"></i></button>
+                                     <button @click="changeDate(1)" class="w-8 h-8 flex items-center justify-center"><i data-lucide="chevron-right"></i></button>
+                                 </div>
+                             </div>
+                         </div>
 
-                        <!-- 월간 뷰 -->
-                        <div x-show="viewType === 'month'" class="border border-toss-grey200 rounded-2xl overflow-hidden flex-1 flex flex-col">
+                         <!-- 월간 뷰 -->
+                         <div x-show="viewType === 'month'" class="border border-toss-grey200 rounded-2xl overflow-hidden flex-1 flex flex-col">
                             <div class="grid grid-cols-7 bg-toss-grey50 border-b border-toss-grey200">
-                                <template x-for="(d,i) in ['월','화','수','목','금','토','일']"><div class="py-3 text-center text-sm font-bold" :class="i===5?'text-toss-blue':(i===6?'text-toss-red':'text-toss-grey600')" x-text="d"></div></template>
+                                <template x-for="(d,i) in ['월','화','수','목','금','토','일']"><div class="py-3 text-center text-sm font-bold text-toss-grey600" x-text="d"></div></template>
                             </div>
                             <div class="grid grid-cols-7 bg-white flex-1">
                                 <template x-for="d in getCalendarDays()" :key="d.key">
                                     <div @click="d.day ? openShiftModal(d.day) : null" class="min-h-[100px] p-1 border-b border-r border-toss-grey100 relative hover:bg-toss-grey50 transition cursor-pointer group flex flex-col">
-                                        <div class="text-sm font-medium p-1" :class="d.day?'text-toss-grey900':'text-toss-grey300'" x-text="d.day||''"></div>
+                                        <div class="text-sm font-medium p-1" x-text="d.day||''"></div>
                                         <div class="flex flex-col gap-1 mt-1 flex-1">
                                             <template x-for="shift in getShifts(d.fullDate)">
-                                                <div @click.stop="openEditShiftModal(shift)" class="text-[10px] bg-toss-blueLight text-toss-blue px-2 py-1 rounded font-medium truncate hover:opacity-80 transition border border-transparent hover:border-toss-blue">
+                                                <div @click.stop="openEditShiftModal(shift)" class="text-[10px] bg-toss-blueLight text-toss-blue px-2 py-1 rounded font-medium truncate border border-transparent hover:border-toss-blue">
                                                     <span x-text="getEmpName(shift.empId)"></span> <span x-text="shift.startTime.slice(0,2)+'시'"></span>
                                                 </div>
                                             </template>
                                         </div>
-                                        <div x-show="d.day" class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition"><i data-lucide="plus-circle" class="w-5 h-5 text-toss-grey400 hover:text-toss-blue"></i></div>
                                     </div>
                                 </template>
                             </div>
@@ -243,8 +184,7 @@
                                 <div class="py-3 text-center text-xs text-toss-grey500 border-r border-toss-grey200">시간</div>
                                 <template x-for="(d, i) in weekDays" :key="d.fullDate">
                                     <div class="py-3 text-center border-r border-toss-grey200 last:border-0">
-                                        <div class="text-xs font-bold" :class="i===5?'text-toss-blue':(i===6?'text-toss-red':'text-toss-grey600')" x-text="d.label"></div>
-                                        <div class="text-sm font-bold text-toss-grey900" x-text="d.date"></div>
+                                        <div class="text-xs font-bold" x-text="d.label"></div><div class="text-sm font-bold" x-text="d.date"></div>
                                     </div>
                                 </template>
                             </div>
@@ -254,20 +194,14 @@
                                         <template x-for="h in 18"><div class="time-slot text-[10px] text-toss-grey400 text-right pr-2 pt-1" x-text="(h+5).toString().padStart(2,'0')+':00'"></div></template>
                                     </div>
                                     <template x-for="(d, index) in weekDays" :key="d.fullDate">
-                                        <div class="week-col bg-white relative" 
-                                             @mousedown="startDrag(index, d.fullDate, $event)" 
-                                             @mousemove="onDrag($event, index)">
+                                        <div class="week-col bg-white relative" @mousedown="startDrag(index, d.fullDate, $event)" @mousemove="onDrag($event, index)">
                                             <template x-for="h in 18"><div class="time-slot pointer-events-none"></div></template>
                                             <template x-for="shift in getShifts(d.fullDate)" :key="shift.id">
                                                 <div @click.stop="openEditShiftModal(shift)" class="event-chip bg-toss-blueLight text-toss-blue border-toss-blue font-bold shadow-sm" :style="getShiftStyle(shift)">
                                                     <div x-text="getEmpName(shift.empId)"></div><div class="font-normal text-[9px]" x-text="`${shift.startTime} - ${shift.endTime}`"></div>
                                                 </div>
                                             </template>
-                                            <div x-show="dragState.active && dragState.dayIndex === index" 
-                                                 class="drag-preview flex items-center justify-center text-xs text-toss-blue font-bold" 
-                                                 :style="getDragStyle()">
-                                                <span x-text="dragState.timeLabel"></span>
-                                            </div>
+                                            <div x-show="dragState.active && dragState.dayIndex === index" class="drag-preview flex items-center justify-center text-xs text-toss-blue font-bold" :style="getDragStyle()"><span x-text="dragState.timeLabel"></span></div>
                                         </div>
                                     </template>
                                 </div>
@@ -278,7 +212,7 @@
 
                 <!-- 3. 급여 내역 -->
                 <div x-show="activeTab === 'payroll'" class="animate-fade-in space-y-6">
-                     <div class="grid gap-6 lg:grid-cols-2">
+                    <div class="grid gap-6 lg:grid-cols-2">
                         <template x-for="emp in employees" :key="emp.id">
                              <div class="bg-white rounded-3xl p-6 shadow-toss border border-toss-grey200 hover:shadow-toss-hover transition" 
                                   x-data="{ pay: null, showDetail: false, showDeduction: false }" x-effect="pay = calculatePayroll(emp)">
@@ -288,68 +222,32 @@
                                         <div class="flex justify-between items-start mb-6">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-12 h-12 rounded-full bg-toss-grey100 flex items-center justify-center text-xl">👤</div>
-                                                <div>
-                                                    <div class="font-bold text-lg" x-text="emp.name"></div>
-                                                    <div class="text-sm text-toss-grey500">
-                                                        <span x-text="formatRole(emp.role)"></span> · 
-                                                        <span x-text="emp.role === 'parttime' ? '시급제' : '월급제(환산)'"></span> ·
-                                                        <span x-text="getContractLabel(emp.contractType)"></span>
-                                                    </div>
-                                                </div>
+                                                <div><div class="font-bold text-lg" x-text="emp.name"></div><div class="text-sm text-toss-grey500"><span x-text="formatRole(emp.role)"></span> · <span x-text="getContractLabel(emp.contractType)"></span></div></div>
                                             </div>
                                             <div class="text-right"><div class="text-xs text-toss-grey500 mb-1">실제 받는 금액</div><div class="text-2xl font-bold text-toss-blue" x-text="formatCurrency(pay.netPay)"></div></div>
                                         </div>
-
                                         <div class="bg-toss-grey50 rounded-2xl p-4 space-y-2 mb-4">
                                             <div class="flex justify-between text-sm"><span class="text-toss-grey600">지급 합계</span><span class="font-bold" x-text="formatCurrency(pay.grossTotal)"></span></div>
                                             <div class="flex justify-between text-sm cursor-pointer" @click="showDeduction = !showDeduction">
                                                 <span class="text-toss-grey600 flex items-center gap-1">공제 합계 <i data-lucide="chevron-down" class="w-3 h-3 transition" :class="showDeduction?'rotate-180':''"></i></span><span class="font-bold text-toss-red" x-text="'- '+formatCurrency(pay.deductions.total)"></span>
                                             </div>
                                             <div x-show="showDeduction" class="pt-2 mt-2 border-t border-gray-200 text-xs text-toss-grey600 space-y-1" x-transition>
-                                                <div class="flex justify-between" x-show="pay.deductions.pension > 0"><span>국민연금</span><span x-text="formatCurrency(pay.deductions.pension)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.health > 0"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.care > 0"><span>장기요양</span><span x-text="formatCurrency(pay.deductions.care)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.employ > 0"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
-                                                <div class="flex justify-between"><span>소득세(지방세)</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
+                                                <div class="flex justify-between"><span>국민연금</span><span x-text="formatCurrency(pay.deductions.pension)"></span></div>
+                                                <div class="flex justify-between"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
+                                                <div class="flex justify-between"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
+                                                <div class="flex justify-between"><span>소득세</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
                                             </div>
                                         </div>
-
-                                        <div class="border-t border-toss-grey200 pt-4">
-                                            <div class="mb-4">
-                                                <h5 class="text-xs font-bold text-toss-grey500 mb-2 uppercase">지급 상세</h5>
-                                                <div x-show="emp.role !== 'parttime'" class="text-[10px] text-toss-grey400 mb-2">* 월간 근무일수: <span x-text="pay.details?.monthDays"></span>일 / 환산 시급: <span x-text="formatCurrency(pay.details?.hourlyRate)"></span></div>
-                                                <div class="space-y-1 text-sm text-toss-grey700">
-                                                    <div class="flex justify-between"><span>기본급</span><span x-text="formatCurrency(pay.basePay)"></span></div>
-                                                    <div class="flex justify-between"><span>주휴수당</span><span :class="pay.juhyuAllowance > 0 ? 'text-toss-blue' : 'text-toss-grey400'" x-text="pay.juhyuAllowance > 0 ? '+ '+formatCurrency(pay.juhyuAllowance) : '0원'"></span></div>
-                                                    <div x-show="pay.juhyuAllowance === 0 && pay.basePay > 0" class="text-xs text-toss-red bg-red-50 p-2 rounded flex items-center gap-1 mt-1"><i data-lucide="info" class="w-3 h-3"></i> 주휴수당 미지급 (아래 사유 참조)</div>
-                                                </div>
-                                            </div>
-                                            <div class="mb-4" x-show="pay.remarks && pay.remarks.length > 0">
-                                                <h5 class="text-xs font-bold text-toss-grey500 mb-2 uppercase">비고 (계산 제외 사유)</h5>
-                                                <div class="text-xs text-toss-grey700 bg-toss-grey50 p-2 rounded space-y-1"><template x-for="remark in pay.remarks"><div class="flex items-start gap-1"><i data-lucide="alert-circle" class="w-3 h-3 mt-0.5 text-toss-red"></i><span x-text="remark"></span></div></template></div>
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between items-center mb-2 cursor-pointer" @click="showDetail = !showDetail"><h5 class="text-xs font-bold text-toss-grey500 uppercase">근무 기록 상세 (일별)</h5><i data-lucide="chevron-down" class="w-4 h-4 text-toss-grey400 transition" :class="showDetail?'rotate-180':''"></i></div>
-                                                <div x-show="showDetail" class="bg-white border border-toss-grey200 rounded-lg overflow-hidden text-xs" x-transition>
-                                                    <div class="grid grid-cols-6 bg-toss-grey50 p-2 font-bold border-b border-toss-grey200 text-toss-grey600 text-center">
-                                                        <div>날짜</div><div>시간/상태</div><div>인정시간</div><div>인정급여</div><div>주휴금액</div><div>총지급액</div>
+                                        <button @click="showDetail = !showDetail" class="w-full flex items-center justify-center gap-1 text-sm text-toss-grey600 py-2 border border-toss-grey200 rounded-xl hover:bg-toss-grey50 transition"><span x-text="showDetail?'접기':'상세보기'"></span><i data-lucide="chevron-down"></i></button>
+                                        <div x-show="showDetail" class="mt-3 bg-white border border-toss-grey200 rounded-xl overflow-hidden text-xs" x-transition>
+                                            <div class="grid grid-cols-6 bg-toss-grey50 p-2 font-bold text-center"><div>날짜</div><div>시간</div><div>인정</div><div>급여</div><div>주휴</div><div>총액</div></div>
+                                            <div class="max-h-60 overflow-y-auto custom-scrollbar">
+                                                <template x-for="log in pay.dailyLogs">
+                                                    <div class="grid grid-cols-6 p-2 border-b text-center items-center">
+                                                        <div x-text="log.date"></div><div x-text="log.timeRange"></div><div x-text="log.hours+'h'"></div>
+                                                        <div x-text="formatCurrency(log.dailyBasePay)"></div><div x-text="formatCurrency(log.dailyJuhyu)"></div><div class="font-bold" x-text="formatCurrency(log.dailyTotal)"></div>
                                                     </div>
-                                                    <div class="max-h-60 overflow-y-auto custom-scrollbar">
-                                                        <template x-for="log in pay.dailyLogs">
-                                                            <div class="grid grid-cols-6 p-2 border-b border-toss-grey100 last:border-0 items-center text-center hover:bg-toss-grey50 transition-colors">
-                                                                <div x-text="log.date" class="text-toss-grey500 text-[10px]"></div>
-                                                                <div>
-                                                                    <span x-show="log.status === 'worked'" x-text="log.timeRange" class="text-toss-grey900 text-[10px] block truncate"></span>
-                                                                    <span x-show="log.status === 'absent'" class="text-toss-red font-bold bg-red-50 px-1.5 py-0.5 rounded text-[10px]">결근</span>
-                                                                </div>
-                                                                <div class="font-medium" :class="log.status==='absent'?'text-toss-red':'text-toss-blue'" x-text="log.hours + '시간'"></div>
-                                                                <div class="text-toss-grey700" x-text="formatCurrency(log.dailyBasePay)"></div>
-                                                                <div class="text-toss-grey500" x-text="log.dailyJuhyu > 0 ? formatCurrency(log.dailyJuhyu) : '-'"></div>
-                                                                <div class="font-bold text-toss-grey900" x-text="formatCurrency(log.dailyTotal)"></div>
-                                                            </div>
-                                                        </template>
-                                                    </div>
-                                                </div>
+                                                </template>
                                             </div>
                                         </div>
                                       </div>
@@ -362,90 +260,28 @@
         </main>
     </div>
 
-    <!-- 모달들 (생략 없이 복구) -->
+    <!-- 모달 -->
     <div x-show="showEmpModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
         <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl p-8 max-h-[90vh] overflow-y-auto" @click.away="showEmpModal = false">
             <div class="flex justify-between mb-6"><h2 class="text-2xl font-bold text-toss-grey900">직원 정보 입력</h2><button @click="showEmpModal = false"><i data-lucide="x"></i></button></div>
             <form @submit.prevent="saveEmployee" class="space-y-6">
-                <!-- 기본 정보 -->
-                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2">기본 정보</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">이름</label><input x-model="newEmp.name" class="toss-input" required></div>
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">주민등록번호</label><input x-model="newEmp.rrn" class="toss-input" placeholder="000000-0000000"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">직책</label><select x-model="newEmp.role" class="toss-input"><option value="parttime">아르바이트</option><option value="staff">정규직</option><option value="manager">매니저</option></select></div>
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">입사일</label><input x-model="newEmp.joinDate" type="date" class="toss-input" required></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-toss-grey700">주소</label>
-                    <div class="flex gap-2">
-                        <input x-model="newEmp.address" class="flex-1 toss-input" readonly placeholder="주소 검색 클릭">
-                        <button type="button" @click="searchAddress()" class="px-4 bg-toss-blue text-white rounded-xl font-medium">검색</button>
-                    </div>
-                </div>
-
-                <!-- 급여 및 계약 -->
-                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 pt-4">계약 및 급여</h3>
-                <div class="p-4 border border-toss-grey200 rounded-xl space-y-4">
-                    <div class="flex gap-2">
-                        <label class="flex-1 cursor-pointer text-center"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 text-sm peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:font-bold transition">4대보험</div></label>
-                        <label class="flex-1 cursor-pointer text-center"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 text-sm peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:font-bold transition">프리랜서</div></label>
-                        <label class="flex-1 cursor-pointer text-center"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 text-sm peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:font-bold transition">고용·산재</div></label>
-                    </div>
-                    <div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" placeholder="금액 입력" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div>
-                </div>
-
-                <!-- 근무 일정 계약 (복구) -->
-                <div>
-                    <label class="block text-sm font-semibold mb-2 text-toss-grey700">근무 일정 계약 (요일별)</label>
-                    <div class="space-y-2">
-                        <template x-for="day in ['월', '화', '수', '목', '금', '토', '일']">
-                            <div class="flex items-center gap-3 p-3 rounded-xl border transition-colors" 
-                                 :class="newEmp.schedule && newEmp.schedule[day] && newEmp.schedule[day].active ? 'border-toss-blue bg-toss-blueLight/30' : 'border-toss-grey200 bg-white'">
-                                <label class="flex items-center min-w-[40px] cursor-pointer">
-                                    <input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue border-toss-grey300">
-                                    <span class="ml-2 font-bold text-toss-grey700" x-text="day"></span>
-                                </label>
-                                <div class="flex-1 flex gap-2" x-show="newEmp.schedule[day] && newEmp.schedule[day].active">
-                                    <input type="time" x-model="newEmp.schedule[day].start" class="p-1.5 text-xs bg-white border border-toss-grey200 rounded-lg">
-                                    <span class="text-toss-grey400 self-center">~</span>
-                                    <input type="time" x-model="newEmp.schedule[day].end" class="p-1.5 text-xs bg-white border border-toss-grey200 rounded-lg">
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- 급여 계좌 -->
-                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 pt-4">급여 계좌</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div>
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input"></div>
-                    <div><label class="block text-sm font-semibold mb-1 text-toss-grey700">예금주</label><input x-model="newEmp.accountHolder" class="toss-input"></div>
-                </div>
-
+                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold mb-1">이름</label><input x-model="newEmp.name" class="toss-input" required></div><div><label class="block text-sm font-bold mb-1">주민번호</label><input x-model="newEmp.rrn" class="toss-input"></div></div>
+                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold mb-1">직책</label><select x-model="newEmp.role" class="toss-input"><option value="parttime">아르바이트</option><option value="staff">정규직</option><option value="manager">매니저</option></select></div><div><label class="block text-sm font-bold mb-1">입사일</label><input x-model="newEmp.joinDate" type="date" class="toss-input" required></div></div>
+                <div><label class="block text-sm font-bold mb-1">주소</label><div class="flex gap-2"><input x-model="newEmp.address" class="flex-1 toss-input" readonly><button type="button" @click="searchAddress()" class="px-4 bg-toss-blue text-white rounded-xl font-bold">검색</button></div></div>
+                <div class="p-4 border border-toss-grey200 rounded-xl space-y-4"><div class="flex gap-2"><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">4대보험</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">프리랜서</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">고용·산재</div></label></div><div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
+                <div><label class="block text-sm font-bold mb-2">근무 일정 계약</label><div class="space-y-2"><template x-for="day in ['월', '화', '수', '목', '금', '토', '일']"><div class="flex items-center gap-3 p-3 rounded-xl border" :class="newEmp.schedule[day]?.active ? 'border-toss-blue bg-toss-blueLight/30' : 'bg-white'"><label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold" x-text="day"></span></label><div class="flex-1 flex gap-2" x-show="newEmp.schedule[day]?.active"><input type="time" x-model="newEmp.schedule[day].start" class="p-1.5 text-xs bg-white rounded border"><span class="self-center">~</span><input type="time" x-model="newEmp.schedule[day].end" class="p-1.5 text-xs bg-white rounded border"></div></div></template></div></div>
                 <button type="submit" class="w-full bg-toss-blue text-white py-4 rounded-xl font-bold shadow-toss text-lg">저장하기</button>
             </form>
         </div>
     </div>
 
-    <!-- 근무 모달 (동일) -->
     <div x-show="showShiftModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
         <div class="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl" @click.away="closeShiftModal()">
-            <h3 class="text-lg font-bold text-toss-grey900 mb-1" x-text="isEditMode ? '근무 내용 수정하기' : '근무 추가하기'"></h3>
-            <p class="text-sm text-toss-blue font-medium mb-6" x-text="targetDateStr"></p>
+            <h3 class="text-lg font-bold mb-1">근무 추가/수정</h3><p class="text-sm text-toss-blue font-bold mb-6" x-text="targetDateStr"></p>
             <form @submit.prevent="saveShift" class="space-y-4">
-                <div><label class="block text-xs font-semibold mb-1 text-toss-grey500">직원</label><select x-model="newShift.empId" class="toss-input" :disabled="isEditMode"><template x-for="emp in employees" :key="emp.id"><option :value="emp.id" x-text="emp.name"></option></template></select></div>
-                <div class="flex gap-2">
-                    <div class="flex-1"><label class="block text-xs font-semibold mb-1 text-toss-grey500">출근</label><input x-model="newShift.startTime" type="time" step="60" class="toss-input text-center" required></div>
-                    <div class="flex-1"><label class="block text-xs font-semibold mb-1 text-toss-grey500">퇴근</label><input x-model="newShift.endTime" type="time" step="60" class="toss-input text-center" required></div>
-                </div>
-                <div class="flex gap-2 pt-4">
-                    <button type="button" @click="closeShiftModal()" class="flex-1 py-3 bg-toss-grey100 text-toss-grey700 rounded-xl font-bold">닫기</button>
-                    <template x-if="isEditMode"><button type="button" @click="deleteShift()" class="flex-1 py-3 bg-red-50 text-toss-red rounded-xl font-bold">삭제</button></template>
-                    <button type="submit" class="flex-1 py-3 bg-toss-blue text-white rounded-xl font-bold">저장</button>
-                </div>
+                <div><label class="block text-xs font-bold mb-1">직원</label><select x-model="newShift.empId" class="toss-input" :disabled="isEditMode"><template x-for="emp in employees" :key="emp.id"><option :value="emp.id" x-text="emp.name"></option></template></select></div>
+                <div class="flex gap-2"><div class="flex-1"><label class="block text-xs font-bold mb-1">출근</label><input x-model="newShift.startTime" type="time" class="toss-input text-center" required></div><div class="flex-1"><label class="block text-xs font-bold mb-1">퇴근</label><input x-model="newShift.endTime" type="time" class="toss-input text-center" required></div></div>
+                <div class="flex gap-2 pt-4"><button type="button" @click="closeShiftModal()" class="flex-1 py-3 bg-toss-grey100 font-bold rounded-xl">닫기</button><template x-if="isEditMode"><button type="button" @click="deleteShift()" class="flex-1 py-3 bg-red-50 text-toss-red font-bold rounded-xl">삭제</button></template><button type="submit" class="flex-1 py-3 bg-toss-blue text-white font-bold rounded-xl">저장</button></div>
             </form>
         </div>
     </div>
@@ -453,61 +289,37 @@
     <script>
         function hrApp() {
             return {
-                loading: true,
-                mobileMenuOpen: false, activeTab: 'employees', viewType: 'month',
+                loading: true, mobileMenuOpen: false, activeTab: 'employees', viewType: 'month',
                 menuItems: [ {id:'employees', label:'직원 관리', icon:'users'}, {id:'calendar', label:'근무 일정', icon:'calendar'}, {id:'payroll', label:'급여 내역', icon:'calculator'} ],
-                currentDate: new Date(2025, 11, 1),
-                employees: [], shifts: [], weekDays: [], dragState: { active: false },
-                
-                showEmpModal: false, isEmpEditMode: false, editingEmpId: null, 
-                showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
-                newEmp: { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: new Date().toISOString().split('T')[0], rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} },
-                newShift: { empId: null, startTime: '09:00', endTime: '18:00' },
+                currentDate: new Date(2025, 11, 1), employees: [], shifts: [], weekDays: [], dragState: { active: false },
+                showEmpModal: false, isEmpEditMode: false, editingEmpId: null, showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
+                newEmp: { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: '', rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }, newShift: { empId: null, startTime: '09:00', endTime: '18:00' },
 
                 async initApp() {
                     this.refreshIcons(); this.updateWeekDays(); this.$watch('activeTab', () => this.refreshIcons());
-                    
-                    // 안전장치: 로딩 타임아웃
-                    setTimeout(() => { if(this.loading) { console.warn("Data Load Timeout"); this.loading = false; } }, 5000);
-
-                    await this.loadData(); 
+                    setTimeout(() => { if(this.loading) { console.warn("Timeout"); this.loading = false; } }, 5000);
+                    await this.loadData();
                 },
-
                 refreshIcons() { setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50); },
-                
                 async loadData() {
                     this.loading = true;
                     try {
                         const [empRes, shiftRes] = await Promise.all([ fetchAPI('getEmployees', 'GET'), fetchAPI('getShifts', 'GET') ]);
-                        if (empRes.status === 'success') {
-                            // JSON 파싱 보정
-                            this.employees = empRes.data.map(e => {
-                                if (typeof e.schedule === 'string') { try { e.schedule = JSON.parse(e.schedule); } catch(err) { e.schedule = {}; } }
-                                return e;
-                            });
-                        }
+                        if (empRes.status === 'success') this.employees = empRes.data.map(e => { if(typeof e.schedule==='string'){try{e.schedule=JSON.parse(e.schedule)}catch(err){e.schedule={}}} return e; });
                         if (shiftRes.status === 'success') this.shifts = shiftRes.data;
-                    } catch (e) {
-                        console.error(e); alert("데이터 로드 실패 (API 권한 확인 필요)");
-                    } finally {
-                        this.loading = false;
-                    }
+                    } catch (e) { console.error(e); } finally { this.loading = false; }
                 },
-
-                // Helper Functions
+                // Helpers
                 getPageTitle() { return {'employees':'직원 관리','calendar':'근무 일정','payroll':'급여 내역'}[this.activeTab]; },
                 formatCurrency(v) { return Math.floor(v||0).toLocaleString()+'원'; },
                 formatRole(r) { return {'manager':'매니저','parttime':'아르바이트','staff':'정규직'}[r]; },
                 getContractLabel(t) { return t==='insurance4'?'4대보험':(t==='freelancer'?'프리랜서':'고용·산재'); },
                 getEmpName(id) { const e = this.employees.find(x => x.id == id); return e ? e.name : '-'; },
-                
-                // Calendar Logic (Monday Start)
+                // Calendar
                 getCalendarDays() {
                     const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
-                    const firstDayObj = new Date(y, m, 1);
-                    let emptySlots = (firstDayObj.getDay() + 6) % 7; 
-                    let days = []; 
-                    for(let i=0; i<emptySlots; i++) days.push({key:`b${i}`, day:null});
+                    const firstDayObj = new Date(y, m, 1); let emptySlots = (firstDayObj.getDay() + 6) % 7; 
+                    let days = []; for(let i=0; i<emptySlots; i++) days.push({key:`b${i}`, day:null});
                     for(let i=1; i<=lastDay; i++) { const dStr = String(i).padStart(2,'0'), mStr = String(m+1).padStart(2,'0'); days.push({key:`d${i}`, day:i, fullDate:`${y}-${mStr}-${dStr}`}); }
                     return days;
                 },
@@ -515,49 +327,20 @@
                 changeMonth(o) { this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth()+o, 1); },
                 changeDate(o) { if (this.viewType === 'month') this.changeMonth(o); else { const n = new Date(this.currentDate); n.setDate(n.getDate() + (o * 7)); this.currentDate = n; this.updateWeekDays(); } },
                 updateWeekDays() {
-                    const curr = new Date(this.currentDate);
-                    const day = curr.getDay(); const diff = (day === 0 ? -6 : 1) - day;
-                    const startOfWeek = new Date(curr.setDate(curr.getDate() + diff));
-                    const days = [];
-                    for (let i = 0; i < 7; i++) {
-                        const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
-                        const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
-                        days.push({ label: ['월','화','수','목','금','토','일'][i], date: dd, fullDate: `${y}-${m}-${dd}` });
-                    }
+                    const curr = new Date(this.currentDate); const day = curr.getDay(); const diff = (day === 0 ? -6 : 1) - day;
+                    const startOfWeek = new Date(curr.setDate(curr.getDate() + diff)); const days = [];
+                    for (let i = 0; i < 7; i++) { const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i); const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0'); days.push({ label: ['월','화','수','목','금','토','일'][i], date: dd, fullDate: `${y}-${m}-${dd}` }); }
                     this.weekDays = days;
                 },
-                getWeekDays() { return this.weekDays; },
                 getWeekRangeString() { const d = this.weekDays; return d.length ? `${d[0].fullDate} ~ ${d[6].fullDate}` : ''; },
-
-                // Drag Logic
+                // Drag
                 startDrag(index, dateKey, e) { this.dragState = { active: true, dayIndex: index, dateKey: dateKey, startYPos: e.clientY - e.currentTarget.getBoundingClientRect().top, currentY: 0, startTime:'', endTime:'' }; },
-                onDrag(e, index) { 
-                    if (!this.dragState.active || this.dragState.dayIndex !== index) return;
-                    const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top;
-                    this.dragState.currentY = offsetY;
-                    const s = Math.min(this.dragState.startYPos, offsetY), eY = Math.max(this.dragState.startYPos, offsetY);
-                    this.dragState.startTime = this.yToTime(s); this.dragState.endTime = this.yToTime(eY);
-                    this.dragState.timeLabel = `${this.dragState.startTime} - ${this.dragState.endTime}`;
-                },
-                endDrag() {
-                    if (!this.dragState.active) return;
-                    this.targetDateStr = this.dragState.dateKey; this.isEditMode = false;
-                    this.newShift = { empId: this.employees[0]?.id, startTime: this.dragState.startTime, endTime: this.dragState.endTime };
-                    this.dragState.active = false; this.showShiftModal = true;
-                },
+                onDrag(e, index) { if (!this.dragState.active || this.dragState.dayIndex !== index) return; const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top; this.dragState.currentY = offsetY; const s = Math.min(this.dragState.startYPos, offsetY), eY = Math.max(this.dragState.startYPos, offsetY); this.dragState.startTime = this.yToTime(s); this.dragState.endTime = this.yToTime(eY); this.dragState.timeLabel = `${this.dragState.startTime} - ${this.dragState.endTime}`; },
+                endDrag() { if (!this.dragState.active) return; this.targetDateStr = this.dragState.dateKey; this.isEditMode = false; this.newShift = { empId: this.employees[0]?.id, startTime: this.dragState.startTime, endTime: this.dragState.endTime }; this.dragState.active = false; this.showShiftModal = true; },
                 yToTime(y) { const tm = Math.round(y/12)*15, h = Math.floor(tm/60)+6, m = tm%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; },
-                getShiftStyle(s) {
-                    const sh = parseInt(s.startTime.split(':')[0]), sm = parseInt(s.startTime.split(':')[1]), eh = parseInt(s.endTime.split(':')[0]), em = parseInt(s.endTime.split(':')[1]);
-                    const sMin = (sh-6)*60+sm, eMin = (eh-6)*60+em, top = (sMin/60)*48, h = ((eMin-sMin)/60)*48;
-                    return `top:${Math.max(0,top)}px;height:${Math.max(12,h)}px;`;
-                },
-                getDragStyle() {
-                    const s = Math.min(this.dragState.startYPos, this.dragState.currentY), e = Math.max(this.dragState.startYPos, this.dragState.currentY);
-                    const ss = Math.round(s/12)*12, se = Math.round(e/12)*12;
-                    return `top:${ss}px;height:${Math.max(12,se-ss)}px;`;
-                },
-
-                // Modal & CRUD
+                getShiftStyle(s) { const sh = parseInt(s.startTime.split(':')[0]), sm = parseInt(s.startTime.split(':')[1]), eh = parseInt(s.endTime.split(':')[0]), em = parseInt(s.endTime.split(':')[1]); const sMin = (sh-6)*60+sm, eMin = (eh-6)*60+em, top = (sMin/60)*48, h = ((eMin-sMin)/60)*48; return `top:${Math.max(0,top)}px;height:${Math.max(12,h)}px;`; },
+                getDragStyle() { const s = Math.min(this.dragState.startYPos, this.dragState.currentY), e = Math.max(this.dragState.startYPos, this.dragState.currentY); const ss = Math.round(s/12)*12, se = Math.round(e/12)*12; return `top:${ss}px;height:${Math.max(12,se-ss)}px;`; },
+                // Modal
                 openEmpModal(emp=null) {
                     if(emp) { this.isEmpEditMode = true; this.editingEmpId = emp.id; this.newEmp = JSON.parse(JSON.stringify(emp)); }
                     else { this.isEmpEditMode = false; this.newEmp = { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: new Date().toISOString().split('T')[0], rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }; }
@@ -567,77 +350,39 @@
                 },
                 searchAddress() { openDaumPostcode((addr, zip) => { this.newEmp.address = `(${zip}) ${addr}`; }); },
                 async saveEmployee() {
-                    // Optimistic Update
-                    const tempId = this.isEmpEditMode ? this.editingEmpId : Date.now().toString();
-                    const tempEmp = { ...this.newEmp, id: tempId };
-                    if(this.isEmpEditMode) { const i = this.employees.findIndex(e => e.id === tempId); if(i!==-1) this.employees[i] = tempEmp; }
-                    else { this.employees.push(tempEmp); }
-                    this.showEmpModal = false;
-                    await fetchAPI(this.isEmpEditMode ? 'updateEmployee' : 'addEmployee', 'POST', this.newEmp);
-                    await this.loadData(); 
+                    const tempId = this.isEmpEditMode ? this.editingEmpId : Date.now().toString(); const tempEmp = { ...this.newEmp, id: tempId };
+                    if(this.isEmpEditMode) { const i = this.employees.findIndex(e => e.id === tempId); if(i!==-1) this.employees[i] = tempEmp; } else { this.employees.push(tempEmp); }
+                    this.showEmpModal = false; await fetchAPI(this.isEmpEditMode ? 'updateEmployee' : 'addEmployee', 'POST', this.newEmp); await this.loadData(); 
                 },
-                
                 openShiftModal(d) { const y=this.currentDate.getFullYear(), m=String(this.currentDate.getMonth()+1).padStart(2,'0'), dd=String(d).padStart(2,'0'); this.targetDateStr = `${y}-${m}-${dd}`; this.isEditMode=false; this.newShift={empId:this.employees[0]?.id, startTime:'09:00', endTime:'18:00'}; this.showShiftModal=true; },
                 openEditShiftModal(s) { this.targetDateStr=s.date; this.isEditMode=true; this.editingShiftId=s.id; this.newShift={empId:s.empId, startTime:s.startTime, endTime:s.endTime}; this.showShiftModal=true; },
                 closeShiftModal() { this.showShiftModal=false; },
-                async saveShift() {
-                    // Optimistic Update 생략 (복잡도 감소), 바로 저장 후 리로드
-                    await fetchAPI(this.isEditMode ? 'updateShift' : 'addShift', 'POST', { ...this.newShift, date: this.targetDateStr, id: this.editingShiftId || Date.now().toString() });
-                    this.showShiftModal=false; await this.loadData();
-                },
-                async deleteShift() {
-                    if(!confirm('삭제하시겠습니까?')) return;
-                    await fetchAPI('deleteShift', 'POST', { id: this.editingShiftId });
-                    this.showShiftModal=false; await this.loadData();
-                },
-
-                // Payroll Logic (Full Restoration)
+                async saveShift() { await fetchAPI(this.isEditMode ? 'updateShift' : 'addShift', 'POST', { ...this.newShift, date: this.targetDateStr, id: this.editingShiftId || Date.now().toString() }); this.showShiftModal=false; await this.loadData(); },
+                async deleteShift() { if(!confirm('삭제하시겠습니까?')) return; await fetchAPI('deleteShift', 'POST', { id: this.editingShiftId }); this.showShiftModal=false; await this.loadData(); },
+                // Payroll Logic (Restored)
                 calculatePayroll(emp) {
+                    if (!emp) return null;
                     try {
-                        if (!emp) return null;
                         let base=0, juhyu=0; const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
-                        let dailyLogs=[], weekStats={}, remarks=[];
-                        let hourlyRate=0, monthScheduledDays=0;
-
-                        // 1. 월급직 시급 환산
+                        let dailyLogs=[], weekStats={}, remarks=[]; let hourlyRate=0, monthScheduledDays=0;
                         if (emp.role !== 'parttime') {
-                            for (let d = 1; d <= lastDay; d++) {
-                                const tempDate = new Date(y, m, d);
-                                const dayName = ['일','월','화','수','목','금','토'][tempDate.getDay()];
-                                if (emp.schedule?.[dayName]?.active) monthScheduledDays++;
-                            }
+                            for (let d = 1; d <= lastDay; d++) { const tempDate = new Date(y, m, d); const dayName = ['일','월','화','수','목','금','토'][tempDate.getDay()]; if (emp.schedule?.[dayName]?.active) monthScheduledDays++; }
                             if (monthScheduledDays > 0) hourlyRate = ((emp.basePay / monthScheduledDays) / 8) / 1.2;
                         } else { hourlyRate = emp.basePay; }
 
-                        // 2. 일별 계산
                         for (let d = 1; d <= lastDay; d++) {
                             const dateObj = new Date(y, m, d), dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                             const dayName = ['일','월','화','수','목','금','토'][dateObj.getDay()];
-                            // ISO-like week number (Monday start)
-                            const dayOfFirst = new Date(y, m, 1).getDay() || 7; 
-                            const adjustedDate = d + dayOfFirst - 1;
-                            const weekNum = Math.ceil(adjustedDate / 7);
-
+                            const dayOfFirst = new Date(y, m, 1).getDay() || 7; const adjustedDate = d + dayOfFirst - 1; const weekNum = Math.ceil(adjustedDate / 7);
                             if (!weekStats[weekNum]) weekStats[weekNum] = { hours: 0, excluded: false, reasons: new Set(), weeklyBasePay: 0, juhyuEligible: false, totalJuhyu: 0 };
-                            
-                            const contract = emp.schedule?.[dayName];
-                            const isScheduled = contract && contract.active;
-                            const shift = this.shifts.find(s => s.date === dateStr && s.empId == emp.id); // Type loose check for ID
-                            
+                            const contract = emp.schedule?.[dayName]; const isScheduled = contract && contract.active;
+                            const shift = this.shifts.find(s => s.date === dateStr && s.empId == emp.id);
                             if (isScheduled) {
                                 if (shift) {
-                                    let h = (new Date(`2000-01-01T${shift.endTime}`) - new Date(`2000-01-01T${shift.startTime}`)) / 3600000;
-                                    if (h < 0) h += 24;
-                                    // Auto Break
-                                    let breakDeduction = 0;
-                                    if (h >= 8) breakDeduction = 1; else if (h >= 4) breakDeduction = 0.5;
-                                    h -= breakDeduction; if (h < 0) h = 0;
-                                    
-                                    const dailyPay = h * hourlyRate;
-                                    base += dailyPay;
-                                    
-                                    weekStats[weekNum].hours += h;
-                                    weekStats[weekNum].weeklyBasePay += dailyPay;
+                                    let h = (new Date(`2000-01-01T${shift.endTime}`) - new Date(`2000-01-01T${shift.startTime}`)) / 3600000; if (h < 0) h += 24;
+                                    let breakDeduction = 0; if (h >= 8) breakDeduction = 1; else if (h >= 4) breakDeduction = 0.5; h -= breakDeduction; if (h < 0) h = 0;
+                                    const dailyPay = h * hourlyRate; base += dailyPay;
+                                    weekStats[weekNum].hours += h; weekStats[weekNum].weeklyBasePay += dailyPay;
                                     dailyLogs.push({ date: dateStr, status: 'worked', timeRange: `${shift.startTime}~${shift.endTime}`, hours: h.toFixed(1), dailyBasePay: dailyPay, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 });
                                 } else {
                                     weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${dateStr} 결근`);
@@ -646,58 +391,33 @@
                             }
                             if (dateStr === emp.joinDate) { weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${emp.joinDate} 입사 주간`); }
                         }
-
-                        // 3. 주휴수당 계산 & 분배
                         Object.keys(weekStats).forEach(w => {
                             const stat = weekStats[w];
                             if (!stat.excluded && stat.hours >= 15) {
                                 stat.juhyuEligible = true;
-                                if (emp.role === 'parttime') {
-                                    stat.totalJuhyu = (Math.min(stat.hours, 40) / 40) * 8 * emp.basePay;
-                                } else {
-                                    stat.totalJuhyu = stat.weeklyBasePay * 0.2;
-                                }
+                                if (emp.role === 'parttime') stat.totalJuhyu = (Math.min(stat.hours, 40) / 40) * 8 * emp.basePay;
+                                else stat.totalJuhyu = stat.weeklyBasePay * 0.2;
                                 juhyu += stat.totalJuhyu;
-                            } else if (stat.excluded) {
-                                stat.reasons.forEach(r => remarks.push(r));
-                            }
+                            } else if (stat.excluded) stat.reasons.forEach(r => remarks.push(r));
                         });
-                        
-                        // 4. 일별 로그 업데이트
                         dailyLogs.forEach(log => {
                             if (log.status === 'worked') {
                                 const stat = weekStats[log.weekNum];
-                                if (stat && stat.juhyuEligible && stat.hours > 0) {
-                                    log.dailyJuhyu = Math.ceil(stat.totalJuhyu * (parseFloat(log.hours) / stat.hours));
-                                }
+                                if (stat && stat.juhyuEligible && stat.hours > 0) log.dailyJuhyu = Math.ceil(stat.totalJuhyu * (parseFloat(log.hours) / stat.hours));
                                 log.dailyTotal = Math.ceil(log.dailyBasePay + log.dailyJuhyu);
                             }
                         });
-
                         const gross = Math.ceil(base + juhyu);
                         let deductions = { pension:0, health:0, care:0, employ:0, tax:0, total:0 };
-                        
-                        if (emp.contractType === 'freelancer') {
-                            deductions.tax = Math.ceil(gross * 0.033 / 10) * 10;
-                        } else if (emp.contractType === 'insurance2') {
-                            deductions.employ = Math.ceil(gross * 0.009 / 10) * 10;
-                            const iTax = Math.ceil(gross * 0.01 / 10) * 10;
-                            deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
+                        if (emp.contractType === 'freelancer') { deductions.tax = Math.ceil(gross * 0.033 / 10) * 10; }
+                        else if (emp.contractType === 'insurance2') {
+                            deductions.employ = Math.ceil(gross * 0.009 / 10) * 10; const iTax = Math.ceil(gross * 0.01 / 10) * 10; deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
                         } else {
-                            deductions.pension = Math.ceil(gross * 0.045 / 10) * 10;
-                            deductions.health = Math.ceil(gross * 0.03545 / 10) * 10;
-                            deductions.care = Math.ceil(deductions.health * 0.1295 / 10) * 10;
-                            deductions.employ = Math.ceil(gross * 0.009 / 10) * 10;
-                            const iTax = Math.ceil(gross * 0.01 / 10) * 10;
-                            deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
+                            deductions.pension = Math.ceil(gross * 0.045 / 10) * 10; deductions.health = Math.ceil(gross * 0.03545 / 10) * 10; deductions.care = Math.ceil(deductions.health * 0.1295 / 10) * 10; deductions.employ = Math.ceil(gross * 0.009 / 10) * 10; const iTax = Math.ceil(gross * 0.01 / 10) * 10; deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
                         }
                         deductions.total = deductions.pension + deductions.health + deductions.care + deductions.employ + deductions.tax;
-
                         return { basePay: base, juhyuAllowance: juhyu, grossTotal: gross, deductions, netPay: gross - deductions.total, dailyLogs, remarks: [...new Set(remarks)], details: { monthDays: monthScheduledDays, hourlyRate: hourlyRate } };
-                    } catch(e) {
-                        console.error("Payroll Calc Error", e);
-                        return null;
-                    }
+                    } catch(e) { return null; }
                 }
             };
         }
