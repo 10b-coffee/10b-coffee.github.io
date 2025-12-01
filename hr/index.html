@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레스토지니 파트너센터 v3.7 (리스트 갱신 Fix)</title>
+    <title>레스토지니 파트너센터 v3.9 (캘린더/급여 완벽 수정)</title>
     
     <!-- 스타일 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -32,21 +32,17 @@
 
         const API_URL = 'https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec'; 
 
-        async function fetchAPI(action, method = 'GET', payload = null) {
+        async function fetchAPI(action, payload = null) {
             try {
-                if (method === 'GET') {
-                    const res = await fetch(`${API_URL}?action=${action}`);
-                    return await res.json();
-                } else {
-                    const options = {
-                        method: 'POST',
-                        redirect: "follow",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ action, payload })
-                    };
-                    const res = await fetch(API_URL, options);
-                    return await res.json();
-                }
+                // 모든 요청을 POST로 통일하여 GAS GET 파라미터 이슈 방지
+                const options = {
+                    method: 'POST',
+                    redirect: "follow",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action, payload })
+                };
+                const res = await fetch(API_URL, options);
+                return await res.json();
             } catch (error) {
                 console.error("API Error:", error);
                 return { status: 'error', message: error.toString() };
@@ -82,11 +78,10 @@
 
 <body class="antialiased select-none" x-data="hrApp()" x-init="initApp()" @mouseup.window="endDrag()">
 
-    <!-- 로딩 화면 -->
+    <!-- 로딩 -->
     <div class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50" x-show="loading" x-transition.opacity>
         <div class="w-10 h-10 border-4 border-toss-blue border-t-transparent rounded-full animate-spin mb-4"></div>
         <div class="text-xl font-bold text-toss-grey900">데이터를 불러오는 중...</div>
-        <div class="text-sm text-toss-grey500 mt-2">잠시만 기다려주세요</div>
     </div>
 
     <div class="flex min-h-screen">
@@ -121,10 +116,11 @@
             <nav class="p-4 space-y-2"><template x-for="item in menuItems"><a href="#" @click.prevent="activeTab = item.id; mobileMenuOpen = false" class="block px-4 py-3 rounded-xl text-lg font-medium" :class="activeTab === item.id ? 'bg-toss-blueLight text-toss-blue' : 'text-toss-grey700'"><span x-text="item.label"></span></a></template></nav>
         </div>
 
+        <!-- Main Content -->
         <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 bg-toss-grey100 min-h-screen" x-cloak>
             <div class="max-w-6xl mx-auto">
                 <header class="flex justify-between items-end mb-8">
-                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.7 (리스트 갱신 Fix)</p></div>
+                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.9 (캘린더 날짜 픽스)</p></div>
                     <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition"><i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span></button>
                 </header>
 
@@ -156,15 +152,19 @@
                 <div x-show="activeTab === 'calendar'" class="animate-fade-in h-full flex flex-col">
                     <div class="bg-white rounded-3xl shadow-toss p-6 border border-toss-grey200 flex-1 flex flex-col min-h-[600px]">
                          <div class="flex justify-between items-center mb-6">
-                             <h3 class="font-bold text-lg flex items-center gap-2"><span x-text="viewType === 'month' ? '12월 근무 현황' : getWeekRangeString()"></span></h3>
+                             <!-- [수정됨] 동적 날짜 표시 및 클릭 시 모달 오픈 -->
+                             <h3 class="font-bold text-lg flex items-center gap-2 cursor-pointer hover:text-toss-blue transition" @click="showDateModal = true">
+                                 <span x-text="viewType === 'month' ? getMonthTitle() : getWeekRangeString()"></span>
+                                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                             </h3>
                              <div class="flex items-center gap-3">
                                  <div class="bg-toss-grey100 p-1 rounded-xl flex text-sm font-medium">
                                      <button @click="viewType = 'month'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'month' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">월간</button>
                                      <button @click="viewType = 'week'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'week' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">주간</button>
                                  </div>
                                  <div class="flex items-center bg-toss-grey100 rounded-xl px-1">
-                                     <button @click="changeDate(-1)" class="w-8 h-8 flex items-center justify-center"><i data-lucide="chevron-left"></i></button>
-                                     <button @click="changeDate(1)" class="w-8 h-8 flex items-center justify-center"><i data-lucide="chevron-right"></i></button>
+                                     <button @click="changeDate(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                                     <button @click="changeDate(1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
                                  </div>
                              </div>
                          </div>
@@ -247,11 +247,11 @@
                                                 <span class="text-toss-grey600 flex items-center gap-1">공제 합계 <i data-lucide="chevron-down" class="w-3 h-3 transition" :class="showDeduction?'rotate-180':''"></i></span><span class="font-bold text-toss-red" x-text="'- '+formatCurrency(pay.deductions.total)"></span>
                                             </div>
                                             <div x-show="showDeduction" class="pt-2 mt-2 border-t border-gray-200 text-xs text-toss-grey600 space-y-1" x-transition>
-                                                <div class="flex justify-between" x-show="pay.deductions.pension > 0"><span>국민연금</span><span x-text="formatCurrency(pay.deductions.pension)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.health > 0"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.care > 0"><span>장기요양</span><span x-text="formatCurrency(pay.deductions.care)"></span></div>
-                                                <div class="flex justify-between" x-show="pay.deductions.employ > 0"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
-                                                <div class="flex justify-between"><span>소득세(지방세)</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
+                                                <div class="flex justify-between"><span>국민연금</span><span x-text="formatCurrency(pay.deductions.pension)"></span></div>
+                                                <div class="flex justify-between"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
+                                                <div class="flex justify-between"><span>장기요양</span><span x-text="formatCurrency(pay.deductions.care)"></span></div>
+                                                <div class="flex justify-between"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
+                                                <div class="flex justify-between"><span>소득세</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
                                             </div>
                                         </div>
                                         <button @click="showDetail = !showDetail" class="w-full flex items-center justify-center gap-1 text-sm text-toss-grey600 py-2 border border-toss-grey200 rounded-xl hover:bg-toss-grey50 transition"><span x-text="showDetail?'접기':'상세보기'"></span><i data-lucide="chevron-down"></i></button>
@@ -276,9 +276,27 @@
         </main>
     </div>
 
-    <!-- 모달 -->
+    <!-- 날짜 선택 모달 (신규) -->
+    <div x-show="showDateModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
+        <div class="bg-white w-80 rounded-3xl shadow-2xl p-6" @click.away="showDateModal = false">
+            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">날짜 선택</h3><button @click="showDateModal=false"><i data-lucide="x"></i></button></div>
+            <div class="flex justify-between items-center mb-4">
+                <button @click="modalYear--" class="p-2 hover:bg-toss-grey100 rounded"><i data-lucide="chevron-left"></i></button>
+                <span class="font-bold text-xl" x-text="modalYear"></span>
+                <button @click="modalYear++" class="p-2 hover:bg-toss-grey100 rounded"><i data-lucide="chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <template x-for="m in 12">
+                    <button @click="selectDate(modalYear, m-1)" class="py-2 rounded-lg text-sm font-medium hover:bg-toss-blueLight hover:text-toss-blue transition" :class="m-1 === currentDate.getMonth() && modalYear === currentDate.getFullYear() ? 'bg-toss-blue text-white hover:bg-toss-blue hover:text-white' : 'bg-toss-grey50 text-toss-grey700'" x-text="m + '월'"></button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- 직원/근무 모달 (기존과 동일) -->
     <div x-show="showEmpModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
         <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl p-8 max-h-[90vh] overflow-y-auto" @click.away="showEmpModal = false">
+            <!-- (폼 내용은 위와 동일) -->
             <div class="flex justify-between mb-6"><h2 class="text-2xl font-bold text-toss-grey900">직원 정보 입력</h2><button @click="showEmpModal = false"><i data-lucide="x"></i></button></div>
             <form @submit.prevent="saveEmployee" class="space-y-6">
                 <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold mb-1">이름</label><input x-model="newEmp.name" class="toss-input" required></div><div><label class="block text-sm font-bold mb-1">주민번호</label><input x-model="newEmp.rrn" class="toss-input"></div></div>
@@ -286,16 +304,9 @@
                 <div><label class="block text-sm font-bold mb-1">주소</label><div class="flex gap-2"><input x-model="newEmp.address" class="flex-1 toss-input" readonly><button type="button" @click="searchAddress()" class="px-4 bg-toss-blue text-white rounded-xl font-bold">검색</button></div></div>
                 <div class="p-4 border border-toss-grey200 rounded-xl space-y-4"><div class="flex gap-2"><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">4대보험</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">프리랜서</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">고용·산재</div></label></div><div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
                 <div><label class="block text-sm font-bold mb-2">근무 일정 계약</label><div class="space-y-2"><template x-for="day in ['월', '화', '수', '목', '금', '토', '일']"><div class="flex items-center gap-3 p-3 rounded-xl border" :class="newEmp.schedule[day]?.active ? 'border-toss-blue bg-toss-blueLight/30' : 'bg-white'"><label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold" x-text="day"></span></label><div class="flex-1 flex gap-2" x-show="newEmp.schedule[day]?.active"><input type="time" x-model="newEmp.schedule[day].start" class="p-1.5 text-xs bg-white rounded border"><span class="self-center">~</span><input type="time" x-model="newEmp.schedule[day].end" class="p-1.5 text-xs bg-white rounded border"></div></div></template></div></div>
-                
-                <!-- 급여 계좌 정보 (복구 완료) -->
-                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 pt-4">급여 계좌</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <div><label class="block text-sm font-bold mb-1">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div>
-                    <div><label class="block text-sm font-bold mb-1">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input"></div>
-                    <div><label class="block text-sm font-bold mb-1">예금주</label><input x-model="newEmp.accountHolder" class="toss-input"></div>
-                </div>
-
-                <button type="submit" class="w-full bg-toss-blue text-white py-4 rounded-xl font-bold shadow-toss text-lg">저장하기</button>
+                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 mt-4">급여 계좌</h3>
+                <div class="grid grid-cols-3 gap-4 mt-2"><div><label class="block text-sm font-bold mb-1">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div><div><label class="block text-sm font-bold mb-1">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input"></div><div><label class="block text-sm font-bold mb-1">예금주</label><input x-model="newEmp.accountHolder" class="toss-input"></div></div>
+                <button type="submit" class="w-full bg-toss-blue text-white py-4 rounded-xl font-bold shadow-toss text-lg mt-4">저장하기</button>
             </form>
         </div>
     </div>
@@ -319,6 +330,7 @@
                 currentDate: new Date(2025, 11, 1), employees: [], shifts: [], weekDays: [], dragState: { active: false },
                 showEmpModal: false, isEmpEditMode: false, editingEmpId: null, showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
                 newEmp: { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: '', rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }, newShift: { empId: null, startTime: '09:00', endTime: '18:00' },
+                showDateModal: false, modalYear: 2025,
 
                 async initApp() {
                     this.refreshIcons(); this.updateWeekDays(); this.$watch('activeTab', () => this.refreshIcons());
@@ -329,18 +341,24 @@
                 async loadData() {
                     this.loading = true;
                     try {
-                        const [empRes, shiftRes] = await Promise.all([ fetchAPI('getEmployees', 'GET'), fetchAPI('getShifts', 'GET') ]);
+                        const [empRes, shiftRes] = await Promise.all([ fetchAPI('getEmployees'), fetchAPI('getShifts') ]);
                         if (empRes.status === 'success') this.employees = empRes.data.map(e => { 
-                            // 입사일 날짜 포맷팅
-                            if (e.joinDate && e.joinDate.includes('T')) e.joinDate = e.joinDate.split('T')[0];
                             if(typeof e.schedule==='string'){try{e.schedule=JSON.parse(e.schedule)}catch(err){e.schedule={}}} 
+                            if(e.joinDate && e.joinDate.includes('T')) e.joinDate = e.joinDate.split('T')[0];
                             return e; 
                         });
-                        if (shiftRes.status === 'success') this.shifts = shiftRes.data;
+                        if (shiftRes.status === 'success') {
+                            // [Fix] Date Format Normalization
+                            this.shifts = shiftRes.data.map(s => {
+                                if(s.date && s.date.includes('T')) s.date = s.date.split('T')[0];
+                                return s;
+                            });
+                        }
                     } catch (e) { console.error(e); } finally { this.loading = false; }
                 },
                 // Helpers
                 getPageTitle() { return {'employees':'직원 관리','calendar':'근무 일정','payroll':'급여 내역'}[this.activeTab]; },
+                getMonthTitle() { return `${this.currentDate.getFullYear()}년 ${this.currentDate.getMonth() + 1}월`; },
                 formatCurrency(v) { return Math.floor(v||0).toLocaleString()+'원'; },
                 formatRole(r) { return {'manager':'매니저','parttime':'아르바이트','staff':'정규직'}[r]; },
                 getContractLabel(t) { return t==='insurance4'?'4대보험':(t==='freelancer'?'프리랜서':'고용·산재'); },
@@ -356,6 +374,7 @@
                 getShifts(d) { return this.shifts.filter(s => s.date === d); },
                 changeMonth(o) { this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth()+o, 1); },
                 changeDate(o) { if (this.viewType === 'month') this.changeMonth(o); else { const n = new Date(this.currentDate); n.setDate(n.getDate() + (o * 7)); this.currentDate = n; this.updateWeekDays(); } },
+                selectDate(y, m) { this.currentDate = new Date(y, m, 1); this.showDateModal = false; this.updateWeekDays(); },
                 updateWeekDays() {
                     const curr = new Date(this.currentDate); const day = curr.getDay(); const diff = (day === 0 ? -6 : 1) - day;
                     const startOfWeek = new Date(curr.setDate(curr.getDate() + diff)); const days = [];
@@ -382,14 +401,14 @@
                 async saveEmployee() {
                     const tempId = this.isEmpEditMode ? this.editingEmpId : Date.now().toString(); const tempEmp = { ...this.newEmp, id: tempId };
                     if(this.isEmpEditMode) { const i = this.employees.findIndex(e => e.id === tempId); if(i!==-1) this.employees[i] = tempEmp; } else { this.employees.push(tempEmp); }
-                    this.showEmpModal = false; await fetchAPI(this.isEmpEditMode ? 'updateEmployee' : 'addEmployee', 'POST', this.newEmp); await this.loadData(); 
+                    this.showEmpModal = false; await fetchAPI(this.isEmpEditMode ? 'updateEmployee' : 'addEmployee', this.newEmp); await this.loadData(); 
                 },
                 openShiftModal(d) { const y=this.currentDate.getFullYear(), m=String(this.currentDate.getMonth()+1).padStart(2,'0'), dd=String(d).padStart(2,'0'); this.targetDateStr = `${y}-${m}-${dd}`; this.isEditMode=false; this.newShift={empId:this.employees[0]?.id, startTime:'09:00', endTime:'18:00'}; this.showShiftModal=true; },
                 openEditShiftModal(s) { this.targetDateStr=s.date; this.isEditMode=true; this.editingShiftId=s.id; this.newShift={empId:s.empId, startTime:s.startTime, endTime:s.endTime}; this.showShiftModal=true; },
                 closeShiftModal() { this.showShiftModal=false; },
-                async saveShift() { await fetchAPI(this.isEditMode ? 'updateShift' : 'addShift', 'POST', { ...this.newShift, date: this.targetDateStr, id: this.editingShiftId || Date.now().toString() }); this.showShiftModal=false; await this.loadData(); },
-                async deleteShift() { if(!confirm('삭제하시겠습니까?')) return; await fetchAPI('deleteShift', 'POST', { id: this.editingShiftId }); this.showShiftModal=false; await this.loadData(); },
-                // Payroll Logic (Restored)
+                async saveShift() { await fetchAPI(this.isEditMode ? 'updateShift' : 'addShift', { ...this.newShift, date: this.targetDateStr, id: this.editingShiftId || Date.now().toString() }); this.showShiftModal=false; await this.loadData(); },
+                async deleteShift() { if(!confirm('삭제하시겠습니까?')) return; await fetchAPI('deleteShift', { id: this.editingShiftId }); this.showShiftModal=false; await this.loadData(); },
+                // Payroll Logic
                 calculatePayroll(emp) {
                     if (!emp) return null;
                     try {
