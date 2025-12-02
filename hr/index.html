@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 v2.0.10 (Bug Fix)</title>
+    <title>레스토지니 v2.0.11 (Click Fix)</title>
     
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
@@ -49,7 +49,8 @@
 <body class="h-screen w-screen flex overflow-hidden bg-[#F2F4F6]">
 
     <!-- Loading Overlay -->
-    <div id="global-loading" class="hidden fixed inset-0 z-[9999] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+    <!-- Fixed: Removed 'flex' class from here. It will be added by JS when needed. -->
+    <div id="global-loading" class="hidden fixed inset-0 z-[9999] bg-white/80 backdrop-blur-sm flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
         <p class="text-blue-600 font-bold animate-pulse" id="loading-text">데이터 동기화 중...</p>
     </div>
@@ -73,7 +74,7 @@
                     <div class="text-sm font-bold text-gray-700">김점장님</div>
                 </div>
             </div>
-            <div class="text-xs text-gray-300 mt-2 pl-1">v2.0.10 (Bug Fix)</div>
+            <div class="text-xs text-gray-300 mt-2 pl-1">v2.0.11 (Click Fix)</div>
             <button onclick="openConfig()" class="text-xs text-blue-400 underline mt-1 pl-1">API 설정</button>
         </div>
     </aside>
@@ -308,7 +309,6 @@
         // === STATE ===
         let staffData = [];
         let schedules = {};
-        // FIX: Defined globally so renderPayroll can write to it and openAIReport can read it
         let payrollResults = {}; 
         
         let currentYear = 2025;
@@ -514,7 +514,15 @@
             location.reload();
         }
         function showLoading(show) {
-            document.getElementById('global-loading').classList.toggle('hidden', !show);
+            // Updated to toggle display classes for click fix
+            const el = document.getElementById('global-loading');
+            if(show) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+            } else {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
         }
 
         // --- Render Inputs Helpers ---
