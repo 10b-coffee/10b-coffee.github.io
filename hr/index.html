@@ -3,485 +3,1152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레스토지니 파트너센터 v3.16 (최종 픽스)</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>레스토지니 - 직원 관리 및 급여 정산</title>
     
-    <!-- 스타일 -->
+    <!-- Pretendard Webfont -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Markdown Parser (for AI responses) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Pretendard', 'sans-serif'] },
-                    colors: {
-                        toss: {
-                            blue: '#3182F6', blueLight: '#E8F3FF', grey50: '#F9FAFB', grey100: '#F2F4F6',
-                            grey200: '#E5E8EB', grey300: '#D1D6DB', grey400: '#B0B8C1', grey500: '#8B95A1',
-                            grey600: '#6B7684', grey700: '#4E5968', grey800: '#333D4B', grey900: '#191F28',
-                            red: '#F04452', green: '#26D07C', orange: '#FF9500', orangeLight: '#FFF7E6'
-                        }
-                    },
-                    boxShadow: { 'toss': '0 4px 20px rgba(0, 0, 0, 0.04)', 'toss-hover': '0 8px 30px rgba(0, 0, 0, 0.08)' }
-                }
-            }
-        }
-
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyR2hc_Zw770ij1nd7gi6ouHG0fM6PRPH21gQ2D5S6Z8A76gBkuInLzD-sFsGJZQDJ4fw/exec'; 
-
-        async function fetchAPI(action, payload = null) {
-            try {
-                const options = {
-                    method: 'POST',
-                    redirect: "follow",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action, payload })
-                };
-                const res = await fetch(API_URL, options);
-                return await res.json();
-            } catch (error) {
-                console.error("API Error:", error);
-                return { status: 'error', message: error.toString() };
-            }
+    <style>
+        :root {
+            --toss-blue: #3182F6;
+            --toss-blue-light: #E8F3FF;
+            --toss-grey-50: #F9FAFB;
+            --toss-grey-100: #F2F4F6;
+            --toss-grey-300: #D1D6DB;
+            --toss-grey-500: #8B95A1;
+            --toss-grey-700: #4E5968;
+            --toss-grey-900: #191F28;
+            --gemini-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
         
-        function openDaumPostcode(callback) {
-            new daum.Postcode({
-                oncomplete: function(data) { callback(data.address, data.zonecode); }
-            }).open();
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--toss-grey-50);
+            color: var(--toss-grey-900);
+            -webkit-font-smoothing: antialiased;
         }
 
-        // [Fix] 로컬 날짜 문자열 변환 (UTC 문제 해결)
-        function toDateString(dateObj) {
-            const offset = dateObj.getTimezoneOffset() * 60000;
-            return new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
+        /* Toss-like UI Components */
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0,0,0,0.03);
         }
-    </script>
-    <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #F2F4F6; color: #191F28; user-select: none; }
-        [x-cloak] { display: none !important; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D6DB; border-radius: 3px; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .toss-table th { background-color: #F9FAFB; color: #4E5968; padding: 12px 16px; text-align: left; border-bottom: 1px solid #E5E8EB; }
-        .toss-table td { padding: 16px; border-bottom: 1px solid #F2F4F6; color: #333D4B; }
-        .toss-input { width: 100%; padding: 12px; background-color: #F9FAFB; border-radius: 12px; border: none; font-weight: 500; transition: all 0.2s; }
-        .toss-input:focus { background-color: #fff; box-shadow: 0 0 0 2px #3182F6; outline: none; }
-        .time-slot { height: 48px; border-bottom: 1px solid #F2F4F6; box-sizing: border-box; }
-        .week-col { position: relative; border-right: 1px solid #F2F4F6; }
-        .week-col:last-child { border-right: none; }
-        .event-chip { position: absolute; left: 2px; right: 2px; border-radius: 6px; font-size: 11px; padding: 2px 4px; overflow: hidden; cursor: pointer; transition: all 0.1s; border: 1px solid transparent; }
-        .event-chip:hover { z-index: 10; transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .drag-preview { position: absolute; left: 2px; right: 2px; background-color: rgba(49, 130, 246, 0.2); border: 1px dashed #3182F6; border-radius: 6px; pointer-events: none; z-index: 20; }
+
+        .btn-primary {
+            background-color: var(--toss-blue);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+        .btn-primary:hover { background-color: #1B64DA; }
+
+        .btn-secondary {
+            background-color: var(--toss-grey-100);
+            color: var(--toss-grey-700);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+        .btn-secondary:hover { background-color: var(--toss-grey-300); }
+        
+        .btn-ai {
+            background: var(--gemini-gradient);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+        .btn-ai:hover { box-shadow: 0 6px 16px rgba(79, 172, 254, 0.5); transform: translateY(-1px); }
+
+        .input-field {
+            background-color: var(--toss-grey-50);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: 0.2s;
+            outline: none;
+            font-size: 15px;
+        }
+        .input-field:focus {
+            background-color: white;
+            border-color: var(--toss-blue);
+            box-shadow: 0 0 0 2px var(--toss-blue-light);
+        }
+        .input-field:disabled {
+            background-color: var(--toss-grey-100);
+            color: var(--toss-grey-500);
+            cursor: not-allowed;
+        }
+
+        /* Calendar Grid */
+        .calendar-grid-week {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            border-top: 1px solid var(--toss-grey-100);
+            border-left: 1px solid var(--toss-grey-100);
+            user-select: none;
+        }
+        .calendar-grid-month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-top: 1px solid var(--toss-grey-100);
+            border-left: 1px solid var(--toss-grey-100);
+            height: 100%;
+        }
+
+        .calendar-header {
+            background-color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--toss-grey-100);
+            border-right: 1px solid var(--toss-grey-100);
+            color: var(--toss-grey-700);
+        }
+        .time-label {
+            text-align: right;
+            padding-right: 8px;
+            font-size: 12px;
+            color: var(--toss-grey-500);
+            border-bottom: 1px solid var(--toss-grey-100);
+            border-right: 1px solid var(--toss-grey-100);
+            height: 48px; /* 1 hour height */
+            position: relative;
+            top: -6px;
+        }
+        .calendar-cell {
+            background-color: white;
+            border-bottom: 1px solid var(--toss-grey-100);
+            border-right: 1px solid var(--toss-grey-100);
+            cursor: pointer;
+            position: relative;
+        }
+        .calendar-cell-week {
+            height: 12px; /* 15 mins */
+        }
+        .calendar-cell-month {
+            min-height: 100px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .calendar-cell-month:hover { background-color: var(--toss-grey-50); }
+        
+        .calendar-cell.hour-marker { border-bottom: 1px solid var(--toss-grey-300); }
+        .calendar-cell:hover { background-color: var(--toss-blue-light); }
+        .calendar-cell.selected { background-color: var(--toss-blue); opacity: 0.5; }
+
+        .event-block {
+            background-color: var(--toss-blue);
+            color: white;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 11px;
+            overflow: hidden;
+            z-index: 10;
+            pointer-events: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .event-block.week {
+            position: absolute;
+            width: 90%;
+            left: 5%;
+        }
+        .event-block.month {
+            width: 100%;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .chat-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: var(--gemini-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .chat-btn:hover { transform: scale(1.05); }
+        
+        .chat-window {
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            margin-bottom: 16px;
+            display: none; /* hidden by default */
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .chat-header {
+            background: var(--toss-grey-50);
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--toss-grey-100);
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-input-area {
+            padding: 12px;
+            border-top: 1px solid var(--toss-grey-100);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            line-height: 1.5;
+        }
+        .message.user {
+            background-color: var(--toss-blue);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .message.ai {
+            background-color: var(--toss-grey-100);
+            color: var(--toss-grey-900);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #ccc;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+            margin: 0 1px;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--toss-blue);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Markdown Styles */
+        .markdown-body ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
+        .markdown-body ol { list-style-type: decimal; padding-left: 20px; margin-bottom: 10px; }
+        .markdown-body p { margin-bottom: 10px; }
+        .markdown-body strong { font-weight: 700; }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E5E8EB; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #B0B8C1; }
     </style>
 </head>
+<body class="flex h-screen overflow-hidden">
 
-<body class="antialiased select-none" x-data="hrApp()" x-init="initApp()" @mouseup.window="endDrag()">
-
-    <!-- 로딩 -->
-    <div class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50" x-show="loading" x-transition.opacity>
-        <div class="w-10 h-10 border-4 border-toss-blue border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div class="text-xl font-bold text-toss-grey900">데이터를 동기화 중입니다...</div>
-    </div>
-
-    <div class="flex min-h-screen">
-        <!-- LNB -->
-        <aside class="w-64 bg-white border-r border-toss-grey200 fixed h-full z-20 hidden md:flex flex-col">
-            <div class="p-6">
-                <div class="flex items-center gap-2 mb-8">
-                    <div class="w-8 h-8 rounded-lg bg-toss-blue flex items-center justify-center text-white font-bold text-lg">R</div>
-                    <span class="font-bold text-xl text-toss-grey900">RestoGenie</span>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col justify-between z-20">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-blue-500 mb-8 flex items-center gap-2">
+                <i class="ph-fill ph-storefront"></i> 레스토지니
+            </h1>
+            <nav class="space-y-2">
+                <button onclick="switchTab('employees')" id="nav-employees" class="w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3">
+                    <i class="ph ph-users text-xl"></i> 직원 관리
+                </button>
+                <button onclick="switchTab('schedule')" id="nav-schedule" class="w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3">
+                    <i class="ph ph-calendar text-xl"></i> 근무 일정
+                </button>
+                <button onclick="switchTab('payroll')" id="nav-payroll" class="w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3">
+                    <i class="ph ph-money text-xl"></i> 급여 정산
+                </button>
+            </nav>
+        </div>
+        <div class="p-6 border-t border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="ph-fill ph-user"></i>
                 </div>
-                <nav class="space-y-1">
-                    <template x-for="item in menuItems">
-                        <a href="#" @click.prevent="activeTab = item.id" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-toss-grey700 hover:bg-toss-grey50" :class="{ 'bg-toss-blueLight text-toss-blue font-bold': activeTab === item.id }">
-                            <i :data-lucide="item.icon" class="w-5 h-5"></i>
-                            <span x-text="item.label"></span>
-                        </a>
-                    </template>
-                </nav>
+                <div>
+                    <p class="text-sm font-bold text-gray-900">관리자님</p>
+                    <p class="text-xs text-gray-500">Premium Plan</p>
+                </div>
             </div>
-            <div class="mt-auto p-6 border-t border-toss-grey100 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-toss-grey100 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
-                <div><div class="text-sm font-bold">김사장님</div><div class="text-xs text-toss-grey500">강남점</div></div>
-            </div>
-        </aside>
+        </div>
+    </aside>
 
-        <!-- Mobile Header -->
-        <header class="md:hidden fixed w-full bg-white border-b border-toss-grey200 z-30 px-4 h-14 flex items-center justify-between">
-            <span class="font-bold text-lg">RestoGenie</span>
-            <button @click="mobileMenuOpen = !mobileMenuOpen"><i data-lucide="menu"></i></button>
-        </header>
-        <div x-show="mobileMenuOpen" class="fixed inset-0 z-40 bg-white pt-14 md:hidden" x-transition>
-            <nav class="p-4 space-y-2"><template x-for="item in menuItems"><a href="#" @click.prevent="activeTab = item.id; mobileMenuOpen = false" class="block px-4 py-3 rounded-xl text-lg font-medium" :class="activeTab === item.id ? 'bg-toss-blueLight text-toss-blue' : 'text-toss-grey700'"><span x-text="item.label"></span></a></template></nav>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-[#F9FAFB] relative" id="main-content">
+        
+        <!-- View: Employee Management -->
+        <div id="view-employees" class="p-8 max-w-5xl mx-auto hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">직원 관리</h2>
+                    <p class="text-gray-500 mt-1">매장의 소중한 동료들을 등록하고 계약을 관리하세요.</p>
+                </div>
+                <button onclick="openEmployeeModal()" class="btn-primary px-5 py-3 flex items-center gap-2">
+                    <i class="ph-bold ph-plus"></i> 직원 등록
+                </button>
+            </div>
+            
+            <div id="employee-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Employee Cards Generated Here -->
+            </div>
         </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 bg-toss-grey100 min-h-screen" x-cloak>
-            <div class="max-w-6xl mx-auto">
-                <header class="flex justify-between items-end mb-8">
-                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.16 (데이터 정합성 Fix)</p></div>
-                    <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition"><i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span></button>
-                </header>
+        <!-- View: Schedule -->
+        <div id="view-schedule" class="flex h-full hidden">
+            <!-- Inner Sidebar -->
+            <div class="w-64 border-r border-gray-200 bg-white p-4 flex flex-col z-10">
+                <h3 class="font-bold text-lg mb-4 flex items-center gap-2 px-2">
+                    <i class="ph-bold ph-users"></i> 직원 목록
+                </h3>
+                <div id="schedule-employee-list" class="space-y-1 overflow-y-auto flex-1"></div>
+            </div>
 
-                <!-- 1. 직원 관리 -->
-                <div x-show="activeTab === 'employees'" class="animate-fade-in space-y-6">
-                    <div class="bg-white rounded-3xl shadow-toss overflow-hidden border border-toss-grey200">
-                        <div class="p-8 text-center text-toss-grey500" x-show="employees.length === 0">데이터가 없습니다.</div>
-                        <div class="overflow-x-auto" x-show="employees.length > 0">
-                            <table class="w-full toss-table">
-                                <thead><tr><th>이름/직책</th><th>계약형태</th><th>급여조건</th><th>근무일정</th><th>입사일</th><th class="text-right">관리</th></tr></thead>
-                                <tbody>
-                                    <template x-for="emp in employees" :key="emp.id">
-                                        <tr class="hover:bg-toss-grey50 transition">
-                                            <td><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-toss-blueLight text-toss-blue flex items-center justify-center font-bold" x-text="emp.name ? emp.name[0] : '-'"></div><div><div class="font-bold" x-text="emp.name"></div><div class="text-xs text-toss-grey500" x-text="formatRole(emp.role)"></div></div></div></td>
-                                            <td><span class="px-2 py-1 rounded text-xs font-medium" :class="{'bg-green-100 text-green-700': emp.contractType==='insurance4','bg-toss-orangeLight text-toss-orange': emp.contractType==='freelancer','bg-blue-100 text-blue-700': emp.contractType==='insurance2'}" x-text="getContractLabel(emp.contractType)"></span></td>
-                                            <td><div class="font-medium" x-text="formatCurrency(emp.basePay)"></div><div class="text-xs text-toss-grey500" x-text="emp.role==='parttime'?'시급':'월급'"></div></td>
-                                            <td><div class="flex gap-1"><template x-for="(s,d) in (emp.schedule || {})"><span x-show="s.active" class="text-xs bg-toss-grey100 px-1.5 py-0.5 rounded" x-text="d"></span></template></div></td>
-                                            <td class="text-sm text-toss-grey600" x-text="emp.joinDate"></td>
-                                            <td class="text-right"><button @click="openEmpModal(emp)" class="px-3 py-2 bg-toss-grey100 rounded-lg text-sm font-medium hover:bg-toss-grey200 text-toss-grey700">상세보기</button></td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
+            <!-- Inner Main: Calendar -->
+            <div class="flex-1 flex flex-col bg-gray-50 relative">
+                <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
+                    <div class="flex items-center gap-4">
+                        <button onclick="changeDate(-1)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-600"><i class="ph-bold ph-caret-left"></i></button>
+                        <div class="relative group">
+                            <span id="calendar-title" class="text-xl font-bold cursor-pointer hover:text-blue-500 transition-colors flex items-center gap-1"></span>
+                            <input type="month" id="calendar-month-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="jumpToDate(this.value)">
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap">클릭하여 날짜 이동</div>
+                        </div>
+                        <button onclick="changeDate(1)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-600"><i class="ph-bold ph-caret-right"></i></button>
+                    </div>
+                    <div class="flex bg-gray-100 p-1 rounded-xl">
+                        <button onclick="setScheduleView('month')" id="btn-view-month" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all">월간</button>
+                        <button onclick="setScheduleView('week')" id="btn-view-week" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all">주간</button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-auto relative p-4" id="calendar-container">
+                    <div id="calendar-grid-wrapper" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Payroll -->
+        <div id="view-payroll" class="p-8 max-w-6xl mx-auto hidden">
+             <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">급여 정산</h2>
+                    <p class="text-gray-500 mt-1">실시간으로 계산된 예상 급여 내역입니다.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="generatePayrollReport()" class="btn-ai px-4 py-2 flex items-center gap-2 text-sm shadow-md hover:shadow-lg transition-all">
+                        <i class="ph-fill ph-sparkle"></i> AI 급여 분석
+                    </button>
+                    <input type="month" id="payroll-month" class="input-field w-40" onchange="renderPayroll()">
+                </div>
+            </div>
+
+            <div id="ai-report-container" class="hidden mb-6 card p-6 bg-gradient-to-r from-blue-50 to-white border-blue-100">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="ph-fill ph-sparkle text-blue-500 text-xl"></i>
+                        <h3 class="font-bold text-lg text-gray-800">AI 경영 분석 리포트</h3>
+                    </div>
+                    <button onclick="closeAiReport()" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
+                </div>
+                <div id="ai-report-content" class="markdown-body text-sm text-gray-700 leading-relaxed"></div>
+            </div>
+
+            <div id="payroll-list" class="space-y-6"></div>
+        </div>
+
+    </main>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-robot text-blue-500 text-xl"></i>
+                    <span>AI 노무사</span>
+                </div>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message ai">안녕하세요! 사장님. 👋<br>근로기준법이나 주휴수당 계산 등 궁금한 점이 있으시면 언제든 물어봐 주세요.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="질문을 입력하세요..." class="flex-1 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" onkeypress="handleChatKey(event)">
+                <button onclick="sendMessage()" class="bg-blue-500 text-white rounded-xl w-10 h-10 flex items-center justify-center hover:bg-blue-600 transition">
+                    <i class="ph-bold ph-paper-plane-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chat-btn" onclick="toggleChat()"><i class="ph-fill ph-chat-teardrop-text"></i></div>
+    </div>
+
+    <!-- Modal: Employee (Updated) -->
+    <div id="modal-employee" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center">
+        <div class="bg-white rounded-3xl w-full max-w-2xl p-8 shadow-2xl max-h-[95vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold" id="modal-employee-title">직원 등록</h3>
+                <button onclick="closeEmployeeModal()" class="p-2 hover:bg-gray-100 rounded-full"><i class="ph-bold ph-x"></i></button>
+            </div>
+            
+            <form id="employee-form" onsubmit="saveEmployee(event)" class="space-y-6">
+                <input type="hidden" id="emp-id">
+                
+                <!-- 1. 인적 사항 -->
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-user"></i> 인적 사항</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+                            <input type="text" id="emp-name" required class="input-field" placeholder="김토스">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">주민등록번호</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="emp-rrn-front" maxlength="6" class="input-field w-1/2" placeholder="생년월일">
+                                <span>-</span>
+                                <input type="password" id="emp-rrn-back" maxlength="7" class="input-field w-1/2" placeholder="뒤 7자리">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">주소</label>
+                        <input type="text" id="emp-address" placeholder="서울시 강남구 테헤란로..." class="input-field">
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 my-4"></div>
+
+                <!-- 2. 근무 정보 -->
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-briefcase"></i> 근무 정보</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">입사일</label>
+                            <input type="date" id="emp-join-date" required class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">퇴사일</label>
+                            <input type="date" id="emp-leave-date" disabled class="input-field">
+                            <div class="mt-2 flex items-center gap-2">
+                                <input type="checkbox" id="emp-is-working" checked onchange="toggleLeaveDate()" class="w-4 h-4 text-blue-600 rounded">
+                                <label for="emp-is-working" class="text-sm text-gray-600">현재 재직 중</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">직책</label>
+                        <select id="emp-role" class="input-field">
+                            <option value="staff">일반 직원</option>
+                            <option value="manager">매니저</option>
+                            <option value="owner">점장</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">요일별 근무 시간 (기본 스케줄)</label>
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
+                            <!-- JS will populate rows for Mon-Sun here -->
+                            <div id="work-schedule-rows" class="space-y-2 text-sm">
+                                <!-- Example Row: Generated dynamically -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. 근무 일정 -->
-                <div x-show="activeTab === 'calendar'" class="animate-fade-in h-full flex flex-col">
-                    <div class="bg-white rounded-3xl shadow-toss p-6 border border-toss-grey200 flex-1 flex flex-col min-h-[600px]">
-                         <div class="flex justify-between items-center mb-6">
-                             <h3 class="font-bold text-lg flex items-center gap-2 cursor-pointer hover:text-toss-blue transition" @click="showDateModal = true">
-                                 <span x-text="viewType === 'month' ? getMonthString() : getWeekRangeString()"></span>
-                                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                             </h3>
-                             <div class="flex items-center gap-3">
-                                 <div class="bg-toss-grey100 p-1 rounded-xl flex text-sm font-medium">
-                                     <button @click="viewType = 'month'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'month' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">월간</button>
-                                     <button @click="viewType = 'week'; changeDate(0)" class="px-3 py-1.5 rounded-lg transition" :class="viewType === 'week' ? 'bg-white shadow-sm text-toss-grey900' : 'text-toss-grey500'">주간</button>
-                                 </div>
-                                 <div class="flex items-center bg-toss-grey100 rounded-xl px-1">
-                                     <button @click="changeDate(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                                     <button @click="changeDate(1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm text-toss-grey600"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                                 </div>
-                             </div>
-                         </div>
+                <div class="border-t border-gray-100 my-4"></div>
 
-                         <!-- 월간 뷰 -->
-                         <div x-show="viewType === 'month'" class="border border-toss-grey200 rounded-2xl overflow-hidden flex-1 flex flex-col">
-                            <div class="grid grid-cols-7 bg-toss-grey50 border-b border-toss-grey200">
-                                <template x-for="(d,i) in ['월','화','수','목','금','토','일']"><div class="py-3 text-center text-sm font-bold text-toss-grey600" x-text="d"></div></template>
-                            </div>
-                            <div class="grid grid-cols-7 bg-white flex-1">
-                                <template x-for="d in getCalendarDays()" :key="d.key">
-                                    <div @click="d.day ? openShiftModal(d.day) : null" class="min-h-[100px] p-1 border-b border-r border-toss-grey100 relative hover:bg-toss-grey50 transition cursor-pointer group flex flex-col">
-                                        <div class="text-sm font-medium p-1" x-text="d.day||''"></div>
-                                        <div class="flex flex-col gap-1 mt-1 flex-1">
-                                            <template x-for="shift in getShifts(d.fullDate)">
-                                                <div @click.stop="openEditShiftModal(shift)" class="text-[10px] bg-toss-blueLight text-toss-blue px-2 py-1 rounded font-medium truncate border border-transparent hover:border-toss-blue">
-                                                    <span x-text="getEmpName(shift.empId)"></span> <span x-text="shift.startTime.slice(0,2)+'시'"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <div x-show="d.day" class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition"><i data-lucide="plus-circle" class="w-5 h-5 text-toss-grey400 hover:text-toss-blue"></i></div>
-                                    </div>
-                                </template>
+                <!-- 3. 급여 및 계약 -->
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-money"></i> 급여 및 계약</h4>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">계약 형태</label>
+                        <select id="emp-type" class="input-field" onchange="updateAllowancePreview()">
+                            <option value="hourly">시급제 (파트타임)</option>
+                            <option value="monthly">월급제 (정규/계약)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" id="label-pay">기본급</label>
+                            <div class="relative">
+                                <input type="number" id="emp-pay" required class="input-field pr-8" placeholder="0">
+                                <span class="absolute right-3 top-3 text-gray-500 text-sm">원</span>
                             </div>
                         </div>
-
-                        <!-- 주간 뷰 -->
-                        <div x-show="viewType === 'week'" class="border border-toss-grey200 rounded-2xl overflow-hidden flex-1 flex flex-col h-[600px]">
-                            <div class="grid grid-cols-8 bg-toss-grey50 border-b border-toss-grey200 shrink-0">
-                                <div class="py-3 text-center text-xs text-toss-grey500 border-r border-toss-grey200">시간</div>
-                                <template x-for="(d, i) in weekDays" :key="d.fullDate">
-                                    <div class="py-3 text-center border-r border-toss-grey200 last:border-0">
-                                        <div class="text-xs font-bold" x-text="d.label"></div><div class="text-sm font-bold" x-text="d.date"></div>
-                                    </div>
-                                </template>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">수당 (직접 입력)</label>
+                             <div class="relative">
+                                <input type="number" id="emp-allowance-manual" class="input-field pr-8" placeholder="0">
+                                <span class="absolute right-3 top-3 text-gray-500 text-sm">원</span>
                             </div>
-                            <div class="flex-1 overflow-y-auto custom-scrollbar relative" x-ref="weekGrid">
-                                <div class="grid grid-cols-8 min-h-[900px]">
-                                    <div class="border-r border-toss-grey200 bg-white">
-                                        <template x-for="h in 18"><div class="time-slot text-[10px] text-toss-grey400 text-right pr-2 pt-1" x-text="(h+5).toString().padStart(2,'0')+':00'"></div></template>
-                                    </div>
-                                    <template x-for="(d, index) in weekDays" :key="d.fullDate">
-                                        <div class="week-col bg-white relative" @mousedown="startDrag(index, d.fullDate, $event)" @mousemove="onDrag($event, index)">
-                                            <template x-for="h in 18"><div class="time-slot pointer-events-none"></div></template>
-                                            <template x-for="shift in getShifts(d.fullDate)" :key="shift.id">
-                                                <div @click.stop="openEditShiftModal(shift)" class="event-chip bg-toss-blueLight text-toss-blue border-toss-blue font-bold shadow-sm" :style="getShiftStyle(shift)">
-                                                    <div x-text="getEmpName(shift.empId)"></div><div class="font-normal text-[9px]" x-text="`${shift.startTime} - ${shift.endTime}`"></div>
-                                                </div>
-                                            </template>
-                                            <div x-show="dragState.active && dragState.dayIndex === index" class="drag-preview flex items-center justify-center text-xs text-toss-blue font-bold" :style="getDragStyle()"><span x-text="dragState.timeLabel"></span></div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
+                            <p class="text-xs text-gray-500 mt-1" id="allowance-hint">시급제: 시간당 추가 / 월급제: 월 추가</p>
                         </div>
+                    </div>
+
+                    <!-- 주휴수당 포함 여부 (시급제 전용) -->
+                    <div id="hourly-options" class="mb-4 bg-blue-50 p-3 rounded-lg hidden">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="emp-juhyu-included" class="w-4 h-4 text-blue-600 rounded">
+                            <span class="text-sm text-blue-800 font-medium">입력한 시급에 주휴수당 포함</span>
+                        </label>
+                        <p class="text-xs text-blue-600 mt-1 ml-6">* 체크 시 기본급을 역산하여 계산합니다 (약 ÷1.2)</p>
+                    </div>
+
+                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">보험 적용</label>
+                        <select id="emp-insurance" class="input-field">
+                            <option value="4major">4대보험 (국민,건강,고용,산재)</option>
+                            <option value="2major">2대보험 (고용,산재)</option>
+                            <option value="freelance">프리랜서 (3.3%)</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- 3. 급여 내역 -->
-                <div x-show="activeTab === 'payroll'" class="animate-fade-in space-y-6">
-                     <div class="grid gap-6 lg:grid-cols-2">
-                        <template x-for="emp in employees" :key="emp.id">
-                             <div class="bg-white rounded-3xl p-6 shadow-toss border border-toss-grey200 hover:shadow-toss-hover transition" 
-                                  x-data="{ pay: calculatePayroll(emp), showDetail: false, showDeduction: false }" x-effect="pay = calculatePayroll(emp)">
-                                  <div class="text-center py-4 text-toss-grey500" x-show="!pay">급여 계산 중...</div>
-                                  <template x-if="pay">
-                                      <div>
-                                        <div class="flex justify-between items-start mb-6">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-12 h-12 rounded-full bg-toss-grey100 flex items-center justify-center text-xl">👤</div>
-                                                <div>
-                                                    <div class="font-bold text-lg" x-text="emp.name"></div>
-                                                    <div class="text-sm text-toss-grey500">
-                                                        <span x-text="formatRole(emp.role)"></span> · 
-                                                        <span x-text="getContractLabel(emp.contractType)"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="text-right"><div class="text-xs text-toss-grey500 mb-1">실제 받는 금액</div><div class="text-2xl font-bold text-toss-blue" x-text="formatCurrency(pay.netPay)"></div></div>
-                                        </div>
-                                        <div class="bg-toss-grey50 rounded-2xl p-4 space-y-2 mb-4">
-                                            <div class="flex justify-between text-sm"><span class="text-toss-grey600">지급 합계</span><span class="font-bold" x-text="formatCurrency(pay.grossTotal)"></span></div>
-                                            <div class="flex justify-between text-sm cursor-pointer" @click="showDeduction = !showDeduction">
-                                                <span class="text-toss-grey600 flex items-center gap-1">공제 합계 <i data-lucide="chevron-down" class="w-3 h-3 transition" :class="showDeduction?'rotate-180':''"></i></span><span class="font-bold text-toss-red" x-text="'- '+formatCurrency(pay.deductions.total)"></span>
-                                            </div>
-                                            <div x-show="showDeduction" class="pt-2 mt-2 border-t border-gray-200 text-xs text-toss-grey600 space-y-1" x-transition>
-                                                <div class="flex justify-between"><span>국민연금</span><span x-text="formatCurrency(pay.deductions.pension)"></span></div>
-                                                <div class="flex justify-between"><span>건강보험</span><span x-text="formatCurrency(pay.deductions.health)"></span></div>
-                                                <div class="flex justify-between"><span>장기요양</span><span x-text="formatCurrency(pay.deductions.care)"></span></div>
-                                                <div class="flex justify-between"><span>고용보험</span><span x-text="formatCurrency(pay.deductions.employ)"></span></div>
-                                                <div class="flex justify-between"><span>소득세</span><span x-text="formatCurrency(pay.deductions.tax)"></span></div>
-                                            </div>
-                                        </div>
-                                        <button @click="showDetail = !showDetail" class="w-full flex items-center justify-center gap-1 text-sm text-toss-grey600 py-2 border border-toss-grey200 rounded-xl hover:bg-toss-grey50 transition"><span x-text="showDetail?'접기':'상세보기'"></span><i data-lucide="chevron-down"></i></button>
-                                        <div x-show="showDetail" class="mt-3 bg-white border border-toss-grey200 rounded-xl overflow-hidden text-xs" x-transition>
-                                            <div class="grid grid-cols-6 bg-toss-grey50 p-2 font-bold text-center"><div>날짜</div><div>시간</div><div>인정</div><div>급여</div><div>주휴</div><div>총액</div></div>
-                                            <div class="max-h-60 overflow-y-auto custom-scrollbar">
-                                                <template x-for="log in pay.dailyLogs">
-                                                    <div class="grid grid-cols-6 p-2 border-b text-center items-center">
-                                                        <div x-text="log.date"></div><div x-text="log.timeRange"></div><div x-text="log.hours+'h'"></div>
-                                                        <div x-text="formatCurrency(log.dailyBasePay)"></div><div x-text="formatCurrency(log.dailyJuhyu)"></div><div class="font-bold" x-text="formatCurrency(log.dailyTotal)"></div>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                      </div>
-                                  </template>
-                             </div>
-                        </template>
-                     </div>
+                <div class="border-t border-gray-100 my-4"></div>
+
+                <!-- 4. 계좌 정보 -->
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-credit-card"></i> 계좌 정보</h4>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="emp-bank-name" class="input-field">
+                            <option value="">은행 선택</option>
+                            <option value="KB국민">KB국민</option>
+                            <option value="신한">신한</option>
+                            <option value="우리">우리</option>
+                            <option value="하나">하나</option>
+                            <option value="NH농협">NH농협</option>
+                            <option value="IBK기업">IBK기업</option>
+                            <option value="토스뱅크">토스뱅크</option>
+                            <option value="카카오뱅크">카카오뱅크</option>
+                            <option value="케이뱅크">케이뱅크</option>
+                            <option value="SC제일">SC제일</option>
+                            <option value="우체국">우체국</option>
+                            <option value="부산">부산</option>
+                            <option value="대구">대구</option>
+                            <option value="새마을">새마을</option>
+                            <option value="신협">신협</option>
+                        </select>
+                        <input type="text" id="emp-account-number" placeholder="계좌번호 (- 제외)" class="input-field col-span-2">
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="emp-account-holder" placeholder="예금주" class="input-field">
+                    </div>
                 </div>
-            </div>
-        </main>
-    </div>
 
-    <!-- 년/월 선택 모달 -->
-    <div x-show="showDateModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
-        <div class="bg-white w-80 rounded-3xl shadow-2xl p-6" @click.away="showDateModal = false">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">날짜 선택</h3><button @click="showDateModal=false"><i data-lucide="x"></i></button></div>
-            <div class="flex justify-between items-center mb-4">
-                <button @click="modalYear--" class="p-2 hover:bg-toss-grey100 rounded"><i data-lucide="chevron-left"></i></button>
-                <span class="font-bold text-xl" x-text="modalYear"></span>
-                <button @click="modalYear++" class="p-2 hover:bg-toss-grey100 rounded"><i data-lucide="chevron-right"></i></button>
-            </div>
-            <div class="grid grid-cols-4 gap-2">
-                <template x-for="m in 12">
-                    <button @click="selectDate(modalYear, m-1)" class="py-2 rounded-lg text-sm font-medium hover:bg-toss-blueLight hover:text-toss-blue transition" :class="m-1 === currentDate.getMonth() && modalYear === currentDate.getFullYear() ? 'bg-toss-blue text-white' : 'bg-toss-grey50 text-toss-grey700'" x-text="m + '월'"></button>
-                </template>
-            </div>
-        </div>
-    </div>
-
-    <!-- 직원 모달 (계좌 포함 + 복구) -->
-    <div x-show="showEmpModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
-        <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl p-8 max-h-[90vh] overflow-y-auto" @click.away="showEmpModal = false">
-            <div class="flex justify-between mb-6"><h2 class="text-2xl font-bold text-toss-grey900">직원 정보 입력</h2><button @click="showEmpModal = false"><i data-lucide="x"></i></button></div>
-            <form @submit.prevent="saveEmployee" class="space-y-6">
-                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold mb-1">이름</label><input x-model="newEmp.name" class="toss-input" required></div><div><label class="block text-sm font-bold mb-1">주민번호</label><input x-model="newEmp.rrn" class="toss-input"></div></div>
-                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-bold mb-1">직책</label><select x-model="newEmp.role" class="toss-input"><option value="parttime">아르바이트</option><option value="staff">정규직</option><option value="manager">매니저</option></select></div><div><label class="block text-sm font-bold mb-1">입사일</label><input x-model="newEmp.joinDate" type="date" class="toss-input" required></div></div>
-                <div><label class="block text-sm font-bold mb-1">주소</label><div class="flex gap-2"><input x-model="newEmp.address" class="flex-1 toss-input" readonly><button type="button" @click="searchAddress()" class="px-4 bg-toss-blue text-white rounded-xl font-bold">검색</button></div></div>
-                <div class="p-4 border border-toss-grey200 rounded-xl space-y-4"><div class="flex gap-2"><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">4대보험</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">프리랜서</div></label><label class="flex-1 text-center cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="py-2 rounded-lg bg-toss-grey50 peer-checked:bg-toss-blueLight peer-checked:text-toss-blue font-bold">고용·산재</div></label></div><div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
-                <div><label class="block text-sm font-bold mb-2">근무 일정 계약</label><div class="space-y-2"><template x-for="day in ['월', '화', '수', '목', '금', '토', '일']"><div class="flex items-center gap-3 p-3 rounded-xl border" :class="newEmp.schedule[day]?.active ? 'border-toss-blue bg-toss-blueLight/30' : 'bg-white'"><label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold" x-text="day"></span></label><div class="flex-1 flex gap-2" x-show="newEmp.schedule[day]?.active"><input type="time" x-model="newEmp.schedule[day].start" class="p-1.5 text-xs bg-white rounded border"><span class="self-center">~</span><input type="time" x-model="newEmp.schedule[day].end" class="p-1.5 text-xs bg-white rounded border"></div></div></template></div></div>
-                <h3 class="text-lg font-bold text-toss-grey900 border-b pb-2 mt-4">급여 계좌</h3>
-                <div class="grid grid-cols-3 gap-4 mt-2"><div><label class="block text-sm font-bold mb-1">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div><div><label class="block text-sm font-bold mb-1">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input"></div><div><label class="block text-sm font-bold mb-1">예금주</label><input x-model="newEmp.accountHolder" class="toss-input"></div></div>
-                <button type="submit" class="w-full bg-toss-blue text-white py-4 rounded-xl font-bold shadow-toss text-lg mt-4">저장하기</button>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="deleteEmployee()" id="btn-delete-emp" class="btn-secondary w-1/3 hidden text-red-500 bg-red-50 hover:bg-red-100">삭제</button>
+                    <button type="submit" class="btn-primary flex-1 py-3 text-lg">저장하기</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- 근무 모달 -->
-    <div x-show="showShiftModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
-        <div class="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl" @click.away="closeShiftModal()">
-            <h3 class="text-lg font-bold mb-1">근무 추가/수정</h3><p class="text-sm text-toss-blue font-bold mb-6" x-text="targetDateStr"></p>
-            <form @submit.prevent="saveShift" class="space-y-4">
-                <div><label class="block text-xs font-bold mb-1">직원</label><select x-model="newShift.empId" class="toss-input" :disabled="isEditMode"><template x-for="emp in employees" :key="emp.id"><option :value="emp.id" x-text="emp.name"></option></template></select></div>
-                <div class="flex gap-2"><div class="flex-1"><label class="block text-xs font-bold mb-1">출근</label><input x-model="newShift.startTime" type="time" class="toss-input text-center" required></div><div class="flex-1"><label class="block text-xs font-bold mb-1">퇴근</label><input x-model="newShift.endTime" type="time" class="toss-input text-center" required></div></div>
-                <div class="flex gap-2 pt-4"><button type="button" @click="closeShiftModal()" class="flex-1 py-3 bg-toss-grey100 font-bold rounded-xl">닫기</button><template x-if="isEditMode"><button type="button" @click="deleteShift()" class="flex-1 py-3 bg-red-50 text-toss-red font-bold rounded-xl">삭제</button></template><button type="submit" class="flex-1 py-3 bg-toss-blue text-white font-bold rounded-xl">저장</button></div>
+    <!-- Modal: Schedule Detail (No Change) -->
+    <div id="modal-schedule" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center">
+        <div class="bg-white rounded-3xl w-80 p-6 shadow-xl">
+             <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold" id="modal-schedule-title">근무 시간 수정</h3>
+                <button onclick="closeScheduleModal()" class="p-1"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <form onsubmit="saveScheduleDetail(event)">
+                <input type="hidden" id="sch-date">
+                <p id="sch-date-display" class="text-sm text-gray-500 mb-3 text-center"></p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-500">시작 시간</label>
+                        <input type="time" id="sch-start" required class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">종료 시간</label>
+                        <input type="time" id="sch-end" required class="input-field">
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" id="btn-delete-schedule" onclick="deleteScheduleDetail()" class="flex-1 btn-secondary text-red-500 bg-red-50">삭제</button>
+                    <button type="submit" class="flex-1 btn-primary">저장</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-        function hrApp() {
-            return {
-                loading: true, mobileMenuOpen: false, activeTab: 'employees', viewType: 'month',
-                menuItems: [ {id:'employees', label:'직원 관리', icon:'users'}, {id:'calendar', label:'근무 일정', icon:'calendar'}, {id:'payroll', label:'급여 내역', icon:'calculator'} ],
-                currentDate: new Date(), employees: [], shifts: [], weekDays: [], dragState: { active: false },
-                showEmpModal: false, isEmpEditMode: false, editingEmpId: null, showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
-                newEmp: { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: toDateString(new Date()), rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }, 
-                newShift: { empId: null, startTime: '09:00', endTime: '18:00' },
-                showDateModal: false, modalYear: 2025,
+        // --- Gemini API Setup ---
+        const apiKey = ""; 
+        
+        async function callGemini(prompt, systemInstruction = "") {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "죄송합니다. 응답을 생성할 수 없습니다.";
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return "API 호출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+            }
+        }
 
-                async initApp() {
-                    this.modalYear = this.currentDate.getFullYear();
-                    this.refreshIcons(); this.updateWeekDays(); this.$watch('activeTab', () => this.refreshIcons());
-                    setTimeout(() => { if(this.loading) { console.warn("Timeout"); this.loading = false; } }, 5000);
-                    await this.loadData();
-                },
-                refreshIcons() { setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50); },
-                async loadData() {
-                    this.loading = true;
-                    try {
-                        const [empRes, shiftRes] = await Promise.all([ fetchAPI('getEmployees', 'GET'), fetchAPI('getShifts', 'GET') ]);
-                        if (empRes.status === 'success') {
-                            this.employees = empRes.data.map(e => {
-                                if(typeof e.schedule === 'string') { try { e.schedule = JSON.parse(e.schedule); } catch(err) { e.schedule = {}; } }
-                                if(e.joinDate) e.joinDate = e.joinDate.toString().substring(0, 10);
-                                return e;
-                            });
-                        }
-                        if (shiftRes.status === 'success') {
-                            // [Fix] 날짜 포맷 강제 변환
-                            this.shifts = shiftRes.data.map(s => {
-                                if(s.date) s.date = s.date.toString().substring(0, 10);
-                                return s;
-                            });
-                        }
-                    } catch (e) { console.error(e); } finally { this.loading = false; }
-                },
-                // Helpers
-                getPageTitle() { return {'employees':'직원 관리','calendar':'근무 일정','payroll':'급여 내역'}[this.activeTab]; },
-                getMonthString() { return `${this.currentDate.getFullYear()}년 ${this.currentDate.getMonth() + 1}월`; },
-                formatCurrency(v) { return Math.floor(v||0).toLocaleString()+'원'; },
-                formatRole(r) { return {'manager':'매니저','parttime':'아르바이트','staff':'정규직'}[r]; },
-                getContractLabel(t) { return t==='insurance4'?'4대보험':(t==='freelancer'?'프리랜서':'고용·산재'); },
-                getEmpName(id) { const e = this.employees.find(x => x.id == id); return e ? e.name : '-'; },
-                // Calendar
-                getCalendarDays() {
-                    const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
-                    const firstDayObj = new Date(y, m, 1); let emptySlots = (firstDayObj.getDay() + 6) % 7; 
-                    let days = []; for(let i=0; i<emptySlots; i++) days.push({key:`b${i}`, day:null});
-                    for(let i=1; i<=lastDay; i++) { const dStr = String(i).padStart(2,'0'), mStr = String(m+1).padStart(2,'0'); days.push({key:`d${i}`, day:i, fullDate:`${y}-${mStr}-${dStr}`}); }
-                    return days;
-                },
-                getShifts(d) { return this.shifts.filter(s => s.date === d); },
-                changeMonth(o) { this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth()+o, 1); },
-                changeDate(o) { if (this.viewType === 'month') this.changeMonth(o); else { const n = new Date(this.currentDate); n.setDate(n.getDate() + (o * 7)); this.currentDate = new Date(n); this.updateWeekDays(); } },
-                selectDate(y, m) { this.currentDate = new Date(y, m, 1); this.showDateModal = false; this.updateWeekDays(); },
-                updateWeekDays() {
-                    const curr = new Date(this.currentDate); const day = curr.getDay(); const diff = (day === 0 ? -6 : 1) - day;
-                    const startOfWeek = new Date(curr.setDate(curr.getDate() + diff)); const days = [];
-                    for (let i = 0; i < 7; i++) { const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i); const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0'); days.push({ label: ['월','화','수','목','금','토','일'][i], date: String(d.getDate()).padStart(2,'0'), fullDate: toDateString(d) }); }
-                    this.weekDays = days;
-                },
-                getWeekRangeString() { const d = this.weekDays; return d.length ? `${d[0].fullDate} ~ ${d[6].fullDate}` : ''; },
-                // Drag
-                startDrag(index, dateKey, e) { this.dragState = { active: true, dayIndex: index, dateKey: dateKey, startYPos: e.clientY - e.currentTarget.getBoundingClientRect().top, currentY: 0, startTime:'', endTime:'' }; },
-                onDrag(e, index) { if (!this.dragState.active || this.dragState.dayIndex !== index) return; const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top; this.dragState.currentY = offsetY; const s = Math.min(this.dragState.startYPos, offsetY), eY = Math.max(this.dragState.startYPos, offsetY); this.dragState.startTime = this.yToTime(s); this.dragState.endTime = this.yToTime(eY); this.dragState.timeLabel = `${this.dragState.startTime} - ${this.dragState.endTime}`; },
-                endDrag() { if (!this.dragState.active) return; this.targetDateStr = this.dragState.dateKey; this.isEditMode = false; this.newShift = { empId: this.employees[0]?.id, startTime: this.dragState.startTime, endTime: this.dragState.endTime }; this.dragState.active = false; this.showShiftModal = true; },
-                yToTime(y) { const tm = Math.round(y/12)*15, h = Math.floor(tm/60)+6, m = tm%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; },
-                getShiftStyle(s) { const sh = parseInt(s.startTime.split(':')[0]), sm = parseInt(s.startTime.split(':')[1]), eh = parseInt(s.endTime.split(':')[0]), em = parseInt(s.endTime.split(':')[1]); const sMin = (sh-6)*60+sm, eMin = (eh-6)*60+em, top = (sMin/60)*48, h = ((eMin-sMin)/60)*48; return `top:${Math.max(0,top)}px;height:${Math.max(12,h)}px;`; },
-                getDragStyle() { const s = Math.min(this.dragState.startYPos, this.dragState.currentY), e = Math.max(this.dragState.startYPos, this.dragState.currentY); const ss = Math.round(s/12)*12, se = Math.round(e/12)*12; return `top:${ss}px;height:${Math.max(12,se-ss)}px;`; },
-                // Modal
-                openEmpModal(emp=null) {
-                    if(emp) { this.isEmpEditMode = true; this.editingEmpId = emp.id; this.newEmp = JSON.parse(JSON.stringify(emp)); }
-                    else { this.isEmpEditMode = false; this.newEmp = { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: toDateString(new Date()), rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }; }
-                    if(!this.newEmp.schedule) this.newEmp.schedule = {};
-                    ['월','화','수','목','금','토','일'].forEach(d => { if(!this.newEmp.schedule[d]) this.newEmp.schedule[d] = { active: false, start: '09:00', end: '18:00', breakTime: 0 }; });
-                    this.showEmpModal = true;
-                },
-                searchAddress() { openDaumPostcode((addr, zip) => { this.newEmp.address = `(${zip}) ${addr}`; }); },
-                async saveEmployee() {
-                    const tempId = this.isEmpEditMode ? this.editingEmpId : Date.now().toString(); const tempEmp = { ...this.newEmp, id: tempId };
-                    if(this.isEmpEditMode) { const i = this.employees.findIndex(e => e.id === tempId); if(i!==-1) this.employees[i] = tempEmp; } else { this.employees.push(tempEmp); }
-                    this.showEmpModal = false; await fetchAPI(this.isEmpEditMode ? 'updateEmployee' : 'addEmployee', this.newEmp); await this.loadData(); 
-                },
-                openShiftModal(d) { const y=this.currentDate.getFullYear(), m=String(this.currentDate.getMonth()+1).padStart(2,'0'), dd=String(d).padStart(2,'0'); this.targetDateStr = `${y}-${m}-${dd}`; this.isEditMode=false; this.newShift={empId:this.employees[0]?.id, startTime:'09:00', endTime:'18:00'}; this.showShiftModal=true; },
-                openEditShiftModal(s) { this.targetDateStr=s.date; this.isEditMode=true; this.editingShiftId=s.id; this.newShift={empId:s.empId, startTime:s.startTime, endTime:s.endTime}; this.showShiftModal=true; },
-                closeShiftModal() { this.showShiftModal=false; },
-                async saveShift() { await fetchAPI(this.isEditMode ? 'updateShift' : 'addShift', { ...this.newShift, date: this.targetDateStr, id: this.editingShiftId || Date.now().toString() }); this.showShiftModal=false; await this.loadData(); },
-                async deleteShift() { if(!confirm('삭제하시겠습니까?')) return; await fetchAPI('deleteShift', { id: this.editingShiftId }); this.showShiftModal=false; await this.loadData(); },
-                // Payroll Logic
-                calculatePayroll(emp) {
-                    if (!emp) return null;
-                    try {
-                        let base=0, juhyu=0; const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
-                        let dailyLogs=[], weekStats={}, remarks=[]; let hourlyRate=0, monthScheduledDays=0;
-                        if (emp.role !== 'parttime') {
-                            for (let d = 1; d <= lastDay; d++) { const tempDate = new Date(y, m, d); const dayName = ['일','월','화','수','목','금','토'][tempDate.getDay()]; if (emp.schedule?.[dayName]?.active) monthScheduledDays++; }
-                            if (monthScheduledDays > 0) hourlyRate = ((emp.basePay / monthScheduledDays) / 8) / 1.2;
-                        } else { hourlyRate = emp.basePay; }
+        // --- Chat Widget Logic ---
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            if (win.style.display === 'flex') {
+                win.style.display = 'none';
+            } else {
+                win.style.display = 'flex';
+                document.getElementById('chat-input').focus();
+            }
+        }
+        function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML += `<div class="message user">${text}</div>`;
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const loadingId = 'loading-' + Date.now();
+            messagesDiv.innerHTML += `<div class="message ai" id="${loadingId}"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const systemPrompt = "당신은 '레스토지니'의 유능한 AI 노무사입니다...";
+            const responseText = await callGemini(text, systemPrompt);
+            const loadingEl = document.getElementById(loadingId);
+            if(loadingEl) loadingEl.innerHTML = marked.parse(responseText);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
 
-                        for (let d = 1; d <= lastDay; d++) {
-                            const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                            const dateObj = new Date(y, m, d);
-                            const dayName = ['일','월','화','수','목','금','토'][dateObj.getDay()];
-                            const dayOfFirst = new Date(y, m, 1).getDay() || 7; const adjustedDate = d + dayOfFirst - 1; const weekNum = Math.ceil(adjustedDate / 7);
-                            if (!weekStats[weekNum]) weekStats[weekNum] = { hours: 0, excluded: false, reasons: new Set(), weeklyBasePay: 0, juhyuEligible: false, totalJuhyu: 0 };
-                            const contract = emp.schedule?.[dayName]; const isScheduled = contract && contract.active;
-                            const shift = this.shifts.find(s => s.date === dateStr && s.empId == emp.id);
-                            if (isScheduled) {
-                                if (shift) {
-                                    let h = (new Date(`2000-01-01T${shift.endTime}`) - new Date(`2000-01-01T${shift.startTime}`)) / 3600000; if (h < 0) h += 24;
-                                    let breakDeduction = 0; if (h >= 8) breakDeduction = 1; else if (h >= 4) breakDeduction = 0.5; h -= breakDeduction; if (h < 0) h = 0;
-                                    const dailyPay = h * hourlyRate; base += dailyPay;
-                                    weekStats[weekNum].hours += h; weekStats[weekNum].weeklyBasePay += dailyPay;
-                                    dailyLogs.push({ date: dateStr, status: 'worked', timeRange: `${shift.startTime}~${shift.endTime}`, hours: h.toFixed(1), dailyBasePay: dailyPay, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 });
-                                } else {
-                                    weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${dateStr} 결근`);
-                                    dailyLogs.push({ date: dateStr, status: 'absent', timeRange: '-', hours: '0', dailyBasePay: 0, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 });
-                                }
-                            }
-                            if (dateStr === emp.joinDate) { weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${emp.joinDate} 입사 주간`); }
-                        }
-                        Object.keys(weekStats).forEach(w => {
-                            const stat = weekStats[w];
-                            if (!stat.excluded && stat.hours >= 15) {
-                                stat.juhyuEligible = true;
-                                if (emp.role === 'parttime') stat.totalJuhyu = (Math.min(stat.hours, 40) / 40) * 8 * emp.basePay;
-                                else stat.totalJuhyu = stat.weeklyBasePay * 0.2;
-                                juhyu += stat.totalJuhyu;
-                            } else if (stat.excluded) stat.reasons.forEach(r => remarks.push(r));
-                        });
-                        dailyLogs.forEach(log => {
-                            if (log.status === 'worked') {
-                                const stat = weekStats[log.weekNum];
-                                if (stat && stat.juhyuEligible && stat.hours > 0) log.dailyJuhyu = Math.ceil(stat.totalJuhyu * (parseFloat(log.hours) / stat.hours));
-                                log.dailyTotal = Math.ceil(log.dailyBasePay + log.dailyJuhyu);
-                            }
-                        });
-                        const gross = Math.ceil(base + juhyu);
-                        let deductions = { pension:0, health:0, care:0, employ:0, tax:0, total:0 };
-                        if (emp.contractType === 'freelancer') { deductions.tax = Math.ceil(gross * 0.033 / 10) * 10; }
-                        else if (emp.contractType === 'insurance2') {
-                            deductions.employ = Math.ceil(gross * 0.009 / 10) * 10; const iTax = Math.ceil(gross * 0.01 / 10) * 10; deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
-                        } else {
-                            deductions.pension = Math.ceil(gross * 0.045 / 10) * 10; deductions.health = Math.ceil(gross * 0.03545 / 10) * 10; deductions.care = Math.ceil(deductions.health * 0.1295 / 10) * 10; deductions.employ = Math.ceil(gross * 0.009 / 10) * 10; const iTax = Math.ceil(gross * 0.01 / 10) * 10; deductions.tax = iTax + Math.ceil(iTax * 0.1 / 10) * 10;
-                        }
-                        deductions.total = deductions.pension + deductions.health + deductions.care + deductions.employ + deductions.tax;
-                        return { basePay: base, juhyuAllowance: juhyu, grossTotal: gross, deductions, netPay: gross - deductions.total, dailyLogs, remarks: [...new Set(remarks)], details: { monthDays: monthScheduledDays, hourlyRate: hourlyRate } };
-                    } catch(e) { return null; }
+        // --- AI Payroll Report Logic ---
+        function closeAiReport() { document.getElementById('ai-report-container').classList.add('hidden'); }
+        async function generatePayrollReport() {
+            const container = document.getElementById('ai-report-container');
+            const contentDiv = document.getElementById('ai-report-content');
+            container.classList.remove('hidden');
+            contentDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-500 py-4"><div class="spinner border-gray-300 border-t-blue-500"></div><span>Gemini가 ${document.getElementById('payroll-month').value} 급여 데이터를 심층 분석 중입니다...</span></div>`;
+            const monthStr = document.getElementById('payroll-month').value;
+            if (!monthStr) return;
+            const [year, month] = monthStr.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            let workDaysInMonth = 0;
+            for(let d=1; d<=daysInMonth; d++) { const day = new Date(year, month-1, d).getDay(); if (day >= 1 && day <= 5) workDaysInMonth++; }
+            let reportData = { month: monthStr, totalCost: 0, totalEmployees: state.employees.length, details: [] };
+            state.employees.forEach(emp => {
+                const calc = calculateMonthlyPayroll(emp, year, month, workDaysInMonth);
+                reportData.totalCost += calc.grossPay;
+                reportData.details.push({ name: emp.name, role: emp.role, type: emp.type, grossPay: calc.grossPay, totalHours: calc.totalHours, juhyuOccurred: calc.dailyLogs.some(l => l.juhyuPay > 0), absentCount: calc.dailyLogs.filter(l => l.status === '-' && (emp.role === 'manager' || emp.role === 'owner')).length });
+            });
+            const prompt = `다음은 매장의 ${monthStr} 급여 정산 데이터입니다...`;
+            const responseText = await callGemini(prompt, "당신은 데이터 분석에 능한 AI 경영 컨설턴트입니다.");
+            contentDiv.innerHTML = marked.parse(responseText);
+        }
+
+        // --- State Management ---
+        const state = {
+            employees: JSON.parse(localStorage.getItem('rg_employees')) || [],
+            schedules: JSON.parse(localStorage.getItem('rg_schedules')) || [],
+            currentView: 'employees',
+            scheduleViewMode: 'month',
+            currentDate: new Date(),
+            selectedEmpIdForSchedule: null,
+            dragStart: null,
+        };
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('payroll-month').value = new Date().toISOString().slice(0, 7);
+            state.currentDate = new Date();
+            if (state.employees.length > 0) state.selectedEmpIdForSchedule = state.employees[0].id;
+            switchTab('employees');
+        });
+        function saveState() {
+            localStorage.setItem('rg_employees', JSON.stringify(state.employees));
+            localStorage.setItem('rg_schedules', JSON.stringify(state.schedules));
+        }
+
+        // --- Routing ---
+        function switchTab(tab) {
+            state.currentView = tab;
+            document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+            const view = document.getElementById(`view-${tab}`);
+            if(view) view.classList.remove('hidden');
+            document.querySelectorAll('aside nav button').forEach(b => { b.className = 'w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3'; });
+            document.getElementById(`nav-${tab}`).className = 'w-full text-left px-4 py-3 rounded-xl font-medium text-blue-600 bg-blue-50 flex items-center gap-3';
+            if (tab === 'employees') renderEmployeeList();
+            if (tab === 'schedule') { renderScheduleSidebar(); renderCalendar(); }
+            if (tab === 'payroll') renderPayroll();
+        }
+
+        // --- Helpers ---
+        function generateId() { return Math.random().toString(36).substr(2, 9); }
+        function getMonday(d) { d = new Date(d); var day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
+        function addDays(d, days) { var date = new Date(d.valueOf()); date.setDate(date.getDate() + days); return date; }
+        function formatDate(d) { return d.toISOString().split('T')[0]; }
+        function formatMoney(n) { return Math.ceil(n).toLocaleString() + '원'; }
+        
+        // --- Employee Logic (Main View) ---
+        function renderEmployeeList() {
+            const container = document.getElementById('employee-list');
+            container.innerHTML = '';
+            if (state.employees.length === 0) { container.innerHTML = `<div class="col-span-2 text-center py-20 text-gray-400">등록된 직원이 없습니다.</div>`; return; }
+            state.employees.forEach(emp => {
+                const el = document.createElement('div');
+                el.className = 'card p-6 cursor-pointer hover:border-blue-200 transition';
+                el.onclick = () => openEmployeeModal(emp.id);
+                let badgeColor = emp.type === 'monthly' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600';
+                let typeText = emp.type === 'monthly' ? '월급제' : '시급제';
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">${emp.name}</h3>
+                                <span class="text-xs px-2 py-1 rounded-full ${badgeColor} font-bold">${typeText}</span>
+                            </div>
+                            <p class="text-sm text-gray-500">${emp.role === 'manager' ? '매니저' : emp.role === 'owner' ? '점장' : '스태프'} · ${emp.joinDate} 입사</p>
+                        </div>
+                        <button class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-blue-500"><i class="ph-bold ph-pencil-simple"></i></button>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-500 mb-1">기본급여</p>
+                        <p class="text-lg font-bold text-gray-900">${formatMoney(emp.pay)}</p>
+                    </div>`;
+                container.appendChild(el);
+            });
+        }
+
+        // --- Employee Modal Logic ---
+        function toggleLeaveDate() {
+            const isWorking = document.getElementById('emp-is-working').checked;
+            document.getElementById('emp-leave-date').disabled = isWorking;
+            if (isWorking) document.getElementById('emp-leave-date').value = '';
+        }
+
+        function renderScheduleRows(scheduleData) {
+            const container = document.getElementById('work-schedule-rows');
+            container.innerHTML = '';
+            const days = [
+                { id: 'mon', label: '월' }, { id: 'tue', label: '화' }, { id: 'wed', label: '수' },
+                { id: 'thu', label: '목' }, { id: 'fri', label: '금' }, { id: 'sat', label: '토' }, { id: 'sun', label: '일' }
+            ];
+            
+            days.forEach(day => {
+                // Find existing data for this day
+                const saved = scheduleData ? scheduleData.find(s => s.day === day.id) : null;
+                const isActive = saved ? saved.active : false;
+                const start = saved ? saved.start : '09:00';
+                const end = saved ? saved.end : '18:00';
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3';
+                row.innerHTML = `
+                    <div class="w-12">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" class="sch-day-check w-4 h-4 text-blue-600 rounded" data-day="${day.id}" ${isActive ? 'checked' : ''}>
+                            <span>${day.label}</span>
+                        </label>
+                    </div>
+                    <div class="flex-1 flex gap-2">
+                        <input type="time" class="sch-start input-field py-1 text-sm" value="${start}" ${!isActive ? 'disabled' : ''}>
+                        <input type="time" class="sch-end input-field py-1 text-sm" value="${end}" ${!isActive ? 'disabled' : ''}>
+                    </div>
+                `;
+                
+                // Add event listener to toggle inputs
+                const cb = row.querySelector('.sch-day-check');
+                const inputs = row.querySelectorAll('input[type="time"]');
+                cb.addEventListener('change', (e) => {
+                    inputs.forEach(inp => inp.disabled = !e.target.checked);
+                });
+
+                container.appendChild(row);
+            });
+        }
+
+        function openEmployeeModal(id = null) {
+            const form = document.getElementById('employee-form');
+            form.reset();
+            document.getElementById('modal-employee').classList.remove('hidden');
+            
+            let scheduleData = null;
+
+            if (id) {
+                const emp = state.employees.find(e => e.id === id);
+                document.getElementById('modal-employee-title').innerText = '직원 정보 수정';
+                document.getElementById('emp-id').value = emp.id;
+                document.getElementById('emp-name').value = emp.name;
+                
+                // RRN Split
+                if (emp.rrn && emp.rrn.includes('-')) {
+                    const [front, back] = emp.rrn.split('-');
+                    document.getElementById('emp-rrn-front').value = front;
+                    document.getElementById('emp-rrn-back').value = back;
                 }
+                
+                document.getElementById('emp-address').value = emp.address || '';
+                document.getElementById('emp-join-date').value = emp.joinDate;
+                document.getElementById('emp-leave-date').value = emp.leaveDate || '';
+                document.getElementById('emp-is-working').checked = !emp.leaveDate;
+                toggleLeaveDate();
+
+                document.getElementById('emp-role').value = emp.role;
+                document.getElementById('emp-type').value = emp.type;
+                document.getElementById('emp-pay').value = emp.pay;
+                document.getElementById('emp-allowance-manual').value = emp.manualAllowance || '';
+                document.getElementById('emp-juhyu-included').checked = emp.juhyuIncluded || false;
+                document.getElementById('emp-insurance').value = emp.insurance;
+                
+                document.getElementById('emp-bank-name').value = emp.bankName || '';
+                document.getElementById('emp-account-number').value = emp.accountNumber || '';
+                document.getElementById('emp-account-holder').value = emp.accountHolder || '';
+
+                scheduleData = emp.workSchedule;
+                document.getElementById('btn-delete-emp').classList.remove('hidden');
+            } else {
+                document.getElementById('modal-employee-title').innerText = '직원 등록';
+                document.getElementById('emp-id').value = '';
+                document.getElementById('emp-is-working').checked = true;
+                toggleLeaveDate();
+                document.getElementById('btn-delete-emp').classList.add('hidden');
+            }
+            updateAllowancePreview();
+            renderScheduleRows(scheduleData);
+        }
+        function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
+        
+        function updateAllowancePreview() {
+            const type = document.getElementById('emp-type').value;
+            const payLabel = document.getElementById('label-pay');
+            const hint = document.getElementById('allowance-hint');
+            const hourlyOptions = document.getElementById('hourly-options');
+            
+            if (type === 'monthly') {
+                payLabel.innerText = '월 기본급';
+                hint.innerText = '월 단위 추가 지급액';
+                hourlyOptions.classList.add('hidden');
+            } else {
+                payLabel.innerText = '기본 시급';
+                hint.innerText = '시간당 추가 지급액';
+                hourlyOptions.classList.remove('hidden');
+            }
+        }
+
+        function saveEmployee(e) {
+            e.preventDefault();
+            const id = document.getElementById('emp-id').value;
+            
+            // Gather Schedule Data
+            const scheduleRows = document.querySelectorAll('#work-schedule-rows > div');
+            const workSchedule = Array.from(scheduleRows).map(row => {
+                const cb = row.querySelector('.sch-day-check');
+                const start = row.querySelector('.sch-start').value;
+                const end = row.querySelector('.sch-end').value;
+                return { day: cb.dataset.day, active: cb.checked, start, end };
+            });
+
+            // Gather RRN
+            const rrnFront = document.getElementById('emp-rrn-front').value;
+            const rrnBack = document.getElementById('emp-rrn-back').value;
+            const rrn = (rrnFront && rrnBack) ? `${rrnFront}-${rrnBack}` : '';
+
+            const empData = {
+                id: id || generateId(),
+                name: document.getElementById('emp-name').value,
+                rrn: rrn,
+                address: document.getElementById('emp-address').value,
+                joinDate: document.getElementById('emp-join-date').value,
+                leaveDate: document.getElementById('emp-is-working').checked ? '' : document.getElementById('emp-leave-date').value,
+                role: document.getElementById('emp-role').value,
+                type: document.getElementById('emp-type').value,
+                pay: parseInt(document.getElementById('emp-pay').value) || 0,
+                manualAllowance: parseInt(document.getElementById('emp-allowance-manual').value) || 0,
+                juhyuIncluded: document.getElementById('emp-juhyu-included').checked,
+                insurance: document.getElementById('emp-insurance').value,
+                bankName: document.getElementById('emp-bank-name').value,
+                accountNumber: document.getElementById('emp-account-number').value,
+                accountHolder: document.getElementById('emp-account-holder').value,
+                workSchedule: workSchedule
             };
+
+            if (id) {
+                const index = state.employees.findIndex(e => e.id === id);
+                state.employees[index] = empData;
+            } else {
+                state.employees.push(empData);
+                // If Manager/Owner, auto-populate schedule based on the new pattern
+                if (empData.role !== 'staff') populateScheduleFromPattern(empData.id, empData.joinDate, workSchedule);
+            }
+            saveState();
+            closeEmployeeModal();
+            renderEmployeeList();
+        }
+
+        function deleteEmployee() {
+            const id = document.getElementById('emp-id').value;
+            if(!confirm('정말 삭제하시겠습니까?')) return;
+            state.employees = state.employees.filter(e => e.id !== id);
+            state.schedules = state.schedules.filter(s => s.employeeId !== id);
+            saveState();
+            closeEmployeeModal();
+            renderEmployeeList();
+        }
+
+        // Auto-fill schedule based on the Day Pattern defined in modal
+        function populateScheduleFromPattern(empId, joinDate, pattern) {
+            let d = new Date(joinDate);
+            const daysMap = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
+            
+            for(let i=0; i<60; i++) { // Generate for 60 days
+                const dayId = daysMap[d.getDay()];
+                const dayConfig = pattern.find(p => p.day === dayId);
+                
+                if (dayConfig && dayConfig.active) {
+                    state.schedules.push({
+                        id: generateId(),
+                        employeeId: empId,
+                        date: formatDate(d),
+                        start: dayConfig.start,
+                        end: dayConfig.end
+                    });
+                }
+                d.setDate(d.getDate() + 1);
+            }
+        }
+
+        // --- Schedule & Calendar Logic (Existing) ---
+        function setScheduleView(view) {
+            state.scheduleViewMode = view;
+            const btnMonth = document.getElementById('btn-view-month');
+            const btnWeek = document.getElementById('btn-view-week');
+            if (view === 'month') {
+                btnMonth.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.remove('text-gray-500');
+                btnWeek.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.add('text-gray-500');
+            } else {
+                btnWeek.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.remove('text-gray-500');
+                btnMonth.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.add('text-gray-500');
+            }
+            renderCalendar();
+        }
+        function changeDate(offset) {
+            if (state.scheduleViewMode === 'month') state.currentDate.setMonth(state.currentDate.getMonth() + offset);
+            else state.currentDate.setDate(state.currentDate.getDate() + (offset * 7));
+            renderCalendar();
+        }
+        function jumpToDate(val) {
+            if(!val) return; state.currentDate = new Date(val + '-01'); setScheduleView('month'); renderCalendar();
+        }
+        function renderScheduleSidebar() {
+            const list = document.getElementById('schedule-employee-list'); list.innerHTML = '';
+            if (state.employees.length === 0) { list.innerHTML = '<div class="p-4 text-xs text-gray-400 text-center">등록된 직원 없음</div>'; return; }
+            state.employees.forEach(emp => {
+                const item = document.createElement('div');
+                const isSelected = emp.id === state.selectedEmpIdForSchedule;
+                item.className = `p-3 rounded-lg cursor-pointer flex items-center justify-between text-sm transition-all ${isSelected ? 'bg-blue-50 text-blue-600 font-bold border border-blue-100' : 'hover:bg-gray-50 text-gray-600'}`;
+                item.onclick = () => { state.selectedEmpIdForSchedule = emp.id; renderScheduleSidebar(); renderCalendar(); };
+                item.innerHTML = `<span>${emp.name}</span><span class="text-xs opacity-70">${emp.role === 'manager' ? 'M' : emp.role === 'owner' ? 'O' : 'S'}</span>`;
+                list.appendChild(item);
+            });
+            if (!state.selectedEmpIdForSchedule && state.employees.length > 0) { state.selectedEmpIdForSchedule = state.employees[0].id; renderScheduleSidebar(); }
+        }
+        function renderCalendar() {
+            const gridWrapper = document.getElementById('calendar-grid-wrapper'); gridWrapper.innerHTML = '';
+            const empId = state.selectedEmpIdForSchedule;
+            const titleEl = document.getElementById('calendar-title');
+            if (state.scheduleViewMode === 'month') titleEl.innerHTML = `<i class="ph-bold ph-calendar"></i> ${state.currentDate.getFullYear()}년 ${state.currentDate.getMonth() + 1}월`;
+            else { const start = getMonday(state.currentDate); const end = addDays(start, 6); titleEl.innerHTML = `<i class="ph-bold ph-calendar"></i> ${start.getMonth()+1}.${start.getDate()} - ${end.getMonth()+1}.${end.getDate()}`; }
+            if (!empId) { gridWrapper.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">직원을 선택해주세요</div>'; return; }
+            if (state.scheduleViewMode === 'month') renderMonthView(gridWrapper, empId); else renderWeekView(gridWrapper, empId);
+        }
+        function renderMonthView(container, empId) {
+            const grid = document.createElement('div'); grid.className = 'calendar-grid-month'; container.appendChild(grid);
+            const days = ['월', '화', '수', '목', '금', '토', '일']; days.forEach(d => { const dh = document.createElement('div'); dh.className = 'calendar-header text-sm py-2 bg-gray-50'; dh.innerText = d; grid.appendChild(dh); });
+            const year = state.currentDate.getFullYear(); const month = state.currentDate.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1); const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let startDay = firstDayOfMonth.getDay(); let gridStartCol = startDay === 0 ? 6 : startDay - 1;
+            for(let i=0; i<gridStartCol; i++) { const empty = document.createElement('div'); empty.className = 'calendar-cell bg-gray-50/30'; grid.appendChild(empty); }
+            for(let d=1; d<=daysInMonth; d++) {
+                const cell = document.createElement('div'); cell.className = 'calendar-cell-month border-b border-r border-gray-100 cursor-pointer transition hover:bg-blue-50';
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const num = document.createElement('div'); num.className = 'text-sm font-medium text-gray-700 mb-1'; num.innerText = d;
+                if (dateStr === formatDate(new Date())) num.className = 'text-sm font-bold text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center mb-1';
+                cell.appendChild(num);
+                const events = state.schedules.filter(s => s.employeeId === empId && s.date === dateStr);
+                events.forEach(ev => { const tag = document.createElement('div'); tag.className = 'event-block month text-xs'; tag.innerText = `${ev.start}~${ev.end}`; tag.onclick = (e) => { e.stopPropagation(); openScheduleDetail(ev.id); }; cell.appendChild(tag); });
+                cell.onclick = () => { openScheduleDetail(null, dateStr); }; grid.appendChild(cell);
+            }
+        }
+        function renderWeekView(container, empId) {
+            const grid = document.createElement('div'); grid.className = 'calendar-grid-week'; container.appendChild(grid);
+            const weekStart = getMonday(state.currentDate); const days = ['월', '화', '수', '목', '금', '토', '일']; const dates = [];
+            const corner = document.createElement('div'); corner.className = 'calendar-header'; grid.appendChild(corner);
+            for(let i=0; i<7; i++) { const d = addDays(weekStart, i); dates.push(formatDate(d)); const header = document.createElement('div'); header.className = 'calendar-header'; if (formatDate(new Date()) === formatDate(d)) header.classList.add('text-blue-500'); header.innerHTML = `<div>${days[i]}</div><div class="text-xs font-normal mt-1">${d.getDate()}</div>`; grid.appendChild(header); }
+            for (let hour = 0; hour < 24; hour++) {
+                const label = document.createElement('div'); label.className = 'time-label'; label.innerText = `${String(hour).padStart(2,'0')}`; label.style.gridRow = `span 4`; grid.appendChild(label);
+                for (let q = 0; q < 4; q++) {
+                    for (let day = 0; day < 7; day++) {
+                        const cell = document.createElement('div'); cell.className = 'calendar-cell calendar-cell-week'; if (q === 3) cell.classList.add('hour-marker');
+                        const dateStr = dates[day]; const timeStr = `${String(hour).padStart(2,'0')}:${String(q*15).padStart(2,'0')}`;
+                        cell.dataset.date = dateStr; cell.dataset.time = timeStr;
+                        cell.onmousedown = () => startDrag(dateStr, timeStr); cell.onmouseover = () => onDragOver(dateStr, timeStr); cell.onmouseup = () => endDrag(); grid.appendChild(cell);
+                    }
+                }
+            }
+            const existingSchedules = state.schedules.filter(s => s.employeeId === empId);
+            existingSchedules.forEach(sch => { if (dates.includes(sch.date)) renderWeekEvent(sch, dates.indexOf(sch.date), grid); });
+        }
+        function renderWeekEvent(sch, dayIndex, grid) {
+            const [sh, sm] = sch.start.split(':').map(Number); const [eh, em] = sch.end.split(':').map(Number);
+            const startMins = sh * 60 + sm; const endMins = eh * 60 + em; const durationMins = endMins - startMins;
+            const eventEl = document.createElement('div'); eventEl.className = 'event-block week hover:bg-blue-600 transition cursor-pointer flex items-center justify-center shadow-md'; eventEl.innerText = `${sch.start}~${sch.end}`;
+            const startCell = grid.querySelector(`.calendar-cell[data-date="${sch.date}"][data-time="${sch.start}"]`);
+            if (startCell) { const slots = durationMins / 15; const heightPx = slots * 12; eventEl.style.height = `${heightPx}px`; eventEl.style.top = '0'; eventEl.onclick = (e) => { e.stopPropagation(); openScheduleDetail(sch.id); }; startCell.appendChild(eventEl); }
+        }
+        let isDragging = false;
+        function startDrag(date, time) { isDragging = true; state.dragStart = { date, time }; document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected')); }
+        function onDragOver(date, time) { if (!isDragging || date !== state.dragStart.date) return; const start = state.dragStart.time; const end = time; const min = start < end ? start : end; const max = start > end ? start : end; document.querySelectorAll(`.calendar-cell[data-date="${date}"]`).forEach(cell => { const t = cell.dataset.time; if (t >= min && t <= max) cell.classList.add('selected'); else cell.classList.remove('selected'); }); }
+        function endDrag() {
+            if (!isDragging) return; isDragging = false; const selected = document.querySelectorAll('.calendar-cell.selected'); if (selected.length === 0) return;
+            const date = selected[0].dataset.date; const times = Array.from(selected).map(el => el.dataset.time); times.sort();
+            const start = times[0]; let lastTimeParts = times[times.length-1].split(':').map(Number); lastTimeParts[1] += 15; if (lastTimeParts[1] >= 60) { lastTimeParts[0]++; lastTimeParts[1] -= 60; }
+            const end = `${String(lastTimeParts[0]).padStart(2,'0')}:${String(lastTimeParts[1]).padStart(2,'0')}`;
+            addSchedule(date, start, end); document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected'));
+        }
+        function addSchedule(date, start, end) {
+            const empId = state.selectedEmpIdForSchedule;
+            state.schedules = state.schedules.filter(s => { if (s.employeeId !== empId || s.date !== date) return true; return !((start < s.end) && (end > s.start)); });
+            state.schedules.push({ id: generateId(), employeeId: empId, date, start, end }); saveState(); renderCalendar();
+        }
+        function openScheduleDetail(schId, newDate = null) {
+            const modal = document.getElementById('modal-schedule'); const form = modal.querySelector('form'); form.reset();
+            document.getElementById('modal-schedule-title').innerText = schId ? '근무 시간 수정' : '근무 추가'; document.getElementById('btn-delete-schedule').classList.toggle('hidden', !schId);
+            if (schId) { const sch = state.schedules.find(s => s.id === schId); if (!sch) return; modal.dataset.schId = schId; modal.dataset.mode = 'edit'; document.getElementById('sch-date').value = sch.date; document.getElementById('sch-date-display').innerText = sch.date; document.getElementById('sch-start').value = sch.start; document.getElementById('sch-end').value = sch.end; }
+            else { modal.dataset.schId = ''; modal.dataset.mode = 'create'; document.getElementById('sch-date').value = newDate; document.getElementById('sch-date-display').innerText = newDate; document.getElementById('sch-start').value = '09:00'; document.getElementById('sch-end').value = '18:00'; }
+            modal.classList.remove('hidden');
+        }
+        function closeScheduleModal() { document.getElementById('modal-schedule').classList.add('hidden'); }
+        function saveScheduleDetail(e) {
+            e.preventDefault(); const modal = document.getElementById('modal-schedule'); const mode = modal.dataset.mode;
+            const date = document.getElementById('sch-date').value; const start = document.getElementById('sch-start').value; const end = document.getElementById('sch-end').value; const empId = state.selectedEmpIdForSchedule;
+            if (mode === 'edit') { const id = modal.dataset.schId; const idx = state.schedules.findIndex(s => s.id === id); if (idx > -1) { state.schedules[idx].start = start; state.schedules[idx].end = end; } }
+            else { state.schedules.push({ id: generateId(), employeeId: empId, date, start, end }); }
+            saveState(); renderCalendar(); closeScheduleModal();
+        }
+        function deleteScheduleDetail() { const id = document.getElementById('modal-schedule').dataset.schId; state.schedules = state.schedules.filter(s => s.id !== id); saveState(); renderCalendar(); closeScheduleModal(); }
+
+        // --- Payroll Calc ---
+        function renderPayroll() {
+            const container = document.getElementById('payroll-list'); container.innerHTML = '';
+            const monthStr = document.getElementById('payroll-month').value; if (!monthStr) return;
+            const [year, month] = monthStr.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            let workDaysInMonth = 0; for(let d=1; d<=daysInMonth; d++) { const day = new Date(year, month-1, d).getDay(); if (day >= 1 && day <= 5) workDaysInMonth++; }
+            state.employees.forEach(emp => {
+                const calc = calculateMonthlyPayroll(emp, year, month, workDaysInMonth);
+                const el = document.createElement('div'); el.className = 'card p-6';
+                let detailsHtml = ''; calc.dailyLogs.forEach(log => { detailsHtml += `<tr class="border-b border-gray-100 text-sm"><td class="py-2">${log.date}</td><td class="py-2 ${log.status === '결근' ? 'text-red-500' : ''}">${log.timeStr}</td><td class="py-2 text-right">${log.workHours}h</td><td class="py-2 text-right text-gray-500">${formatMoney(log.basePay)}</td><td class="py-2 text-right text-blue-500">${log.juhyuPay > 0 ? formatMoney(log.juhyuPay) : '-'}</td><td class="py-2 text-right font-bold">${formatMoney(log.total)}</td></tr>${log.note ? `<tr><td colspan="6" class="text-xs text-gray-400 pb-2 text-right">${log.note}</td></tr>` : ''}`; });
+                el.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center gap-3"><h3 class="text-xl font-bold">${emp.name}</h3><span class="text-sm bg-gray-100 px-2 py-1 rounded text-gray-600">${emp.type === 'monthly' ? '월급' : '시급'}</span></div><div class="text-right"><p class="text-sm text-gray-500">실 수령액</p><p class="text-2xl font-bold text-blue-600">${formatMoney(calc.netPay)}</p></div></div><div class="grid grid-cols-3 gap-4 mb-4 bg-gray-50 p-4 rounded-xl text-center"><div><p class="text-xs text-gray-500">지급 총액(세전)</p><p class="font-bold">${formatMoney(calc.grossPay)}</p></div><div><p class="text-xs text-gray-500">공제 총액</p><p class="font-bold text-red-500">-${formatMoney(calc.totalDeduction)}</p></div><div><p class="text-xs text-gray-500">총 인정근로</p><p class="font-bold">${calc.totalHours}시간</p></div></div><details class="group"><summary class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-500 hover:text-blue-500"><i class="ph-bold ph-caret-down group-open:rotate-180 transition"></i> 상세 급여 명세 및 근무 기록 보기</summary><div class="mt-4 border-t border-gray-100 pt-4"><div class="mb-6"><h4 class="text-sm font-bold mb-2">공제 내역 (${calc.insuranceType})</h4><div class="grid grid-cols-2 gap-2 text-sm text-gray-600">${Object.entries(calc.taxDetails).map(([k, v]) => `<div class="flex justify-between"><span>${k}</span><span>-${formatMoney(v)}</span></div>`).join('')}</div></div><h4 class="text-sm font-bold mb-2">일별 상세 기록</h4><div class="overflow-x-auto"><table class="w-full text-left min-w-[500px]"><thead><tr class="text-xs text-gray-400 border-b border-gray-200"><th class="py-2 font-normal">날짜</th><th class="py-2 font-normal">시간/상태</th><th class="py-2 font-normal text-right">인정시간</th><th class="py-2 font-normal text-right">기본급여</th><th class="py-2 font-normal text-right">주휴수당</th><th class="py-2 font-normal text-right">총지급액</th></tr></thead><tbody>${detailsHtml}</tbody></table></div></div></details>`;
+                container.appendChild(el);
+            });
+        }
+        function calculateMonthlyPayroll(emp, year, month, workDaysInMonth) {
+            let hourlyRate = 0; let allowanceBase = emp.manualAllowance || 0;
+            if (emp.role === 'manager') allowanceBase += 200000; if (emp.role === 'owner') allowanceBase += 500000;
+            if (emp.type === 'monthly') { const rawDaily = (emp.pay + allowanceBase) / workDaysInMonth; const rawHourly = rawDaily / 8; hourlyRate = Math.ceil(rawHourly / 1.2); }
+            else { if (emp.juhyuIncluded) hourlyRate = Math.ceil(emp.pay / 1.2); else hourlyRate = emp.pay; }
+            const daysInMonth = new Date(year, month, 0).getDate(); let dailyLogs = []; let totalGross = 0; let totalHours = 0;
+            const getSched = (d) => state.schedules.find(s => s.employeeId === emp.id && s.date === d);
+            let currentWeekData = { hours: 0, daysWorked: 0, logs: [], weekBasePay: 0 };
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, month-1, d); const dateStr = formatDate(dateObj); const dayNum = dateObj.getDay(); const sch = getSched(dateStr);
+                let workHours = 0; let dailyBasePay = 0; let status = ''; let timeStr = '';
+                if (sch) {
+                    const [sh, sm] = sch.start.split(':').map(Number); const [eh, em] = sch.end.split(':').map(Number);
+                    let rawMins = (eh*60 + em) - (sh*60 + sm); let restMins = 0; if (rawMins >= 480) restMins = 60; else if (rawMins >= 240) restMins = 30;
+                    workHours = (rawMins - restMins) / 60; if (workHours < 0) workHours = 0; timeStr = `${sch.start}~${sch.end}`;
+                    let rate = hourlyRate; if (emp.type === 'hourly') rate += (emp.manualAllowance || 0);
+                    dailyBasePay = Math.ceil(workHours * rate); status = '근무'; currentWeekData.hours += workHours; currentWeekData.daysWorked++; currentWeekData.weekBasePay += dailyBasePay;
+                } else { status = '-'; }
+                const log = { date: dateStr, timeStr: sch ? timeStr : (status === '-' ? '' : '결근'), status: status, workHours: workHours, basePay: dailyBasePay, juhyuPay: 0, total: dailyBasePay, note: '' };
+                dailyLogs.push(log); currentWeekData.logs.push(log);
+                if (dayNum === 0 || d === daysInMonth) {
+                    let giveJuhyu = false; let juhyuReason = ''; if (currentWeekData.hours < 15) juhyuReason = '주 15시간 미만'; else if (new Date(emp.joinDate) > getMonday(dateObj)) juhyuReason = '입사 주간 제외'; else giveJuhyu = true;
+                    if (giveJuhyu) { const juhyuAmt = Math.ceil(currentWeekData.weekBasePay * 0.2); const lastLog = currentWeekData.logs[currentWeekData.logs.length-1]; lastLog.juhyuPay = juhyuAmt; lastLog.total += juhyuAmt; }
+                    else { const lastLog = currentWeekData.logs[currentWeekData.logs.length-1]; if (currentWeekData.hours > 0) lastLog.note = `주휴 제외: ${juhyuReason}`; }
+                    currentWeekData = { hours: 0, daysWorked: 0, logs: [], weekBasePay: 0 };
+                }
+            }
+            dailyLogs.forEach(l => { totalGross += l.total; totalHours += l.workHours; });
+            if (emp.type === 'monthly' && emp.manualAllowance) totalGross += emp.manualAllowance;
+            let taxDetails = {}; if (emp.insurance === 'freelance') taxDetails['사업소득세(3.3%)'] = Math.ceil(totalGross * 0.033); else if (emp.insurance === '4major') { taxDetails['국민연금(4.5%)'] = Math.ceil(totalGross * 0.045); taxDetails['건강보험(3.545%)'] = Math.ceil(totalGross * 0.03545); taxDetails['장기요양(건보료12.95%)'] = Math.ceil(taxDetails['건강보험(3.545%)'] * 0.1295); taxDetails['고용보험(0.9%)'] = Math.ceil(totalGross * 0.009); } else if (emp.insurance === '2major') { taxDetails['고용보험(0.9%)'] = Math.ceil(totalGross * 0.009); }
+            let totalDeduction = Object.values(taxDetails).reduce((a, b) => a + b, 0);
+            return { dailyLogs, totalHours, grossPay: totalGross, totalDeduction, netPay: totalGross - totalDeduction, taxDetails, insuranceType: emp.insurance };
         }
     </script>
 </body>
