@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 v1.0.0 (Cloud)</title>
+    <title>레스토지니 v1.0.1 (Cloud Fix)</title>
     
     <!-- Pretendard Webfont -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -232,7 +232,7 @@
     <aside class="w-64 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col justify-between z-20">
         <div class="p-6">
             <h1 class="text-xl font-bold text-blue-500 mb-8 flex items-center gap-2 cursor-pointer" onclick="openApiSetup()">
-                <i class="ph-fill ph-storefront"></i> 레스토지니 <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">v1.0.0</span>
+                <i class="ph-fill ph-storefront"></i> 레스토지니 <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">v1.0.1</span>
             </h1>
             <nav class="space-y-2">
                 <button onclick="switchTab('employees')" id="nav-employees" class="w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3">
@@ -410,8 +410,9 @@
 
     <script>
         // --- Configuration & Cloud Sync ---
-        // Set hardcoded API URL as per user request
-        let API_URL = localStorage.getItem('rg_api_url') || 'https://script.google.com/macros/s/AKfycbzld_OWshFmOj0S-J4IR7OwK5hjadnBTyZaDYyPsT7UMYaDYcec2F_ZFbAPGNtXjMkMVw/exec';
+        // v1.0.1 Update: Changed storage key to force refresh URL for users with old cached URL
+        const STORAGE_KEY_URL = 'rg_api_url_v1_0_1';
+        let API_URL = localStorage.getItem(STORAGE_KEY_URL) || 'https://script.google.com/macros/s/AKfycbw964noWTdqm_01XB7ujPtQLCYKxGOsUZd0iGcpferVOjKiwdR4KdPTWE4RB50bhXaFwg/exec';
         const apiKey = ""; 
 
         const state = {
@@ -430,27 +431,60 @@
                 return null;
             }
             showLoading(true);
+            
+            // 15초 타임아웃 설정 (무한 로딩 방지)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
             try {
                 let response;
+                const fetchOptions = {
+                    signal: controller.signal,
+                    redirect: 'follow'
+                };
+
                 if (op === 'init') {
-                    response = await fetch(`${API_URL}?op=init`);
+                    response = await fetch(`${API_URL}?op=init`, { method: 'GET', ...fetchOptions });
                 } else {
                     response = await fetch(API_URL, {
                         method: 'POST',
                         mode: 'cors',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify({ op, payload, id })
+                        headers: { 'Content-Type': 'text/plain' }, // GAS는 text/plain을 선호
+                        body: JSON.stringify({ op, payload, id }),
+                        ...fetchOptions
                     });
                 }
                 
-                const data = await response.json();
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`서버 응답 오류 (${response.status})`);
+                }
+                
+                // Safe JSON Parsing to prevent silent failures on HTML error pages
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error("서버 응답이 올바르지 않습니다. (HTML 반환됨 - 배포 권한을 '모든 사용자'로 설정했는지 확인하세요)");
+                }
+
                 if (data.error) throw new Error(data.error);
                 return data;
+
             } catch (err) {
-                alert('데이터 동기화 오류: ' + err.message);
+                console.error("API Call Error:", err);
+                let msg = err.message;
+                if (err.name === 'AbortError') {
+                    msg = '서버 응답 시간이 초과되었습니다. (15초)';
+                } else if (msg.includes('Failed to fetch')) {
+                    msg = '서버 연결 실패. 배포 권한이 "모든 사용자"인지 확인해주세요.';
+                }
+                alert(`동기화 실패: ${msg}`);
                 return null;
             } finally {
-                showLoading(false);
+                showLoading(false); // 무조건 로딩 종료
             }
         }
 
@@ -458,7 +492,7 @@
         function openApiSetup() { document.getElementById('modal-api-setup').classList.remove('hidden'); document.getElementById('gas-url-input').value = API_URL; }
         function saveApiUrl() {
             const url = document.getElementById('gas-url-input').value.trim();
-            if (url) { localStorage.setItem('rg_api_url', url); API_URL = url; document.getElementById('modal-api-setup').classList.add('hidden'); initApp(); }
+            if (url) { localStorage.setItem(STORAGE_KEY_URL, url); API_URL = url; document.getElementById('modal-api-setup').classList.add('hidden'); initApp(); }
         }
 
         async function initApp() {
