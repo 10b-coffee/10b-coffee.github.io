@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레스토지니 파트너센터 v3.12 (API 통신 픽스)</title>
+    <title>레스토지니 파트너센터 v3.13 (캘린더 완벽 수정)</title>
     
     <!-- 스타일 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -32,24 +32,17 @@
 
         const API_URL = 'https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec'; 
 
-        // [수정됨] API 통신 함수: GET(조회)과 POST(저장)를 구분
-        async function fetchAPI(action, method = 'GET', payload = null) {
+        // [핵심 수정] 모든 요청을 POST로 통일하여 GAS 통신 안정성 확보
+        async function fetchAPI(action, payload = null) {
             try {
-                if (method === 'GET') {
-                    // GET 요청: 데이터 조회 (doGet 호출)
-                    const res = await fetch(`${API_URL}?action=${action}`);
-                    return await res.json();
-                } else {
-                    // POST 요청: 데이터 저장/수정/삭제 (doPost 호출)
-                    const options = {
-                        method: 'POST',
-                        redirect: "follow",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ action, payload })
-                    };
-                    const res = await fetch(API_URL, options);
-                    return await res.json();
-                }
+                const options = {
+                    method: 'POST',
+                    redirect: "follow",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action, payload })
+                };
+                const res = await fetch(API_URL, options);
+                return await res.json();
             } catch (error) {
                 console.error("API Error:", error);
                 return { status: 'error', message: error.toString() };
@@ -128,7 +121,7 @@
         <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 bg-toss-grey100 min-h-screen" x-cloak>
             <div class="max-w-6xl mx-auto">
                 <header class="flex justify-between items-end mb-8">
-                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.12 (API 통신 픽스)</p></div>
+                    <div><h1 class="text-2xl font-bold text-toss-grey900 mb-1" x-text="getPageTitle()"></h1><p class="text-toss-grey600 text-sm">v3.13 (캘린더 완벽 수정)</p></div>
                     <button x-show="activeTab === 'employees'" @click="openEmpModal()" class="flex items-center gap-2 bg-toss-blue hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-bold shadow-toss transition"><i data-lucide="plus" class="w-5 h-5"></i><span>새 직원 등록하기</span></button>
                 </header>
 
@@ -160,7 +153,7 @@
                 <div x-show="activeTab === 'calendar'" class="animate-fade-in h-full flex flex-col">
                     <div class="bg-white rounded-3xl shadow-toss p-6 border border-toss-grey200 flex-1 flex flex-col min-h-[600px]">
                          <div class="flex justify-between items-center mb-6">
-                             <!-- 동적 날짜 표시 -->
+                             <!-- [수정됨] 동적 날짜 표시 및 모달 트리거 -->
                              <h3 class="font-bold text-lg flex items-center gap-2 cursor-pointer hover:text-toss-blue transition" @click="showDateModal = true">
                                  <span x-text="viewType === 'month' ? getMonthString() : getWeekRangeString()"></span>
                                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -288,7 +281,7 @@
         </main>
     </div>
 
-    <!-- 년/월 선택 모달 -->
+    <!-- 년/월 선택 모달 (New) -->
     <div x-show="showDateModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
         <div class="bg-white w-80 rounded-3xl shadow-2xl p-6" @click.away="showDateModal = false">
             <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">날짜 선택</h3><button @click="showDateModal=false"><i data-lucide="x"></i></button></div>
@@ -338,7 +331,7 @@
             return {
                 loading: true, mobileMenuOpen: false, activeTab: 'employees', viewType: 'month',
                 menuItems: [ {id:'employees', label:'직원 관리', icon:'users'}, {id:'calendar', label:'근무 일정', icon:'calendar'}, {id:'payroll', label:'급여 내역', icon:'calculator'} ],
-                currentDate: new Date(2025, 11, 1), employees: [], shifts: [], weekDays: [], dragState: { active: false },
+                currentDate: new Date(), employees: [], shifts: [], weekDays: [], dragState: { active: false },
                 showEmpModal: false, isEmpEditMode: false, editingEmpId: null, showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
                 newEmp: { name: '', role: 'parttime', contractType: 'insurance4', basePay: 10030, joinDate: new Date().toISOString().split('T')[0], rrn: '', address: '', bankName: '', accountNumber: '', accountHolder: '', schedule: {} }, newShift: { empId: null, startTime: '09:00', endTime: '18:00' },
                 showDateModal: false, modalYear: 2025,
@@ -349,8 +342,6 @@
                     await this.loadData();
                 },
                 refreshIcons() { setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50); },
-                
-                // [Fix] loadData: Use GET for read operations
                 async loadData() {
                     this.loading = true;
                     try {
@@ -361,6 +352,7 @@
                             return e; 
                         });
                         if (shiftRes.status === 'success') {
+                            // [Fix] Date Format: YYYY-MM-DD
                             this.shifts = shiftRes.data.map(s => {
                                 if(s.date && s.date.includes('T')) s.date = s.date.split('T')[0];
                                 return s;
