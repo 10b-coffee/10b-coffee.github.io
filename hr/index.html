@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 - 직원 관리 및 급여 정산</title>
+    <title>레스토지니 v1.0.0 (Cloud)</title>
     
     <!-- Pretendard Webfont -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -93,6 +93,21 @@
             cursor: not-allowed;
         }
 
+        /* Loading Overlay */
+        #global-loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--toss-blue);
+        }
+
         /* Calendar Grid */
         .calendar-grid-week {
             display: grid;
@@ -136,9 +151,7 @@
             cursor: pointer;
             position: relative;
         }
-        .calendar-cell-week {
-            height: 12px; /* 15 mins */
-        }
+        .calendar-cell-week { height: 12px; }
         .calendar-cell-month {
             min-height: 100px;
             padding: 8px;
@@ -147,7 +160,6 @@
             gap: 4px;
         }
         .calendar-cell-month:hover { background-color: var(--toss-grey-50); }
-        
         .calendar-cell.hour-marker { border-bottom: 1px solid var(--toss-grey-300); }
         .calendar-cell:hover { background-color: var(--toss-blue-light); }
         .calendar-cell.selected { background-color: var(--toss-blue); opacity: 0.5; }
@@ -163,142 +175,32 @@
             pointer-events: auto;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .event-block.week {
-            position: absolute;
-            width: 90%;
-            left: 5%;
-        }
-        .event-block.month {
-            width: 100%;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
+        .event-block.week { position: absolute; width: 90%; left: 5%; }
+        .event-block.month { width: 100%; white-space: nowrap; text-overflow: ellipsis; }
 
         /* Modal Overlay */
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-        }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); }
 
         /* Chat Widget */
-        .chat-widget {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        .chat-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background: var(--gemini-gradient);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            cursor: pointer;
-            transition: 0.3s;
-        }
+        .chat-widget { position: fixed; bottom: 24px; right: 24px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; }
+        .chat-btn { width: 60px; height: 60px; border-radius: 30px; background: var(--gemini-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; transition: 0.3s; }
         .chat-btn:hover { transform: scale(1.05); }
-        
-        .chat-window {
-            width: 350px;
-            height: 500px;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            margin-bottom: 16px;
-            display: none; /* hidden by default */
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .chat-header {
-            background: var(--toss-grey-50);
-            padding: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--toss-grey-100);
-        }
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .chat-input-area {
-            padding: 12px;
-            border-top: 1px solid var(--toss-grey-100);
-            display: flex;
-            gap: 8px;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 16px;
-            line-height: 1.5;
-        }
-        .message.user {
-            background-color: var(--toss-blue);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .message.ai {
-            background-color: var(--toss-grey-100);
-            color: var(--toss-grey-900);
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .typing-indicator span {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background-color: #ccc;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
-            margin: 0 1px;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid rgba(0,0,0,0.1);
-            border-radius: 50%;
-            border-top: 3px solid var(--toss-blue);
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Markdown Styles */
+        .chat-window { width: 350px; height: 500px; background: white; border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 16px; display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+        .chat-header { background: var(--toss-grey-50); padding: 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--toss-grey-100); }
+        .chat-messages { flex: 1; padding: 16px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 12px; }
+        .chat-input-area { padding: 12px; border-top: 1px solid var(--toss-grey-100); display: flex; gap: 8px; }
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 16px; line-height: 1.5; }
+        .message.user { background-color: var(--toss-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message.ai { background-color: var(--toss-grey-100); color: var(--toss-grey-900); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #ccc; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 1px; }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; } .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .spinner { border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--toss-blue); width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .markdown-body ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
         .markdown-body ol { list-style-type: decimal; padding-left: 20px; margin-bottom: 10px; }
         .markdown-body p { margin-bottom: 10px; }
         .markdown-body strong { font-weight: 700; }
-
-        /* Hide scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #E5E8EB; border-radius: 4px; }
@@ -307,11 +209,30 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- Global Loading Overlay -->
+    <div id="global-loading" class="hidden">
+        <div class="spinner w-10 h-10 border-4 border-t-blue-600 mb-4"></div>
+        <p>클라우드 동기화 중...</p>
+    </div>
+
+    <!-- API Setup Modal (First Run - Hidden by default if URL exists) -->
+    <div id="modal-api-setup" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-gray-900">클라우드 연결 설정</h2>
+            <p class="text-gray-600 mb-4 text-sm">Google Apps Script 배포 URL을 입력해주세요.<br>이 URL은 브라우저에 안전하게 저장됩니다.</p>
+            <input type="text" id="gas-url-input" class="input-field mb-4" placeholder="https://script.google.com/macros/s/...">
+            <button onclick="saveApiUrl()" class="btn-primary w-full py-3">연결하기</button>
+            <div class="mt-4 text-xs text-gray-400 text-center">
+                * 설정 > 배포 > 웹 앱 > '웹 앱 URL' 복사
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col justify-between z-20">
         <div class="p-6">
-            <h1 class="text-2xl font-bold text-blue-500 mb-8 flex items-center gap-2">
-                <i class="ph-fill ph-storefront"></i> 레스토지니
+            <h1 class="text-xl font-bold text-blue-500 mb-8 flex items-center gap-2 cursor-pointer" onclick="openApiSetup()">
+                <i class="ph-fill ph-storefront"></i> 레스토지니 <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">v1.0.0</span>
             </h1>
             <nav class="space-y-2">
                 <button onclick="switchTab('employees')" id="nav-employees" class="w-full text-left px-4 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-3">
@@ -332,7 +253,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-gray-900">관리자님</p>
-                    <p class="text-xs text-gray-500">Premium Plan</p>
+                    <p class="text-xs text-green-600 flex items-center gap-1"><i class="ph-fill ph-cloud-check"></i> Connected</p>
                 </div>
             </div>
         </div>
@@ -352,23 +273,15 @@
                     <i class="ph-bold ph-plus"></i> 직원 등록
                 </button>
             </div>
-            
-            <div id="employee-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Employee Cards Generated Here -->
-            </div>
+            <div id="employee-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
         <!-- View: Schedule -->
         <div id="view-schedule" class="flex h-full hidden">
-            <!-- Inner Sidebar -->
             <div class="w-64 border-r border-gray-200 bg-white p-4 flex flex-col z-10">
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2 px-2">
-                    <i class="ph-bold ph-users"></i> 직원 목록
-                </h3>
+                <h3 class="font-bold text-lg mb-4 flex items-center gap-2 px-2"><i class="ph-bold ph-users"></i> 직원 목록</h3>
                 <div id="schedule-employee-list" class="space-y-1 overflow-y-auto flex-1"></div>
             </div>
-
-            <!-- Inner Main: Calendar -->
             <div class="flex-1 flex flex-col bg-gray-50 relative">
                 <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
                     <div class="flex items-center gap-4">
@@ -376,7 +289,6 @@
                         <div class="relative group">
                             <span id="calendar-title" class="text-xl font-bold cursor-pointer hover:text-blue-500 transition-colors flex items-center gap-1"></span>
                             <input type="month" id="calendar-month-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="jumpToDate(this.value)">
-                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap">클릭하여 날짜 이동</div>
                         </div>
                         <button onclick="changeDate(1)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-600"><i class="ph-bold ph-caret-right"></i></button>
                     </div>
@@ -396,7 +308,7 @@
              <div class="flex justify-between items-center mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">급여 정산</h2>
-                    <p class="text-gray-500 mt-1">실시간으로 계산된 예상 급여 내역입니다.</p>
+                    <p class="text-gray-500 mt-1">스프레드시트 데이터 기반 실시간 정산 내역입니다.</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="generatePayrollReport()" class="btn-ai px-4 py-2 flex items-center gap-2 text-sm shadow-md hover:shadow-lg transition-all">
@@ -405,200 +317,74 @@
                     <input type="month" id="payroll-month" class="input-field w-40" onchange="renderPayroll()">
                 </div>
             </div>
-
             <div id="ai-report-container" class="hidden mb-6 card p-6 bg-gradient-to-r from-blue-50 to-white border-blue-100">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center gap-2">
-                        <i class="ph-fill ph-sparkle text-blue-500 text-xl"></i>
-                        <h3 class="font-bold text-lg text-gray-800">AI 경영 분석 리포트</h3>
-                    </div>
+                    <div class="flex items-center gap-2"><i class="ph-fill ph-sparkle text-blue-500 text-xl"></i><h3 class="font-bold text-lg text-gray-800">AI 경영 분석 리포트</h3></div>
                     <button onclick="closeAiReport()" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
                 </div>
                 <div id="ai-report-content" class="markdown-body text-sm text-gray-700 leading-relaxed"></div>
             </div>
-
             <div id="payroll-list" class="space-y-6"></div>
         </div>
-
     </main>
 
     <!-- Chat Widget -->
     <div class="chat-widget">
         <div class="chat-window" id="chat-window">
-            <div class="chat-header">
-                <div class="flex items-center gap-2">
-                    <i class="ph-fill ph-robot text-blue-500 text-xl"></i>
-                    <span>AI 노무사</span>
-                </div>
-                <button onclick="toggleChat()" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="message ai">안녕하세요! 사장님. 👋<br>근로기준법이나 주휴수당 계산 등 궁금한 점이 있으시면 언제든 물어봐 주세요.</div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="질문을 입력하세요..." class="flex-1 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" onkeypress="handleChatKey(event)">
-                <button onclick="sendMessage()" class="bg-blue-500 text-white rounded-xl w-10 h-10 flex items-center justify-center hover:bg-blue-600 transition">
-                    <i class="ph-bold ph-paper-plane-right"></i>
-                </button>
-            </div>
+            <div class="chat-header"><div class="flex items-center gap-2"><i class="ph-fill ph-robot text-blue-500 text-xl"></i><span>AI 노무사</span></div><button onclick="toggleChat()" class="text-gray-400 hover:text-gray-600"><i class="ph-bold ph-x"></i></button></div>
+            <div class="chat-messages" id="chat-messages"><div class="message ai">안녕하세요! 사장님. 👋<br>궁금한 노무 질문을 입력해주세요.</div></div>
+            <div class="chat-input-area"><input type="text" id="chat-input" placeholder="질문을 입력하세요..." class="flex-1 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" onkeypress="handleChatKey(event)"><button onclick="sendMessage()" class="bg-blue-500 text-white rounded-xl w-10 h-10 flex items-center justify-center hover:bg-blue-600 transition"><i class="ph-bold ph-paper-plane-right"></i></button></div>
         </div>
         <div class="chat-btn" onclick="toggleChat()"><i class="ph-fill ph-chat-teardrop-text"></i></div>
     </div>
 
-    <!-- Modal: Employee (Updated) -->
+    <!-- Employee Modal -->
     <div id="modal-employee" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center">
         <div class="bg-white rounded-3xl w-full max-w-2xl p-8 shadow-2xl max-h-[95vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold" id="modal-employee-title">직원 등록</h3>
                 <button onclick="closeEmployeeModal()" class="p-2 hover:bg-gray-100 rounded-full"><i class="ph-bold ph-x"></i></button>
             </div>
-            
             <form id="employee-form" onsubmit="saveEmployee(event)" class="space-y-6">
                 <input type="hidden" id="emp-id">
-                
-                <!-- 1. 인적 사항 -->
                 <div>
                     <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-user"></i> 인적 사항</h4>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">이름</label>
-                            <input type="text" id="emp-name" required class="input-field" placeholder="김토스">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">주민등록번호</label>
-                            <div class="flex items-center gap-2">
-                                <input type="text" id="emp-rrn-front" maxlength="6" class="input-field w-1/2" placeholder="생년월일">
-                                <span>-</span>
-                                <input type="password" id="emp-rrn-back" maxlength="7" class="input-field w-1/2" placeholder="뒤 7자리">
-                            </div>
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">이름</label><input type="text" id="emp-name" required class="input-field" placeholder="김토스"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">주민등록번호</label><div class="flex items-center gap-2"><input type="text" id="emp-rrn-front" maxlength="6" class="input-field w-1/2" placeholder="생년월일"><span>-</span><input type="password" id="emp-rrn-back" maxlength="7" class="input-field w-1/2" placeholder="뒤 7자리"></div></div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">주소</label>
-                        <input type="text" id="emp-address" placeholder="서울시 강남구 테헤란로..." class="input-field">
-                    </div>
+                    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">주소</label><input type="text" id="emp-address" placeholder="서울시 강남구..." class="input-field"></div>
                 </div>
-
                 <div class="border-t border-gray-100 my-4"></div>
-
-                <!-- 2. 근무 정보 -->
                 <div>
                     <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-briefcase"></i> 근무 정보</h4>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">입사일</label>
-                            <input type="date" id="emp-join-date" required class="input-field">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">퇴사일</label>
-                            <input type="date" id="emp-leave-date" disabled class="input-field">
-                            <div class="mt-2 flex items-center gap-2">
-                                <input type="checkbox" id="emp-is-working" checked onchange="toggleLeaveDate()" class="w-4 h-4 text-blue-600 rounded">
-                                <label for="emp-is-working" class="text-sm text-gray-600">현재 재직 중</label>
-                            </div>
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">입사일</label><input type="date" id="emp-join-date" required class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">퇴사일</label><input type="date" id="emp-leave-date" disabled class="input-field"><div class="mt-2 flex items-center gap-2"><input type="checkbox" id="emp-is-working" checked onchange="toggleLeaveDate()" class="w-4 h-4 text-blue-600 rounded"><label for="emp-is-working" class="text-sm text-gray-600">현재 재직 중</label></div></div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">직책</label>
-                        <select id="emp-role" class="input-field">
-                            <option value="staff">일반 직원</option>
-                            <option value="manager">매니저</option>
-                            <option value="owner">점장</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">요일별 근무 시간 (기본 스케줄)</label>
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                            <!-- JS will populate rows for Mon-Sun here -->
-                            <div id="work-schedule-rows" class="space-y-2 text-sm">
-                                <!-- Example Row: Generated dynamically -->
-                            </div>
-                        </div>
-                    </div>
+                    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">직책</label><select id="emp-role" class="input-field"><option value="staff">일반 직원</option><option value="manager">매니저</option><option value="owner">점장</option></select></div>
+                    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">요일별 근무 시간 (기본 스케줄)</label><div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2"><div id="work-schedule-rows" class="space-y-2 text-sm"></div></div></div>
                 </div>
-
                 <div class="border-t border-gray-100 my-4"></div>
-
-                <!-- 3. 급여 및 계약 -->
                 <div>
                     <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-money"></i> 급여 및 계약</h4>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">계약 형태</label>
-                        <select id="emp-type" class="input-field" onchange="updateAllowancePreview()">
-                            <option value="hourly">시급제 (파트타임)</option>
-                            <option value="monthly">월급제 (정규/계약)</option>
-                        </select>
-                    </div>
-
+                    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">계약 형태</label><select id="emp-type" class="input-field" onchange="updateAllowancePreview()"><option value="hourly">시급제 (파트타임)</option><option value="monthly">월급제 (정규/계약)</option></select></div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1" id="label-pay">기본급</label>
-                            <div class="relative">
-                                <input type="number" id="emp-pay" required class="input-field pr-8" placeholder="0">
-                                <span class="absolute right-3 top-3 text-gray-500 text-sm">원</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">수당 (직접 입력)</label>
-                             <div class="relative">
-                                <input type="number" id="emp-allowance-manual" class="input-field pr-8" placeholder="0">
-                                <span class="absolute right-3 top-3 text-gray-500 text-sm">원</span>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1" id="allowance-hint">시급제: 시간당 추가 / 월급제: 월 추가</p>
-                        </div>
+                         <div><label class="block text-sm font-medium text-gray-700 mb-1" id="label-pay">기본급</label><div class="relative"><input type="number" id="emp-pay" required class="input-field pr-8" placeholder="0"><span class="absolute right-3 top-3 text-gray-500 text-sm">원</span></div></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">수당 (직접 입력)</label><div class="relative"><input type="number" id="emp-allowance-manual" class="input-field pr-8" placeholder="0"><span class="absolute right-3 top-3 text-gray-500 text-sm">원</span></div><p class="text-xs text-gray-500 mt-1" id="allowance-hint">시급제: 시간당 추가 / 월급제: 월 추가</p></div>
                     </div>
-
-                    <!-- 주휴수당 포함 여부 (시급제 전용) -->
-                    <div id="hourly-options" class="mb-4 bg-blue-50 p-3 rounded-lg hidden">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="emp-juhyu-included" class="w-4 h-4 text-blue-600 rounded">
-                            <span class="text-sm text-blue-800 font-medium">입력한 시급에 주휴수당 포함</span>
-                        </label>
-                        <p class="text-xs text-blue-600 mt-1 ml-6">* 체크 시 기본급을 역산하여 계산합니다 (약 ÷1.2)</p>
-                    </div>
-
-                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">보험 적용</label>
-                        <select id="emp-insurance" class="input-field">
-                            <option value="4major">4대보험 (국민,건강,고용,산재)</option>
-                            <option value="2major">2대보험 (고용,산재)</option>
-                            <option value="freelance">프리랜서 (3.3%)</option>
-                        </select>
-                    </div>
+                    <div id="hourly-options" class="mb-4 bg-blue-50 p-3 rounded-lg hidden"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="emp-juhyu-included" class="w-4 h-4 text-blue-600 rounded"><span class="text-sm text-blue-800 font-medium">입력한 시급에 주휴수당 포함</span></label><p class="text-xs text-blue-600 mt-1 ml-6">* 체크 시 기본급을 역산하여 계산합니다 (약 ÷1.2)</p></div>
+                     <div><label class="block text-sm font-medium text-gray-700 mb-1">보험 적용</label><select id="emp-insurance" class="input-field"><option value="4major">4대보험 (국민,건강,고용,산재)</option><option value="2major">2대보험 (고용,산재)</option><option value="freelance">프리랜서 (3.3%)</option></select></div>
                 </div>
-
                 <div class="border-t border-gray-100 my-4"></div>
-
-                <!-- 4. 계좌 정보 -->
                 <div>
                     <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1"><i class="ph-fill ph-credit-card"></i> 계좌 정보</h4>
                     <div class="grid grid-cols-3 gap-2">
-                        <select id="emp-bank-name" class="input-field">
-                            <option value="">은행 선택</option>
-                            <option value="KB국민">KB국민</option>
-                            <option value="신한">신한</option>
-                            <option value="우리">우리</option>
-                            <option value="하나">하나</option>
-                            <option value="NH농협">NH농협</option>
-                            <option value="IBK기업">IBK기업</option>
-                            <option value="토스뱅크">토스뱅크</option>
-                            <option value="카카오뱅크">카카오뱅크</option>
-                            <option value="케이뱅크">케이뱅크</option>
-                            <option value="SC제일">SC제일</option>
-                            <option value="우체국">우체국</option>
-                            <option value="부산">부산</option>
-                            <option value="대구">대구</option>
-                            <option value="새마을">새마을</option>
-                            <option value="신협">신협</option>
-                        </select>
+                        <select id="emp-bank-name" class="input-field"><option value="">은행 선택</option><option value="KB국민">KB국민</option><option value="신한">신한</option><option value="우리">우리</option><option value="하나">하나</option><option value="NH농협">NH농협</option><option value="IBK기업">IBK기업</option><option value="토스뱅크">토스뱅크</option><option value="카카오뱅크">카카오뱅크</option><option value="케이뱅크">케이뱅크</option><option value="SC제일">SC제일</option><option value="우체국">우체국</option><option value="부산">부산</option><option value="대구">대구</option><option value="새마을">새마을</option><option value="신협">신협</option></select>
                         <input type="text" id="emp-account-number" placeholder="계좌번호 (- 제외)" class="input-field col-span-2">
                     </div>
-                    <div class="mt-2">
-                        <input type="text" id="emp-account-holder" placeholder="예금주" class="input-field">
-                    </div>
+                    <div class="mt-2"><input type="text" id="emp-account-holder" placeholder="예금주" class="input-field"></div>
                 </div>
-
                 <div class="pt-4 flex gap-3">
                     <button type="button" onclick="deleteEmployee()" id="btn-delete-emp" class="btn-secondary w-1/3 hidden text-red-500 bg-red-50 hover:bg-red-100">삭제</button>
                     <button type="submit" class="btn-primary flex-1 py-3 text-lg">저장하기</button>
@@ -607,114 +393,30 @@
         </div>
     </div>
 
-    <!-- Modal: Schedule Detail (No Change) -->
+    <!-- Modal: Schedule Detail -->
     <div id="modal-schedule" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center">
         <div class="bg-white rounded-3xl w-80 p-6 shadow-xl">
-             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold" id="modal-schedule-title">근무 시간 수정</h3>
-                <button onclick="closeScheduleModal()" class="p-1"><i class="ph-bold ph-x"></i></button>
-            </div>
+             <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold" id="modal-schedule-title">근무 시간 수정</h3><button onclick="closeScheduleModal()" class="p-1"><i class="ph-bold ph-x"></i></button></div>
             <form onsubmit="saveScheduleDetail(event)">
-                <input type="hidden" id="sch-date">
-                <p id="sch-date-display" class="text-sm text-gray-500 mb-3 text-center"></p>
+                <input type="hidden" id="sch-date"><p id="sch-date-display" class="text-sm text-gray-500 mb-3 text-center"></p>
                 <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-gray-500">시작 시간</label>
-                        <input type="time" id="sch-start" required class="input-field">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-500">종료 시간</label>
-                        <input type="time" id="sch-end" required class="input-field">
-                    </div>
+                    <div><label class="text-xs text-gray-500">시작 시간</label><input type="time" id="sch-start" required class="input-field"></div>
+                    <div><label class="text-xs text-gray-500">종료 시간</label><input type="time" id="sch-end" required class="input-field"></div>
                 </div>
-                <div class="flex gap-2 mt-4">
-                    <button type="button" id="btn-delete-schedule" onclick="deleteScheduleDetail()" class="flex-1 btn-secondary text-red-500 bg-red-50">삭제</button>
-                    <button type="submit" class="flex-1 btn-primary">저장</button>
-                </div>
+                <div class="flex gap-2 mt-4"><button type="button" id="btn-delete-schedule" onclick="deleteScheduleDetail()" class="flex-1 btn-secondary text-red-500 bg-red-50">삭제</button><button type="submit" class="flex-1 btn-primary">저장</button></div>
             </form>
         </div>
     </div>
 
     <script>
-        // --- Gemini API Setup ---
+        // --- Configuration & Cloud Sync ---
+        // Set hardcoded API URL as per user request
+        let API_URL = localStorage.getItem('rg_api_url') || 'https://script.google.com/macros/s/AKfycbzld_OWshFmOj0S-J4IR7OwK5hjadnBTyZaDYyPsT7UMYaDYcec2F_ZFbAPGNtXjMkMVw/exec';
         const apiKey = ""; 
-        
-        async function callGemini(prompt, systemInstruction = "") {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        systemInstruction: { parts: [{ text: systemInstruction }] }
-                    })
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "죄송합니다. 응답을 생성할 수 없습니다.";
-            } catch (error) {
-                console.error("Gemini API Error:", error);
-                return "API 호출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-            }
-        }
 
-        // --- Chat Widget Logic ---
-        function toggleChat() {
-            const win = document.getElementById('chat-window');
-            if (win.style.display === 'flex') {
-                win.style.display = 'none';
-            } else {
-                win.style.display = 'flex';
-                document.getElementById('chat-input').focus();
-            }
-        }
-        function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-            const messagesDiv = document.getElementById('chat-messages');
-            messagesDiv.innerHTML += `<div class="message user">${text}</div>`;
-            input.value = '';
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            const loadingId = 'loading-' + Date.now();
-            messagesDiv.innerHTML += `<div class="message ai" id="${loadingId}"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            const systemPrompt = "당신은 '레스토지니'의 유능한 AI 노무사입니다. 사용자는 식당이나 카페를 운영하는 자영업자입니다. 대한민국 근로기준법에 기반하여 주휴수당, 퇴직금, 4대보험, 해고 예고 수당 등에 대한 질문에 친절하고 전문적으로 답변해 주세요. 복잡한 법률 용어보다는 사장님이 이해하기 쉬운 말로 설명해 주세요.";
-            const responseText = await callGemini(text, systemPrompt);
-            const loadingEl = document.getElementById(loadingId);
-            if(loadingEl) loadingEl.innerHTML = marked.parse(responseText);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // --- AI Payroll Report Logic ---
-        function closeAiReport() { document.getElementById('ai-report-container').classList.add('hidden'); }
-        async function generatePayrollReport() {
-            const container = document.getElementById('ai-report-container');
-            const contentDiv = document.getElementById('ai-report-content');
-            container.classList.remove('hidden');
-            contentDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-500 py-4"><div class="spinner border-gray-300 border-t-blue-500"></div><span>Gemini가 ${document.getElementById('payroll-month').value} 급여 데이터를 심층 분석 중입니다...</span></div>`;
-            const monthStr = document.getElementById('payroll-month').value;
-            if (!monthStr) return;
-            const [year, month] = monthStr.split('-').map(Number);
-            const daysInMonth = new Date(year, month, 0).getDate();
-            let workDaysInMonth = 0;
-            for(let d=1; d<=daysInMonth; d++) { const day = new Date(year, month-1, d).getDay(); if (day >= 1 && day <= 5) workDaysInMonth++; }
-            let reportData = { month: monthStr, totalCost: 0, totalEmployees: state.employees.length, details: [] };
-            state.employees.forEach(emp => {
-                const calc = calculateMonthlyPayroll(emp, year, month, workDaysInMonth);
-                reportData.totalCost += calc.grossPay;
-                reportData.details.push({ name: emp.name, role: emp.role, type: emp.type, grossPay: calc.grossPay, totalHours: calc.totalHours, juhyuOccurred: calc.dailyLogs.some(l => l.juhyuPay > 0), absentCount: calc.dailyLogs.filter(l => l.status === '-' && (emp.role === 'manager' || emp.role === 'owner')).length });
-            });
-            const prompt = `다음은 매장의 ${monthStr} 급여 정산 데이터(JSON)입니다. 이 데이터를 분석하여 사장님을 위한 '경영 인사이트 리포트'를 작성해 주세요. 데이터: ${JSON.stringify(reportData)} 작성 가이드: 1. 총 인건비 요약 2. 주요 특징 (최다 급여자, 주휴수당 발생 여부) 3. 경영 조언. 톤앤매너: 토스 스타일 부드러운 해요체.`;
-            const responseText = await callGemini(prompt, "당신은 데이터 분석에 능한 AI 경영 컨설턴트입니다.");
-            contentDiv.innerHTML = marked.parse(responseText);
-        }
-
-        // --- State Management ---
         const state = {
-            employees: JSON.parse(localStorage.getItem('rg_employees')) || [],
-            schedules: JSON.parse(localStorage.getItem('rg_schedules')) || [],
+            employees: [],
+            schedules: [],
             currentView: 'employees',
             scheduleViewMode: 'month',
             currentDate: new Date(),
@@ -722,17 +424,55 @@
             dragStart: null,
         };
 
-        // --- Init ---
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('payroll-month').value = new Date().toISOString().slice(0, 7);
-            state.currentDate = new Date();
-            if (state.employees.length > 0) state.selectedEmpIdForSchedule = state.employees[0].id;
-            switchTab('employees');
-        });
-        function saveState() {
-            localStorage.setItem('rg_employees', JSON.stringify(state.employees));
-            localStorage.setItem('rg_schedules', JSON.stringify(state.schedules));
+        async function apiCall(op, payload = {}, id = null) {
+            if (!API_URL) {
+                openApiSetup();
+                return null;
+            }
+            showLoading(true);
+            try {
+                let response;
+                if (op === 'init') {
+                    response = await fetch(`${API_URL}?op=init`);
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({ op, payload, id })
+                    });
+                }
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                return data;
+            } catch (err) {
+                alert('데이터 동기화 오류: ' + err.message);
+                return null;
+            } finally {
+                showLoading(false);
+            }
         }
+
+        function showLoading(show) { document.getElementById('global-loading').classList.toggle('hidden', !show); }
+        function openApiSetup() { document.getElementById('modal-api-setup').classList.remove('hidden'); document.getElementById('gas-url-input').value = API_URL; }
+        function saveApiUrl() {
+            const url = document.getElementById('gas-url-input').value.trim();
+            if (url) { localStorage.setItem('rg_api_url', url); API_URL = url; document.getElementById('modal-api-setup').classList.add('hidden'); initApp(); }
+        }
+
+        async function initApp() {
+            if (!API_URL) { openApiSetup(); return; }
+            const data = await apiCall('init');
+            if (data) {
+                state.employees = data.employees || [];
+                state.schedules = data.schedules || [];
+                document.getElementById('payroll-month').value = new Date().toISOString().slice(0, 7);
+                if (state.employees.length > 0) state.selectedEmpIdForSchedule = state.employees[0].id;
+                switchTab(state.currentView);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
 
         // --- Routing ---
         function switchTab(tab) {
@@ -747,128 +487,53 @@
             if (tab === 'payroll') renderPayroll();
         }
 
-        // --- Helpers ---
+        // --- Core Logic Helpers ---
         function generateId() { return Math.random().toString(36).substr(2, 9); }
         function getMonday(d) { d = new Date(d); var day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); }
         function addDays(d, days) { var date = new Date(d.valueOf()); date.setDate(date.getDate() + days); return date; }
         function formatDate(d) { return d.toISOString().split('T')[0]; }
         function formatMoney(n) { return Math.ceil(n).toLocaleString() + '원'; }
-        
-        // --- Employee Logic (Main View) ---
+
+        // --- Employee Logic ---
         function renderEmployeeList() {
-            const container = document.getElementById('employee-list');
-            container.innerHTML = '';
+            const container = document.getElementById('employee-list'); container.innerHTML = '';
             if (state.employees.length === 0) { container.innerHTML = `<div class="col-span-2 text-center py-20 text-gray-400">등록된 직원이 없습니다.</div>`; return; }
             state.employees.forEach(emp => {
-                const el = document.createElement('div');
-                el.className = 'card p-6 cursor-pointer hover:border-blue-200 transition';
-                el.onclick = () => openEmployeeModal(emp.id);
+                const el = document.createElement('div'); el.className = 'card p-6 cursor-pointer hover:border-blue-200 transition'; el.onclick = () => openEmployeeModal(emp.id);
                 let badgeColor = emp.type === 'monthly' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600';
                 let typeText = emp.type === 'monthly' ? '월급제' : '시급제';
                 el.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="text-lg font-bold text-gray-900">${emp.name}</h3>
-                                <span class="text-xs px-2 py-1 rounded-full ${badgeColor} font-bold">${typeText}</span>
-                            </div>
-                            <p class="text-sm text-gray-500">${emp.role === 'manager' ? '매니저' : emp.role === 'owner' ? '점장' : '스태프'} · ${emp.joinDate} 입사</p>
-                        </div>
+                        <div><div class="flex items-center gap-2 mb-1"><h3 class="text-lg font-bold text-gray-900">${emp.name}</h3><span class="text-xs px-2 py-1 rounded-full ${badgeColor} font-bold">${typeText}</span></div><p class="text-sm text-gray-500">${emp.role === 'manager' ? '매니저' : emp.role === 'owner' ? '점장' : '스태프'} · ${emp.joinDate} 입사</p></div>
                         <button class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-blue-500"><i class="ph-bold ph-pencil-simple"></i></button>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs text-gray-500 mb-1">기본급여</p>
-                        <p class="text-lg font-bold text-gray-900">${formatMoney(emp.pay)}</p>
-                    </div>`;
+                    <div class="text-right"><p class="text-xs text-gray-500 mb-1">기본급여</p><p class="text-lg font-bold text-gray-900">${formatMoney(emp.pay)}</p></div>`;
                 container.appendChild(el);
             });
         }
-
-        // --- Employee Modal Logic ---
-        function toggleLeaveDate() {
-            const isWorking = document.getElementById('emp-is-working').checked;
-            document.getElementById('emp-leave-date').disabled = isWorking;
-            if (isWorking) document.getElementById('emp-leave-date').value = '';
-        }
-
-        function renderScheduleRows(scheduleData) {
-            const container = document.getElementById('work-schedule-rows');
-            container.innerHTML = '';
-            const days = [
-                { id: 'mon', label: '월' }, { id: 'tue', label: '화' }, { id: 'wed', label: '수' },
-                { id: 'thu', label: '목' }, { id: 'fri', label: '금' }, { id: 'sat', label: '토' }, { id: 'sun', label: '일' }
-            ];
-            
-            days.forEach(day => {
-                // Find existing data for this day
-                const saved = scheduleData ? scheduleData.find(s => s.day === day.id) : null;
-                const isActive = saved ? saved.active : false;
-                const start = saved ? saved.start : '09:00';
-                const end = saved ? saved.end : '18:00';
-
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-3';
-                row.innerHTML = `
-                    <div class="w-12">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="sch-day-check w-4 h-4 text-blue-600 rounded" data-day="${day.id}" ${isActive ? 'checked' : ''}>
-                            <span>${day.label}</span>
-                        </label>
-                    </div>
-                    <div class="flex-1 flex gap-2">
-                        <input type="time" class="sch-start input-field py-1 text-sm" value="${start}" ${!isActive ? 'disabled' : ''}>
-                        <input type="time" class="sch-end input-field py-1 text-sm" value="${end}" ${!isActive ? 'disabled' : ''}>
-                    </div>
-                `;
-                
-                // Add event listener to toggle inputs
-                const cb = row.querySelector('.sch-day-check');
-                const inputs = row.querySelectorAll('input[type="time"]');
-                cb.addEventListener('change', (e) => {
-                    inputs.forEach(inp => inp.disabled = !e.target.checked);
-                });
-
-                container.appendChild(row);
-            });
-        }
-
         function openEmployeeModal(id = null) {
-            const form = document.getElementById('employee-form');
-            form.reset();
-            document.getElementById('modal-employee').classList.remove('hidden');
-            
+            const form = document.getElementById('employee-form'); form.reset(); document.getElementById('modal-employee').classList.remove('hidden');
             let scheduleData = null;
-
             if (id) {
                 const emp = state.employees.find(e => e.id === id);
                 document.getElementById('modal-employee-title').innerText = '직원 정보 수정';
                 document.getElementById('emp-id').value = emp.id;
                 document.getElementById('emp-name').value = emp.name;
-                
-                // RRN Split
-                if (emp.rrn && emp.rrn.includes('-')) {
-                    const [front, back] = emp.rrn.split('-');
-                    document.getElementById('emp-rrn-front').value = front;
-                    document.getElementById('emp-rrn-back').value = back;
-                }
-                
+                if (emp.rrn && emp.rrn.includes('-')) { const [front, back] = emp.rrn.split('-'); document.getElementById('emp-rrn-front').value = front; document.getElementById('emp-rrn-back').value = back; }
                 document.getElementById('emp-address').value = emp.address || '';
                 document.getElementById('emp-join-date').value = emp.joinDate;
                 document.getElementById('emp-leave-date').value = emp.leaveDate || '';
                 document.getElementById('emp-is-working').checked = !emp.leaveDate;
                 toggleLeaveDate();
-
                 document.getElementById('emp-role').value = emp.role;
                 document.getElementById('emp-type').value = emp.type;
                 document.getElementById('emp-pay').value = emp.pay;
                 document.getElementById('emp-allowance-manual').value = emp.manualAllowance || '';
                 document.getElementById('emp-juhyu-included').checked = emp.juhyuIncluded || false;
                 document.getElementById('emp-insurance').value = emp.insurance;
-                
                 document.getElementById('emp-bank-name').value = emp.bankName || '';
                 document.getElementById('emp-account-number').value = emp.accountNumber || '';
                 document.getElementById('emp-account-holder').value = emp.accountHolder || '';
-
                 scheduleData = emp.workSchedule;
                 document.getElementById('btn-delete-emp').classList.remove('hidden');
             } else {
@@ -881,43 +546,33 @@
             updateAllowancePreview();
             renderScheduleRows(scheduleData);
         }
-        function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
-        
+        function toggleLeaveDate() { const isWorking = document.getElementById('emp-is-working').checked; document.getElementById('emp-leave-date').disabled = isWorking; if (isWorking) document.getElementById('emp-leave-date').value = ''; }
         function updateAllowancePreview() {
-            const type = document.getElementById('emp-type').value;
-            const payLabel = document.getElementById('label-pay');
-            const hint = document.getElementById('allowance-hint');
-            const hourlyOptions = document.getElementById('hourly-options');
-            
-            if (type === 'monthly') {
-                payLabel.innerText = '월 기본급';
-                hint.innerText = '월 단위 추가 지급액';
-                hourlyOptions.classList.add('hidden');
-            } else {
-                payLabel.innerText = '기본 시급';
-                hint.innerText = '시간당 추가 지급액';
-                hourlyOptions.classList.remove('hidden');
-            }
+            const type = document.getElementById('emp-type').value; const payLabel = document.getElementById('label-pay'); const hint = document.getElementById('allowance-hint'); const hourlyOptions = document.getElementById('hourly-options');
+            if (type === 'monthly') { payLabel.innerText = '월 기본급'; hint.innerText = '월 단위 추가 지급액'; hourlyOptions.classList.add('hidden'); }
+            else { payLabel.innerText = '기본 시급'; hint.innerText = '시간당 추가 지급액'; hourlyOptions.classList.remove('hidden'); }
         }
-
-        function saveEmployee(e) {
+        function renderScheduleRows(scheduleData) {
+            const container = document.getElementById('work-schedule-rows'); container.innerHTML = '';
+            const days = [{ id: 'mon', label: '월' }, { id: 'tue', label: '화' }, { id: 'wed', label: '수' }, { id: 'thu', label: '목' }, { id: 'fri', label: '금' }, { id: 'sat', label: '토' }, { id: 'sun', label: '일' }];
+            days.forEach(day => {
+                const saved = scheduleData ? scheduleData.find(s => s.day === day.id) : null;
+                const isActive = saved ? saved.active : false; const start = saved ? saved.start : '09:00'; const end = saved ? saved.end : '18:00';
+                const row = document.createElement('div'); row.className = 'flex items-center gap-3';
+                row.innerHTML = `<div class="w-12"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="sch-day-check w-4 h-4 text-blue-600 rounded" data-day="${day.id}" ${isActive ? 'checked' : ''}><span>${day.label}</span></label></div><div class="flex-1 flex gap-2"><input type="time" class="sch-start input-field py-1 text-sm" value="${start}" ${!isActive ? 'disabled' : ''}><input type="time" class="sch-end input-field py-1 text-sm" value="${end}" ${!isActive ? 'disabled' : ''}></div>`;
+                const cb = row.querySelector('.sch-day-check'); const inputs = row.querySelectorAll('input[type="time"]');
+                cb.addEventListener('change', (e) => { inputs.forEach(inp => inp.disabled = !e.target.checked); });
+                container.appendChild(row);
+            });
+        }
+        function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
+        async function saveEmployee(e) {
             e.preventDefault();
             const id = document.getElementById('emp-id').value;
-            
-            // Gather Schedule Data
             const scheduleRows = document.querySelectorAll('#work-schedule-rows > div');
-            const workSchedule = Array.from(scheduleRows).map(row => {
-                const cb = row.querySelector('.sch-day-check');
-                const start = row.querySelector('.sch-start').value;
-                const end = row.querySelector('.sch-end').value;
-                return { day: cb.dataset.day, active: cb.checked, start, end };
-            });
-
-            // Gather RRN
-            const rrnFront = document.getElementById('emp-rrn-front').value;
-            const rrnBack = document.getElementById('emp-rrn-back').value;
+            const workSchedule = Array.from(scheduleRows).map(row => { const cb = row.querySelector('.sch-day-check'); return { day: cb.dataset.day, active: cb.checked, start: row.querySelector('.sch-start').value, end: row.querySelector('.sch-end').value }; });
+            const rrnFront = document.getElementById('emp-rrn-front').value; const rrnBack = document.getElementById('emp-rrn-back').value;
             const rrn = (rrnFront && rrnBack) ? `${rrnFront}-${rrnBack}` : '';
-
             const empData = {
                 id: id || generateId(),
                 name: document.getElementById('emp-name').value,
@@ -936,64 +591,22 @@
                 accountHolder: document.getElementById('emp-account-holder').value,
                 workSchedule: workSchedule
             };
-
-            if (id) {
-                const index = state.employees.findIndex(e => e.id === id);
-                state.employees[index] = empData;
-            } else {
-                state.employees.push(empData);
-                // If Manager/Owner, auto-populate schedule based on the new pattern
-                if (empData.role !== 'staff') populateScheduleFromPattern(empData.id, empData.joinDate, workSchedule);
-            }
-            saveState();
-            closeEmployeeModal();
-            renderEmployeeList();
+            const res = await apiCall('save_employee', empData);
+            if (res && res.success) { state.employees = res.employees; closeEmployeeModal(); renderEmployeeList(); }
         }
-
-        function deleteEmployee() {
+        async function deleteEmployee() {
             const id = document.getElementById('emp-id').value;
             if(!confirm('정말 삭제하시겠습니까?')) return;
-            state.employees = state.employees.filter(e => e.id !== id);
-            state.schedules = state.schedules.filter(s => s.employeeId !== id);
-            saveState();
-            closeEmployeeModal();
-            renderEmployeeList();
+            const res = await apiCall('delete_employee', {}, id);
+            if (res && res.success) { state.employees = res.employees; state.schedules = state.schedules.filter(s => s.employeeId !== id); closeEmployeeModal(); renderEmployeeList(); }
         }
 
-        // Auto-fill schedule based on the Day Pattern defined in modal
-        function populateScheduleFromPattern(empId, joinDate, pattern) {
-            let d = new Date(joinDate);
-            const daysMap = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
-            
-            for(let i=0; i<60; i++) { // Generate for 60 days
-                const dayId = daysMap[d.getDay()];
-                const dayConfig = pattern.find(p => p.day === dayId);
-                
-                if (dayConfig && dayConfig.active) {
-                    state.schedules.push({
-                        id: generateId(),
-                        employeeId: empId,
-                        date: formatDate(d),
-                        start: dayConfig.start,
-                        end: dayConfig.end
-                    });
-                }
-                d.setDate(d.getDate() + 1);
-            }
-        }
-
-        // --- Schedule & Calendar Logic (Existing) ---
+        // --- Schedule Logic ---
         function setScheduleView(view) {
             state.scheduleViewMode = view;
-            const btnMonth = document.getElementById('btn-view-month');
-            const btnWeek = document.getElementById('btn-view-week');
-            if (view === 'month') {
-                btnMonth.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.remove('text-gray-500');
-                btnWeek.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.add('text-gray-500');
-            } else {
-                btnWeek.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.remove('text-gray-500');
-                btnMonth.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.add('text-gray-500');
-            }
+            const btnMonth = document.getElementById('btn-view-month'); const btnWeek = document.getElementById('btn-view-week');
+            if (view === 'month') { btnMonth.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.remove('text-gray-500'); btnWeek.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.add('text-gray-500'); } 
+            else { btnWeek.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnWeek.classList.remove('text-gray-500'); btnMonth.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.add('text-gray-500'); }
             renderCalendar();
         }
         function changeDate(offset) {
@@ -1001,15 +614,12 @@
             else state.currentDate.setDate(state.currentDate.getDate() + (offset * 7));
             renderCalendar();
         }
-        function jumpToDate(val) {
-            if(!val) return; state.currentDate = new Date(val + '-01'); setScheduleView('month'); renderCalendar();
-        }
+        function jumpToDate(val) { if(!val) return; state.currentDate = new Date(val + '-01'); setScheduleView('month'); renderCalendar(); }
         function renderScheduleSidebar() {
             const list = document.getElementById('schedule-employee-list'); list.innerHTML = '';
             if (state.employees.length === 0) { list.innerHTML = '<div class="p-4 text-xs text-gray-400 text-center">등록된 직원 없음</div>'; return; }
             state.employees.forEach(emp => {
-                const item = document.createElement('div');
-                const isSelected = emp.id === state.selectedEmpIdForSchedule;
+                const item = document.createElement('div'); const isSelected = emp.id === state.selectedEmpIdForSchedule;
                 item.className = `p-3 rounded-lg cursor-pointer flex items-center justify-between text-sm transition-all ${isSelected ? 'bg-blue-50 text-blue-600 font-bold border border-blue-100' : 'hover:bg-gray-50 text-gray-600'}`;
                 item.onclick = () => { state.selectedEmpIdForSchedule = emp.id; renderScheduleSidebar(); renderCalendar(); };
                 item.innerHTML = `<span>${emp.name}</span><span class="text-xs opacity-70">${emp.role === 'manager' ? 'M' : emp.role === 'owner' ? 'O' : 'S'}</span>`;
@@ -1029,16 +639,13 @@
         function renderMonthView(container, empId) {
             const grid = document.createElement('div'); grid.className = 'calendar-grid-month'; container.appendChild(grid);
             const days = ['월', '화', '수', '목', '금', '토', '일']; days.forEach(d => { const dh = document.createElement('div'); dh.className = 'calendar-header text-sm py-2 bg-gray-50'; dh.innerText = d; grid.appendChild(dh); });
-            const year = state.currentDate.getFullYear(); const month = state.currentDate.getMonth();
-            const firstDayOfMonth = new Date(year, month, 1); const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let startDay = firstDayOfMonth.getDay(); let gridStartCol = startDay === 0 ? 6 : startDay - 1;
-            for(let i=0; i<gridStartCol; i++) { const empty = document.createElement('div'); empty.className = 'calendar-cell bg-gray-50/30'; grid.appendChild(empty); }
+            const year = state.currentDate.getFullYear(); const month = state.currentDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDay = new Date(year, month, 1).getDay(); const gridStartCol = startDay === 0 ? 6 : startDay - 1;
+            for(let i=0; i<gridStartCol; i++) { grid.appendChild(document.createElement('div')).className = 'calendar-cell bg-gray-50/30'; }
             for(let d=1; d<=daysInMonth; d++) {
                 const cell = document.createElement('div'); cell.className = 'calendar-cell-month border-b border-r border-gray-100 cursor-pointer transition hover:bg-blue-50';
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const num = document.createElement('div'); num.className = 'text-sm font-medium text-gray-700 mb-1'; num.innerText = d;
-                if (dateStr === formatDate(new Date())) num.className = 'text-sm font-bold text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center mb-1';
-                cell.appendChild(num);
+                cell.innerHTML = `<div class="text-sm font-medium text-gray-700 mb-1 ${dateStr === formatDate(new Date()) ? 'bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center' : ''}">${d}</div>`;
                 const events = state.schedules.filter(s => s.employeeId === empId && s.date === dateStr);
                 events.forEach(ev => { const tag = document.createElement('div'); tag.className = 'event-block month text-xs'; tag.innerText = `${ev.start}~${ev.end}`; tag.onclick = (e) => { e.stopPropagation(); openScheduleDetail(ev.id); }; cell.appendChild(tag); });
                 cell.onclick = () => { openScheduleDetail(null, dateStr); }; grid.appendChild(cell);
@@ -1047,43 +654,28 @@
         function renderWeekView(container, empId) {
             const grid = document.createElement('div'); grid.className = 'calendar-grid-week'; container.appendChild(grid);
             const weekStart = getMonday(state.currentDate); const days = ['월', '화', '수', '목', '금', '토', '일']; const dates = [];
-            const corner = document.createElement('div'); corner.className = 'calendar-header'; grid.appendChild(corner);
-            for(let i=0; i<7; i++) { const d = addDays(weekStart, i); dates.push(formatDate(d)); const header = document.createElement('div'); header.className = 'calendar-header'; if (formatDate(new Date()) === formatDate(d)) header.classList.add('text-blue-500'); header.innerHTML = `<div>${days[i]}</div><div class="text-xs font-normal mt-1">${d.getDate()}</div>`; grid.appendChild(header); }
+            grid.appendChild(document.createElement('div')).className = 'calendar-header';
+            for(let i=0; i<7; i++) { const d = addDays(weekStart, i); dates.push(formatDate(d)); const h = document.createElement('div'); h.className = 'calendar-header'; h.innerHTML = `<div>${days[i]}</div><div class="text-xs font-normal mt-1">${d.getDate()}</div>`; grid.appendChild(h); }
             for (let hour = 0; hour < 24; hour++) {
-                const label = document.createElement('div'); label.className = 'time-label'; label.innerText = `${String(hour).padStart(2,'0')}`; label.style.gridRow = `span 4`; grid.appendChild(label);
-                for (let q = 0; q < 4; q++) {
-                    for (let day = 0; day < 7; day++) {
-                        const cell = document.createElement('div'); cell.className = 'calendar-cell calendar-cell-week'; if (q === 3) cell.classList.add('hour-marker');
-                        const dateStr = dates[day]; const timeStr = `${String(hour).padStart(2,'0')}:${String(q*15).padStart(2,'0')}`;
-                        cell.dataset.date = dateStr; cell.dataset.time = timeStr;
-                        cell.onmousedown = () => startDrag(dateStr, timeStr); cell.onmouseover = () => onDragOver(dateStr, timeStr); cell.onmouseup = () => endDrag(); grid.appendChild(cell);
+                const label = document.createElement('div'); label.className = 'time-label'; label.innerText = String(hour).padStart(2,'0'); label.style.gridRow = 'span 4'; grid.appendChild(label);
+                for (let q = 0; q < 4; q++) { for (let day = 0; day < 7; day++) {
+                    const c = document.createElement('div'); c.className = `calendar-cell calendar-cell-week ${q===3?'hour-marker':''}`;
+                    const dateStr = dates[day]; const timeStr = `${String(hour).padStart(2,'0')}:${String(q*15).padStart(2,'0')}`;
+                    c.dataset.date = dateStr; c.dataset.time = timeStr; c.onclick = () => openScheduleDetail(null, dateStr); grid.appendChild(c);
+                }}
+            }
+            state.schedules.filter(s => s.employeeId === empId).forEach(sch => {
+                if (dates.includes(sch.date)) {
+                    const [sh, sm] = sch.start.split(':').map(Number); const [eh, em] = sch.end.split(':').map(Number);
+                    const durationMins = (eh * 60 + em) - (sh * 60 + sm);
+                    const startCell = grid.querySelector(`.calendar-cell[data-date="${sch.date}"][data-time="${sch.start}"]`);
+                    if (startCell) {
+                        const el = document.createElement('div'); el.className = 'event-block week hover:bg-blue-600 transition cursor-pointer flex items-center justify-center shadow-md';
+                        el.innerText = `${sch.start}~${sch.end}`; el.style.height = `${(durationMins/15)*12}px`; el.style.top = '0';
+                        el.onclick = (e) => { e.stopPropagation(); openScheduleDetail(sch.id); }; startCell.appendChild(el);
                     }
                 }
-            }
-            const existingSchedules = state.schedules.filter(s => s.employeeId === empId);
-            existingSchedules.forEach(sch => { if (dates.includes(sch.date)) renderWeekEvent(sch, dates.indexOf(sch.date), grid); });
-        }
-        function renderWeekEvent(sch, dayIndex, grid) {
-            const [sh, sm] = sch.start.split(':').map(Number); const [eh, em] = sch.end.split(':').map(Number);
-            const startMins = sh * 60 + sm; const endMins = eh * 60 + em; const durationMins = endMins - startMins;
-            const eventEl = document.createElement('div'); eventEl.className = 'event-block week hover:bg-blue-600 transition cursor-pointer flex items-center justify-center shadow-md'; eventEl.innerText = `${sch.start}~${sch.end}`;
-            const startCell = grid.querySelector(`.calendar-cell[data-date="${sch.date}"][data-time="${sch.start}"]`);
-            if (startCell) { const slots = durationMins / 15; const heightPx = slots * 12; eventEl.style.height = `${heightPx}px`; eventEl.style.top = '0'; eventEl.onclick = (e) => { e.stopPropagation(); openScheduleDetail(sch.id); }; startCell.appendChild(eventEl); }
-        }
-        let isDragging = false;
-        function startDrag(date, time) { isDragging = true; state.dragStart = { date, time }; document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected')); }
-        function onDragOver(date, time) { if (!isDragging || date !== state.dragStart.date) return; const start = state.dragStart.time; const end = time; const min = start < end ? start : end; const max = start > end ? start : end; document.querySelectorAll(`.calendar-cell[data-date="${date}"]`).forEach(cell => { const t = cell.dataset.time; if (t >= min && t <= max) cell.classList.add('selected'); else cell.classList.remove('selected'); }); }
-        function endDrag() {
-            if (!isDragging) return; isDragging = false; const selected = document.querySelectorAll('.calendar-cell.selected'); if (selected.length === 0) return;
-            const date = selected[0].dataset.date; const times = Array.from(selected).map(el => el.dataset.time); times.sort();
-            const start = times[0]; let lastTimeParts = times[times.length-1].split(':').map(Number); lastTimeParts[1] += 15; if (lastTimeParts[1] >= 60) { lastTimeParts[0]++; lastTimeParts[1] -= 60; }
-            const end = `${String(lastTimeParts[0]).padStart(2,'0')}:${String(lastTimeParts[1]).padStart(2,'0')}`;
-            addSchedule(date, start, end); document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected'));
-        }
-        function addSchedule(date, start, end) {
-            const empId = state.selectedEmpIdForSchedule;
-            state.schedules = state.schedules.filter(s => { if (s.employeeId !== empId || s.date !== date) return true; return !((start < s.end) && (end > s.start)); });
-            state.schedules.push({ id: generateId(), employeeId: empId, date, start, end }); saveState(); renderCalendar();
+            });
         }
         function openScheduleDetail(schId, newDate = null) {
             const modal = document.getElementById('modal-schedule'); const form = modal.querySelector('form'); form.reset();
@@ -1093,21 +685,29 @@
             modal.classList.remove('hidden');
         }
         function closeScheduleModal() { document.getElementById('modal-schedule').classList.add('hidden'); }
-        function saveScheduleDetail(e) {
-            e.preventDefault(); const modal = document.getElementById('modal-schedule'); const mode = modal.dataset.mode;
-            const date = document.getElementById('sch-date').value; const start = document.getElementById('sch-start').value; const end = document.getElementById('sch-end').value; const empId = state.selectedEmpIdForSchedule;
-            if (mode === 'edit') { const id = modal.dataset.schId; const idx = state.schedules.findIndex(s => s.id === id); if (idx > -1) { state.schedules[idx].start = start; state.schedules[idx].end = end; } }
-            else { state.schedules.push({ id: generateId(), employeeId: empId, date, start, end }); }
-            saveState(); renderCalendar(); closeScheduleModal();
+        async function saveScheduleDetail(e) {
+            e.preventDefault(); const modal = document.getElementById('modal-schedule');
+            const schData = {
+                id: modal.dataset.mode === 'edit' ? modal.dataset.schId : generateId(),
+                employeeId: state.selectedEmpIdForSchedule,
+                date: document.getElementById('sch-date').value,
+                start: document.getElementById('sch-start').value,
+                end: document.getElementById('sch-end').value
+            };
+            const res = await apiCall('save_schedule', schData);
+            if(res && res.success) { state.schedules = res.schedules; renderCalendar(); closeScheduleModal(); }
         }
-        function deleteScheduleDetail() { const id = document.getElementById('modal-schedule').dataset.schId; state.schedules = state.schedules.filter(s => s.id !== id); saveState(); renderCalendar(); closeScheduleModal(); }
+        async function deleteScheduleDetail() {
+            const id = document.getElementById('modal-schedule').dataset.schId;
+            const res = await apiCall('delete_schedule', {}, id);
+            if(res && res.success) { state.schedules = res.schedules; renderCalendar(); closeScheduleModal(); }
+        }
 
-        // --- Payroll Calc ---
+        // --- Payroll & AI ---
         function renderPayroll() {
             const container = document.getElementById('payroll-list'); container.innerHTML = '';
             const monthStr = document.getElementById('payroll-month').value; if (!monthStr) return;
-            const [year, month] = monthStr.split('-').map(Number);
-            const daysInMonth = new Date(year, month, 0).getDate();
+            const [year, month] = monthStr.split('-').map(Number); const daysInMonth = new Date(year, month, 0).getDate();
             let workDaysInMonth = 0; for(let d=1; d<=daysInMonth; d++) { const day = new Date(year, month-1, d).getDay(); if (day >= 1 && day <= 5) workDaysInMonth++; }
             state.employees.forEach(emp => {
                 const calc = calculateMonthlyPayroll(emp, year, month, workDaysInMonth);
@@ -1150,6 +750,32 @@
             let totalDeduction = Object.values(taxDetails).reduce((a, b) => a + b, 0);
             return { dailyLogs, totalHours, grossPay: totalGross, totalDeduction, netPay: totalGross - totalDeduction, taxDetails, insuranceType: emp.insurance };
         }
+        
+        async function callGemini(prompt, systemInstruction = "") {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] } })
+                });
+                const data = await response.json(); return data.candidates?.[0]?.content?.parts?.[0]?.text || "죄송합니다. 응답을 생성할 수 없습니다.";
+            } catch (error) { console.error("Gemini API Error:", error); return "API 호출 중 오류가 발생했습니다."; }
+        }
+        function toggleChat() { const win = document.getElementById('chat-window'); if (win.style.display === 'flex') { win.style.display = 'none'; } else { win.style.display = 'flex'; document.getElementById('chat-input').focus(); } }
+        function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
+        async function sendMessage() {
+            const input = document.getElementById('chat-input'); const text = input.value.trim(); if (!text) return;
+            const messagesDiv = document.getElementById('chat-messages'); messagesDiv.innerHTML += `<div class="message user">${text}</div>`; input.value = ''; messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const loadingId = 'loading-' + Date.now(); messagesDiv.innerHTML += `<div class="message ai" id="${loadingId}"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`; messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const responseText = await callGemini(text, "당신은 '레스토지니'의 AI 노무사입니다.");
+            const loadingEl = document.getElementById(loadingId); if(loadingEl) loadingEl.innerHTML = marked.parse(responseText); messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        async function generatePayrollReport() {
+            const container = document.getElementById('ai-report-container'); const contentDiv = document.getElementById('ai-report-content'); container.classList.remove('hidden');
+            contentDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-500 py-4"><div class="spinner border-gray-300 border-t-blue-500"></div><span>분석 중...</span></div>`;
+            const prompt = `현재 직원 데이터를 분석하여 경영 리포트를 작성해주세요.`;
+            const responseText = await callGemini(prompt, "데이터 분석가"); contentDiv.innerHTML = marked.parse(responseText);
+        }
+        function closeAiReport() { document.getElementById('ai-report-container').classList.add('hidden'); }
     </script>
 </body>
 </html>
