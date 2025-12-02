@@ -8,9 +8,10 @@
 
     <!-- 스타일 & 폰트 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind 설정 (CDN 로드 전 설정 권장) -->
     <script>
-        tailwind.config = {
+        window.tailwindConfig = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Pretendard', 'sans-serif'] },
@@ -27,6 +28,11 @@
             }
         }
     </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = window.tailwindConfig;
+    </script>
+
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #F2F4F6; color: #191F28; user-select: none; }
         [x-cloak] { display: none !important; }
@@ -55,12 +61,419 @@
     </style>
 
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine.js (Defer 속성 유지) -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
     <!-- 카카오 주소 API -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+    <!-- App Logic (Head로 이동하여 초기화 보장) -->
+    <script>
+        // --- CONSTANTS ---
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec";
+        const MIN_WAGE_2025 = 10030;
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('hrApp', () => ({
+                // --- STATE ---
+                isLoading: true, // 초기 로딩 상태 true로 변경
+                mobileMenuOpen: false, 
+                activeTab: 'employees', 
+                viewType: 'month',
+                menuItems: [ {id:'employees', label:'직원 관리', icon:'users'}, {id:'calendar', label:'근무 일정', icon:'calendar'}, {id:'payroll', label:'급여 정산', icon:'calculator'} ],
+                currentDate: new Date(),
+                weekDays: [],
+                dragState: { active: false, startY: 0, currentY: 0, dayIndex: null, startTime: '', endTime: '', startYPos: 0 },
+                
+                // Data
+                employees: [],
+                shifts: [],
+
+                // Modals
+                showEmpModal: false, isEmpEditMode: false, editingEmpId: null,
+                showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
+                newEmp: null, // 초기화 함수에서 설정
+                newShift: { empId: '', startTime: '09:00', endTime: '18:00' },
+
+                // --- INIT & UTILS ---
+                initApp() { 
+                    this.newEmp = this.getEmptyEmp();
+                    this.refreshIcons(); 
+                    this.updateWeekDays(); 
+                    this.$watch('activeTab', () => this.refreshIcons());
+                    this.fetchData(); // Initial Load
+                },
+                
+                refreshIcons() { setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50); },
+                getPageTitle() { return {'employees':'직원 관리','calendar':'근무 일정','payroll':'급여 정산'}[this.activeTab]; },
+                formatCurrency(v) { return Math.floor(v||0).toLocaleString()+'원'; },
+                formatRole(r) { return {'manager':'매니저','parttime':'아르바이트','staff':'정규직'}[r] || r; },
+                getContractLabel(type) { return {'insurance4':'4대보험','freelancer':'프리랜서','insurance2':'고용·산재'}[type] || type; },
+                getEmpName(id) { const e = this.employees.find(x => String(x.id) === String(id)); return e ? e.name : '(삭제됨)'; },
+                
+                getEmptyEmp() {
+                    const s = {}; ['월','화','수','목','금','토','일'].forEach(d => s[d]={active:false, start:'09:00', end:'18:00', breakTime:0});
+                    return { name: '', role: 'parttime', contractType: 'insurance4', basePay: MIN_WAGE_2025, joinDate: new Date().toISOString().split('T')[0], rrn:'', address:'', bankName:'', accountNumber:'', schedule: s };
+                },
+
+                // --- API COMM ---
+                async callApi(action, payload = null) {
+                    this.isLoading = true;
+                    const url = `${GAS_URL}?action=${action}`;
+                    const options = {
+                        method: payload ? 'POST' : 'GET',
+                    };
+                    // GAS doPost workaround for CORS: use text/plain
+                    if (payload) {
+                        options.body = JSON.stringify(payload);
+                        options.headers = { 'Content-Type': 'text/plain' }; 
+                    }
+
+                    try {
+                        const res = await fetch(url, options);
+                        const json = await res.json();
+                        if (json.status !== 'success') throw new Error(json.message);
+                        return json.data;
+                    } catch (e) {
+                        console.error("API Error:", e);
+                        alert(`데이터 통신 중 오류가 발생했습니다.\n${e.message}`);
+                        return null;
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async fetchData() {
+                    const [emps, shifts] = await Promise.all([
+                        this.callApi('getEmployees'),
+                        this.callApi('getShifts')
+                    ]);
+                    
+                    if (emps) {
+                        // Parse schedule JSON string if necessary
+                        this.employees = emps.map(e => {
+                            if (typeof e.schedule === 'string') {
+                                try { e.schedule = JSON.parse(e.schedule); } catch(err) { e.schedule = {}; }
+                            }
+                            return e;
+                        });
+                    }
+                    if (shifts) this.shifts = shifts;
+                },
+
+                // --- EMPLOYEES CRUD ---
+                openEmpModal(e = null) {
+                    if (e) {
+                        this.isEmpEditMode = true;
+                        this.editingEmpId = e.id;
+                        this.newEmp = JSON.parse(JSON.stringify(e));
+                        // Ensure schedule structure
+                        ['월','화','수','목','금','토','일'].forEach(d => {
+                            if(!this.newEmp.schedule[d]) this.newEmp.schedule[d] = {active:false, start:'09:00', end:'18:00', breakTime:0};
+                        });
+                    } else {
+                        this.isEmpEditMode = false;
+                        this.editingEmpId = null;
+                        this.newEmp = this.getEmptyEmp();
+                    }
+                    this.showEmpModal = true;
+                },
+
+                openAddressSearch() {
+                    new daum.Postcode({
+                        oncomplete: (data) => {
+                            this.newEmp.address = `(${data.zonecode}) ${data.roadAddress} ${data.buildingName ? '('+data.buildingName+')' : ''}`;
+                        }
+                    }).open();
+                },
+
+                async saveEmployee() {
+                    const action = this.isEmpEditMode ? 'updateEmployee' : 'addEmployee';
+                    const payload = { ...this.newEmp };
+                    if (this.isEmpEditMode) payload.id = this.editingEmpId;
+                    
+                    // Optimistic UI Update
+                    const backup = [...this.employees];
+                    if (this.isEmpEditMode) {
+                        const idx = this.employees.findIndex(e => e.id === payload.id);
+                        if (idx !== -1) this.employees[idx] = payload;
+                    } else {
+                        // Temp ID for display
+                        this.employees.push({ ...payload, id: 'temp_' + Date.now() }); 
+                    }
+                    this.showEmpModal = false;
+
+                    const result = await this.callApi(action, payload);
+                    if (!result) {
+                        this.employees = backup; // Revert
+                    } else {
+                        await this.fetchData(); // Refresh for real ID
+                    }
+                },
+
+                // --- SHIFTS CRUD ---
+                changeDate(o) { 
+                    if (this.viewType === 'month') {
+                        this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth()+o, 1);
+                    } else { 
+                        const n = new Date(this.currentDate); n.setDate(n.getDate() + (o * 7)); 
+                        this.currentDate = n; this.updateWeekDays(); 
+                    } 
+                },
+                updateWeekDays() {
+                    const curr = new Date(this.currentDate);
+                    const startOfWeek = new Date(curr.setDate(curr.getDate() - curr.getDay() + 1)); // Mon start
+                    if (curr.getDay() === 0) startOfWeek.setDate(startOfWeek.getDate() - 7); // Fix Sunday issue
+                    
+                    const days = [];
+                    for (let i = 0; i < 7; i++) {
+                        const d = new Date(startOfWeek);
+                        d.setDate(startOfWeek.getDate() + i);
+                        const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0'));
+                        days.push({ label: ['월','화','수','목','금','토','일'][i], date: dd, fullDate: `${y}-${m}-${dd}` });
+                    }
+                    this.weekDays = days;
+                },
+                getCalendarDays() {
+                    const y = this.currentDate.getFullYear(), m = this.currentDate.getMonth();
+                    const lastDay = new Date(y, m+1, 0).getDate();
+                    const firstDayIdx = (new Date(y, m, 1).getDay() + 6) % 7; // Mon=0
+                    let days = []; 
+                    for(let i=0; i<firstDayIdx; i++) days.push({key:`b${i}`, day:null});
+                    for(let i=1; i<=lastDay; i++) { 
+                        const dStr = String(i).padStart(2,'0'), mStr = String(m+1).padStart(2,'0'); 
+                        days.push({key:`d${i}`, day:i, fullDate:`${y}-${mStr}-${dStr}`}); 
+                    }
+                    return days;
+                },
+                getShifts(d) { return this.shifts.filter(s => s.date === d); },
+                getWeekRangeString() { const d = this.weekDays; return d.length ? `${d[0].fullDate} ~ ${d[6].fullDate}` : ''; },
+
+                openShiftModal(d) {
+                    const y=this.currentDate.getFullYear(), m=String(this.currentDate.getMonth()+1).padStart(2,'0'), dd=String(d).padStart(2,'0');
+                    this.targetDateStr = `${y}-${m}-${dd}`; 
+                    this.isEditMode=false; this.editingShiftId=null; 
+                    this.newShift={empId: this.employees.length > 0 ? this.employees[0].id : '', startTime:'09:00', endTime:'18:00'}; 
+                    this.showShiftModal=true;
+                },
+                openEditShiftModal(s) { 
+                    this.targetDateStr=s.date; this.isEditMode=true; this.editingShiftId=s.id; 
+                    this.newShift={empId:s.empId, startTime:s.startTime, endTime:s.endTime}; 
+                    this.showShiftModal=true; 
+                },
+                
+                async saveShift() {
+                    const id = this.isEditMode ? this.editingShiftId : Date.now().toString();
+                    const payload = {
+                        id: String(id),
+                        empId: String(this.newShift.empId),
+                        date: this.targetDateStr,
+                        startTime: this.newShift.startTime,
+                        endTime: this.newShift.endTime
+                    };
+                    const action = this.isEditMode ? 'updateShift' : 'addShift';
+                    this.showShiftModal = false;
+
+                    // Optimistic
+                    const backup = [...this.shifts];
+                    if (this.isEditMode) {
+                        const idx = this.shifts.findIndex(s => String(s.id) === String(id));
+                        if(idx!==-1) this.shifts[idx] = payload;
+                    } else {
+                        this.shifts.push(payload);
+                    }
+                    this.refreshIcons();
+
+                    const res = await this.callApi(action, payload);
+                    if(!res) this.shifts = backup;
+                },
+
+                async deleteShift() {
+                    if(!this.isEditMode) return;
+                    const id = this.editingShiftId;
+                    this.showShiftModal = false;
+                    
+                    const backup = [...this.shifts];
+                    this.shifts = this.shifts.filter(s => String(s.id) !== String(id));
+                    this.refreshIcons();
+
+                    const res = await this.callApi('deleteShift', { id: String(id) });
+                    if(!res) this.shifts = backup;
+                },
+                closeShiftModal() { this.showShiftModal=false; },
+
+                // --- DRAG & DROP ---
+                yToTime(y) { const tm = Math.round(y/12)*15, h = Math.floor(tm/60)+5, m = tm%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; },
+                startDrag(dayIndex, dateKey, e) {
+                    const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top;
+                    this.dragState = { active: true, dayIndex: dayIndex, dateKey: dateKey, startYPos: offsetY, currentY: offsetY, startTime: this.yToTime(offsetY), endTime: this.yToTime(offsetY + 48), timeLabel: '' };
+                },
+                onDrag(e, dayIndex) { 
+                    if (!this.dragState.active || this.dragState.dayIndex !== dayIndex) return;
+                    const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top;
+                    this.dragState.currentY = offsetY;
+                    const s = Math.min(this.dragState.startYPos, offsetY), eY = Math.max(this.dragState.startYPos, offsetY);
+                    this.dragState.startTime = this.yToTime(s); this.dragState.endTime = this.yToTime(eY);
+                    this.dragState.timeLabel = `${this.dragState.startTime} - ${this.dragState.endTime}`;
+                },
+                endDrag() {
+                    if (!this.dragState.active) return;
+                    this.targetDateStr = this.dragState.dateKey; 
+                    this.isEditMode = false;
+                    // 안전한 접근
+                    const safeEmpId = this.employees && this.employees.length > 0 ? this.employees[0].id : '';
+                    this.newShift = { empId: safeEmpId, startTime: this.dragState.startTime, endTime: this.dragState.endTime };
+                    this.dragState.active = false; 
+                    this.showShiftModal = true;
+                },
+                getShiftStyle(s) {
+                    const sh = parseInt(s.startTime.split(':')[0]), sm = parseInt(s.startTime.split(':')[1]), eh = parseInt(s.endTime.split(':')[0]), em = parseInt(s.endTime.split(':')[1]);
+                    const sMin = (sh-5)*60+sm, eMin = (eh-5)*60+em; // 5시 시작 기준
+                    const top = (sMin/60)*48, h = ((eMin-sMin)/60)*48;
+                    return `top:${Math.max(0,top)}px;height:${Math.max(12,h)}px;`;
+                },
+                getDragStyle() {
+                    const s = Math.min(this.dragState.startYPos, this.dragState.currentY), e = Math.max(this.dragState.startYPos, this.dragState.currentY);
+                    const ss = Math.round(s/12)*12, se = Math.round(e/12)*12;
+                    return `top:${ss}px;height:${Math.max(12,se-ss)}px;`;
+                },
+
+                // --- PAYROLL ENGINE 2025 ---
+                calculatePayroll(emp) {
+                    if (!emp) return null;
+                    try {
+                        let base=0, juhyu=0; 
+                        const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
+                        let dailyLogs=[], weekStats={}, remarks=[];
+                        let hourlyRate=0, monthScheduledDays=0;
+
+                        // 월급직 -> 통상 시급 역산
+                        if (emp.role !== 'parttime') {
+                            for (let d = 1; d <= lastDay; d++) {
+                                const tempDate = new Date(y, m, d);
+                                const dayName = ['일','월','화','수','목','금','토'][tempDate.getDay()];
+                                if (emp.schedule?.[dayName]?.active) monthScheduledDays++;
+                            }
+                            if (monthScheduledDays > 0) hourlyRate = ((emp.basePay / monthScheduledDays) / 8) / 1.2; // 근사치
+                        } else {
+                            hourlyRate = emp.basePay;
+                        }
+
+                        for (let d = 1; d <= lastDay; d++) {
+                            const dateObj = new Date(y, m, d), dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                            const dayName = ['일','월','화','수','목','금','토'][dateObj.getDay()];
+                            
+                            // 주차 계산 (월요일 시작 기준)
+                            const firstDayOfMonth = new Date(y, m, 1);
+                            const dayOfFirst = (firstDayOfMonth.getDay() + 6) % 7; // Mon=0
+                            const weekNum = Math.ceil((d + dayOfFirst) / 7);
+
+                            if (!weekStats[weekNum]) weekStats[weekNum] = { hours: 0, excluded: false, reasons: new Set(), weeklyBasePay: 0, juhyuEligible: false };
+                            
+                            const contract = emp.schedule?.[dayName];
+                            const isScheduled = contract && contract.active;
+                            const shift = this.shifts.find(s => s.date === dateStr && String(s.empId) === String(emp.id));
+                            
+                            if (isScheduled) {
+                                if (shift) {
+                                    let h = (new Date(`2000-01-01T${shift.endTime}`) - new Date(`2000-01-01T${shift.startTime}`)) / 3600000;
+                                    if (h < 0) h += 24;
+
+                                    // 휴게시간 차감 (4시간 30분, 8시간 1시간)
+                                    let breakDeduction = 0;
+                                    if (h >= 8) breakDeduction = 1;
+                                    else if (h >= 4) breakDeduction = 0.5;
+                                    
+                                    h -= breakDeduction;
+                                    if (h < 0) h = 0;
+                                    
+                                    const dailyPay = h * hourlyRate;
+                                    base += dailyPay;
+                                    
+                                    weekStats[weekNum].hours += h;
+                                    weekStats[weekNum].weeklyBasePay += dailyPay;
+                                    
+                                    dailyLogs.push({ 
+                                        date: dateStr, status: 'worked', timeRange: `${shift.startTime}~${shift.endTime}`, 
+                                        hours: h.toFixed(1), dailyBasePay: dailyPay, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 
+                                    });
+                                } else {
+                                    // 결근 처리
+                                    weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${dateStr} 결근`);
+                                    dailyLogs.push({ date: dateStr, status: 'absent', timeRange: '-', hours: '0', dailyBasePay: 0, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 });
+                                }
+                            }
+                            // 입사일 이전 제외 로직
+                            if (new Date(dateStr) < new Date(emp.joinDate)) {
+                                weekStats[weekNum].excluded = true;
+                            }
+                        }
+
+                        // 주휴수당 계산
+                        Object.keys(weekStats).forEach(w => {
+                            const stat = weekStats[w];
+                            if (!stat.excluded && stat.hours >= 15) {
+                                stat.juhyuEligible = true;
+                                if (emp.role === 'parttime') {
+                                    // 비례 주휴: (주40시간 한도 / 40) * 8 * 시급
+                                    stat.totalJuhyu = (Math.min(stat.hours, 40) / 40) * 8 * emp.basePay;
+                                    juhyu += stat.totalJuhyu;
+                                } else {
+                                    stat.totalJuhyu = stat.weeklyBasePay * 0.2; // 월급제 간편 계산
+                                    juhyu += stat.totalJuhyu;
+                                }
+                            } else {
+                                stat.totalJuhyu = 0;
+                                if (stat.excluded) stat.reasons.forEach(r => remarks.push(r));
+                            }
+                        });
+
+                        // 일별 주휴 배분 (디스플레이용)
+                        dailyLogs.forEach(log => {
+                            if (log.status === 'worked') {
+                                const stat = weekStats[log.weekNum];
+                                if (stat && stat.juhyuEligible && stat.hours > 0) {
+                                    log.dailyJuhyu = Math.ceil(stat.totalJuhyu * (parseFloat(log.hours) / stat.hours));
+                                }
+                                log.dailyTotal = Math.ceil(log.dailyBasePay + log.dailyJuhyu);
+                            }
+                        });
+
+                        const gross = Math.ceil(base + juhyu);
+                        
+                        // 공제 계산 (2025 요율 반영 / 프리랜서 3.3%)
+                        let deductions = { pension:0, health:0, care:0, employ:0, tax:0, total:0 };
+                        if (emp.contractType === 'freelancer') {
+                            deductions.tax = Math.floor(gross * 0.033 / 10) * 10;
+                        } else if (emp.contractType === 'insurance2') { // 고용/산재
+                            deductions.employ = Math.floor(gross * 0.009 / 10) * 10; // 0.9%
+                            // 소득세 간이세액표 약식 (1%)
+                            const iTax = Math.floor(gross * 0.01 / 10) * 10;
+                            deductions.tax = iTax + Math.floor(iTax * 0.1 / 10) * 10;
+                        } else { // 4대보험
+                            deductions.pension = Math.floor(gross * 0.045 / 10) * 10; // 4.5%
+                            deductions.health = Math.floor(gross * 0.03545 / 10) * 10; // 3.545%
+                            deductions.care = Math.floor(deductions.health * 0.1295 / 10) * 10; // 12.95%
+                            deductions.employ = Math.floor(gross * 0.009 / 10) * 10; // 0.9%
+                            const iTax = Math.floor(gross * 0.01 / 10) * 10; // 약식 소득세
+                            deductions.tax = iTax + Math.floor(iTax * 0.1 / 10) * 10;
+                        }
+                        deductions.total = deductions.pension + deductions.health + deductions.care + deductions.employ + deductions.tax;
+
+                        return { 
+                            basePay: base, juhyuAllowance: juhyu, grossTotal: gross, deductions, netPay: gross - deductions.total, dailyLogs, 
+                            remarks: [...new Set(remarks)], details: { monthDays: monthScheduledDays, hourlyRate: hourlyRate } 
+                        };
+                    } catch (e) {
+                        console.error('Payroll Error:', e);
+                        return null;
+                    }
+                }
+            }));
+        });
+    </script>
 </head>
 
-<body class="antialiased select-none" x-data="hrApp()" x-init="initApp()" @mouseup.window="endDrag()">
+<body class="antialiased select-none" x-data="hrApp" x-init="initApp()" @mouseup.window="endDrag()">
 
     <!-- 로딩 오버레이 -->
     <div x-show="isLoading" class="fixed inset-0 bg-white/50 backdrop-blur-sm z-[60] flex items-center justify-center transition-opacity" x-transition>
@@ -328,37 +741,37 @@
             <form @submit.prevent="saveEmployee" class="space-y-6">
                 <!-- 기본 정보 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold mb-2">이름</label><input x-model="newEmp.name" class="toss-input" required></div>
-                    <div><label class="block text-sm font-semibold mb-2">주민등록번호</label><input x-model="newEmp.rrn" class="toss-input" placeholder="000000-0000000" required></div>
+                    <div><label class="block text-sm font-semibold mb-2">이름</label><input x-model="newEmp && newEmp.name" class="toss-input" required></div>
+                    <div><label class="block text-sm font-semibold mb-2">주민등록번호</label><input x-model="newEmp && newEmp.rrn" class="toss-input" placeholder="000000-0000000" required></div>
                 </div>
                 <!-- 연락처/주소 (카카오 API) -->
                 <div>
                     <label class="block text-sm font-semibold mb-2">주소</label>
                     <div class="flex gap-2">
-                        <input x-model="newEmp.address" class="toss-input flex-1" readonly placeholder="주소 검색 버튼을 눌러주세요">
+                        <input x-model="newEmp && newEmp.address" class="toss-input flex-1" readonly placeholder="주소 검색 버튼을 눌러주세요">
                         <button type="button" @click="openAddressSearch" class="bg-toss-grey100 px-4 rounded-xl text-sm font-bold whitespace-nowrap">검색</button>
                     </div>
                 </div>
                 <!-- 계좌 정보 -->
                 <div class="grid grid-cols-3 gap-2">
-                    <div><label class="block text-sm font-semibold mb-2">은행명</label><input x-model="newEmp.bankName" class="toss-input" placeholder="예: 토스"></div>
-                    <div class="col-span-2"><label class="block text-sm font-semibold mb-2">계좌번호</label><input x-model="newEmp.accountNumber" class="toss-input" placeholder="'-' 포함 입력"></div>
+                    <div><label class="block text-sm font-semibold mb-2">은행명</label><input x-model="newEmp && newEmp.bankName" class="toss-input" placeholder="예: 토스"></div>
+                    <div class="col-span-2"><label class="block text-sm font-semibold mb-2">계좌번호</label><input x-model="newEmp && newEmp.accountNumber" class="toss-input" placeholder="'-' 포함 입력"></div>
                 </div>
                 
                 <!-- 계약 정보 -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold mb-2">직책</label><select x-model="newEmp.role" class="toss-input"><option value="parttime">아르바이트</option><option value="staff">정규직</option><option value="manager">매니저</option></select></div>
-                    <div><label class="block text-sm font-semibold mb-2">입사일</label><input x-model="newEmp.joinDate" type="date" class="toss-input" required></div>
+                    <div><label class="block text-sm font-semibold mb-2">직책</label><select x-model="newEmp && newEmp.role" class="toss-input"><option value="parttime">아르바이트</option><option value="staff">정규직</option><option value="manager">매니저</option></select></div>
+                    <div><label class="block text-sm font-semibold mb-2">입사일</label><input x-model="newEmp && newEmp.joinDate" type="date" class="toss-input" required></div>
                 </div>
-                <div><label class="block text-sm font-semibold mb-2">시급/월급</label><div class="relative"><input x-model.number="newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
+                <div><label class="block text-sm font-semibold mb-2">시급/월급</label><div class="relative"><input x-model.number="newEmp && newEmp.basePay" type="number" class="toss-input text-right font-bold pr-12" required><span class="absolute right-4 top-3 text-toss-grey500">원</span></div></div>
 
                 <!-- 계약 형태 -->
                 <div>
                     <label class="block text-sm font-semibold mb-2">계약 형태 (세금/보험 적용)</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">4대보험</div></label>
-                        <label class="cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">프리랜서(3.3%)</div></label>
-                        <label class="cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">고용·산재</div></label>
+                        <label class="cursor-pointer"><input type="radio" value="insurance4" x-model="newEmp && newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">4대보험</div></label>
+                        <label class="cursor-pointer"><input type="radio" value="freelancer" x-model="newEmp && newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">프리랜서(3.3%)</div></label>
+                        <label class="cursor-pointer"><input type="radio" value="insurance2" x-model="newEmp && newEmp.contractType" class="peer sr-only"><div class="text-center py-3 rounded-xl bg-toss-grey50 border border-transparent peer-checked:bg-toss-blueLight peer-checked:text-toss-blue peer-checked:border-toss-blue font-medium transition">고용·산재</div></label>
                     </div>
                 </div>
 
@@ -367,12 +780,12 @@
                     <label class="block text-sm font-semibold mb-2">기본 근무 일정</label>
                     <div class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
                         <template x-for="day in ['월', '화', '수', '목', '금', '토', '일']">
-                            <div class="flex items-center gap-3 p-3 rounded-xl border transition-colors" :class="newEmp.schedule[day].active ? 'border-toss-blue bg-toss-blueLight/20' : 'border-toss-grey200'">
-                                <label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold text-toss-grey700" x-text="day"></span></label>
-                                <div class="flex-1 flex gap-2" x-show="newEmp.schedule[day].active">
-                                    <input type="time" x-model="newEmp.schedule[day].start" class="p-2 text-xs bg-white rounded border border-toss-grey300">
+                            <div class="flex items-center gap-3 p-3 rounded-xl border transition-colors" :class="newEmp && newEmp.schedule && newEmp.schedule[day] && newEmp.schedule[day].active ? 'border-toss-blue bg-toss-blueLight/20' : 'border-toss-grey200'">
+                                <label class="flex items-center min-w-[40px]"><input type="checkbox" x-model="newEmp && newEmp.schedule && newEmp.schedule[day].active" class="w-5 h-5 rounded text-toss-blue"><span class="ml-2 font-bold text-toss-grey700" x-text="day"></span></label>
+                                <div class="flex-1 flex gap-2" x-show="newEmp && newEmp.schedule && newEmp.schedule[day].active">
+                                    <input type="time" x-model="newEmp && newEmp.schedule && newEmp.schedule[day].start" class="p-2 text-xs bg-white rounded border border-toss-grey300">
                                     <span class="self-center">~</span>
-                                    <input type="time" x-model="newEmp.schedule[day].end" class="p-2 text-xs bg-white rounded border border-toss-grey300">
+                                    <input type="time" x-model="newEmp && newEmp.schedule && newEmp.schedule[day].end" class="p-2 text-xs bg-white rounded border border-toss-grey300">
                                 </div>
                             </div>
                         </template>
@@ -405,404 +818,5 @@
             </form>
         </div>
     </div>
-
-    <script>
-        // --- CONSTANTS ---
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwHhAhlRbIpSgH5bK0qmS4pTxaOOLJmYTMZ-01Y_AAytAAaL1lg-F8LVuYhsHqj5blMnA/exec";
-        const MIN_WAGE_2025 = 10030;
-
-        function hrApp() {
-            return {
-                // --- STATE ---
-                isLoading: false, mobileMenuOpen: false, activeTab: 'employees', viewType: 'month',
-                menuItems: [ {id:'employees', label:'직원 관리', icon:'users'}, {id:'calendar', label:'근무 일정', icon:'calendar'}, {id:'payroll', label:'급여 정산', icon:'calculator'} ],
-                currentDate: new Date(),
-                weekDays: [],
-                dragState: { active: false, startY: 0, currentY: 0, dayIndex: null, startTime: '', endTime: '', startYPos: 0 },
-                
-                // Data
-                employees: [],
-                shifts: [],
-
-                // Modals
-                showEmpModal: false, isEmpEditMode: false, editingEmpId: null,
-                showShiftModal: false, isEditMode: false, editingShiftId: null, targetDateStr: '',
-                newEmp: this.getEmptyEmp(),
-                newShift: { empId: '', startTime: '09:00', endTime: '18:00' },
-
-                // --- INIT & UTILS ---
-                initApp() { 
-                    this.refreshIcons(); 
-                    this.updateWeekDays(); 
-                    this.$watch('activeTab', () => this.refreshIcons());
-                    this.fetchData(); // Initial Load
-                },
-                
-                refreshIcons() { setTimeout(() => { if(window.lucide) window.lucide.createIcons(); }, 50); },
-                getPageTitle() { return {'employees':'직원 관리','calendar':'근무 일정','payroll':'급여 정산'}[this.activeTab]; },
-                formatCurrency(v) { return Math.floor(v||0).toLocaleString()+'원'; },
-                formatRole(r) { return {'manager':'매니저','parttime':'아르바이트','staff':'정규직'}[r] || r; },
-                getContractLabel(type) { return {'insurance4':'4대보험','freelancer':'프리랜서','insurance2':'고용·산재'}[type] || type; },
-                getEmpName(id) { const e = this.employees.find(x => String(x.id) === String(id)); return e ? e.name : '(삭제됨)'; },
-                
-                getEmptyEmp() {
-                    const s = {}; ['월','화','수','목','금','토','일'].forEach(d => s[d]={active:false, start:'09:00', end:'18:00', breakTime:0});
-                    return { name: '', role: 'parttime', contractType: 'insurance4', basePay: MIN_WAGE_2025, joinDate: new Date().toISOString().split('T')[0], rrn:'', address:'', bankName:'', accountNumber:'', schedule: s };
-                },
-
-                // --- API COMM ---
-                async callApi(action, payload = null) {
-                    this.isLoading = true;
-                    const url = `${GAS_URL}?action=${action}`;
-                    const options = {
-                        method: payload ? 'POST' : 'GET',
-                    };
-                    // GAS doPost workaround for CORS: use text/plain
-                    if (payload) {
-                        options.body = JSON.stringify(payload);
-                        options.headers = { 'Content-Type': 'text/plain' }; 
-                    }
-
-                    try {
-                        const res = await fetch(url, options);
-                        const json = await res.json();
-                        if (json.status !== 'success') throw new Error(json.message);
-                        return json.data;
-                    } catch (e) {
-                        console.error("API Error:", e);
-                        alert(`오류 발생: ${e.message}`);
-                        return null;
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
-
-                async fetchData() {
-                    const [emps, shifts] = await Promise.all([
-                        this.callApi('getEmployees'),
-                        this.callApi('getShifts')
-                    ]);
-                    
-                    if (emps) {
-                        // Parse schedule JSON string if necessary
-                        this.employees = emps.map(e => {
-                            if (typeof e.schedule === 'string') {
-                                try { e.schedule = JSON.parse(e.schedule); } catch(err) { e.schedule = {}; }
-                            }
-                            return e;
-                        });
-                    }
-                    if (shifts) this.shifts = shifts;
-                },
-
-                // --- EMPLOYEES CRUD ---
-                openEmpModal(e = null) {
-                    if (e) {
-                        this.isEmpEditMode = true;
-                        this.editingEmpId = e.id;
-                        this.newEmp = JSON.parse(JSON.stringify(e));
-                        // Ensure schedule structure
-                        ['월','화','수','목','금','토','일'].forEach(d => {
-                            if(!this.newEmp.schedule[d]) this.newEmp.schedule[d] = {active:false, start:'09:00', end:'18:00', breakTime:0};
-                        });
-                    } else {
-                        this.isEmpEditMode = false;
-                        this.editingEmpId = null;
-                        this.newEmp = this.getEmptyEmp();
-                    }
-                    this.showEmpModal = true;
-                },
-
-                openAddressSearch() {
-                    new daum.Postcode({
-                        oncomplete: (data) => {
-                            this.newEmp.address = `(${data.zonecode}) ${data.roadAddress} ${data.buildingName ? '('+data.buildingName+')' : ''}`;
-                        }
-                    }).open();
-                },
-
-                async saveEmployee() {
-                    const action = this.isEmpEditMode ? 'updateEmployee' : 'addEmployee';
-                    const payload = { ...this.newEmp };
-                    if (this.isEmpEditMode) payload.id = this.editingEmpId;
-                    
-                    // Optimistic UI Update
-                    const backup = [...this.employees];
-                    if (this.isEmpEditMode) {
-                        const idx = this.employees.findIndex(e => e.id === payload.id);
-                        if (idx !== -1) this.employees[idx] = payload;
-                    } else {
-                        // Temp ID for display
-                        this.employees.push({ ...payload, id: 'temp_' + Date.now() }); 
-                    }
-                    this.showEmpModal = false;
-
-                    const result = await this.callApi(action, payload);
-                    if (!result) {
-                        this.employees = backup; // Revert
-                    } else {
-                        await this.fetchData(); // Refresh for real ID
-                    }
-                },
-
-                // --- SHIFTS CRUD ---
-                changeDate(o) { 
-                    if (this.viewType === 'month') {
-                        this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth()+o, 1);
-                    } else { 
-                        const n = new Date(this.currentDate); n.setDate(n.getDate() + (o * 7)); 
-                        this.currentDate = n; this.updateWeekDays(); 
-                    } 
-                },
-                updateWeekDays() {
-                    const curr = new Date(this.currentDate);
-                    const startOfWeek = new Date(curr.setDate(curr.getDate() - curr.getDay() + 1)); // Mon start
-                    if (curr.getDay() === 0) startOfWeek.setDate(startOfWeek.getDate() - 7); // Fix Sunday issue
-                    
-                    const days = [];
-                    for (let i = 0; i < 7; i++) {
-                        const d = new Date(startOfWeek);
-                        d.setDate(startOfWeek.getDate() + i);
-                        const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
-                        days.push({ label: ['월','화','수','목','금','토','일'][i], date: dd, fullDate: `${y}-${m}-${dd}` });
-                    }
-                    this.weekDays = days;
-                },
-                getCalendarDays() {
-                    const y = this.currentDate.getFullYear(), m = this.currentDate.getMonth();
-                    const lastDay = new Date(y, m+1, 0).getDate();
-                    const firstDayIdx = (new Date(y, m, 1).getDay() + 6) % 7; // Mon=0
-                    let days = []; 
-                    for(let i=0; i<firstDayIdx; i++) days.push({key:`b${i}`, day:null});
-                    for(let i=1; i<=lastDay; i++) { 
-                        const dStr = String(i).padStart(2,'0'), mStr = String(m+1).padStart(2,'0'); 
-                        days.push({key:`d${i}`, day:i, fullDate:`${y}-${mStr}-${dStr}`}); 
-                    }
-                    return days;
-                },
-                getShifts(d) { return this.shifts.filter(s => s.date === d); },
-                getWeekRangeString() { const d = this.weekDays; return d.length ? `${d[0].fullDate} ~ ${d[6].fullDate}` : ''; },
-
-                openShiftModal(d) {
-                    const y=this.currentDate.getFullYear(), m=String(this.currentDate.getMonth()+1).padStart(2,'0'), dd=String(d).padStart(2,'0');
-                    this.targetDateStr = `${y}-${m}-${dd}`; 
-                    this.isEditMode=false; this.editingShiftId=null; 
-                    this.newShift={empId: this.employees.length > 0 ? this.employees[0].id : '', startTime:'09:00', endTime:'18:00'}; 
-                    this.showShiftModal=true;
-                },
-                openEditShiftModal(s) { 
-                    this.targetDateStr=s.date; this.isEditMode=true; this.editingShiftId=s.id; 
-                    this.newShift={empId:s.empId, startTime:s.startTime, endTime:s.endTime}; 
-                    this.showShiftModal=true; 
-                },
-                
-                async saveShift() {
-                    const id = this.isEditMode ? this.editingShiftId : Date.now().toString();
-                    const payload = {
-                        id: String(id),
-                        empId: String(this.newShift.empId),
-                        date: this.targetDateStr,
-                        startTime: this.newShift.startTime,
-                        endTime: this.newShift.endTime
-                    };
-                    const action = this.isEditMode ? 'updateShift' : 'addShift';
-                    this.showShiftModal = false;
-
-                    // Optimistic
-                    const backup = [...this.shifts];
-                    if (this.isEditMode) {
-                        const idx = this.shifts.findIndex(s => String(s.id) === String(id));
-                        if(idx!==-1) this.shifts[idx] = payload;
-                    } else {
-                        this.shifts.push(payload);
-                    }
-                    this.refreshIcons();
-
-                    const res = await this.callApi(action, payload);
-                    if(!res) this.shifts = backup;
-                },
-
-                async deleteShift() {
-                    if(!this.isEditMode) return;
-                    const id = this.editingShiftId;
-                    this.showShiftModal = false;
-                    
-                    const backup = [...this.shifts];
-                    this.shifts = this.shifts.filter(s => String(s.id) !== String(id));
-                    this.refreshIcons();
-
-                    const res = await this.callApi('deleteShift', { id: String(id) });
-                    if(!res) this.shifts = backup;
-                },
-                closeShiftModal() { this.showShiftModal=false; },
-
-                // --- DRAG & DROP ---
-                yToTime(y) { const tm = Math.round(y/12)*15, h = Math.floor(tm/60)+5, m = tm%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; },
-                startDrag(dayIndex, dateKey, e) {
-                    const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top;
-                    this.dragState = { active: true, dayIndex: dayIndex, dateKey: dateKey, startYPos: offsetY, currentY: offsetY, startTime: this.yToTime(offsetY), endTime: this.yToTime(offsetY + 48), timeLabel: '' };
-                },
-                onDrag(e, dayIndex) { 
-                    if (!this.dragState.active || this.dragState.dayIndex !== dayIndex) return;
-                    const rect = e.currentTarget.getBoundingClientRect(); const offsetY = e.clientY - rect.top;
-                    this.dragState.currentY = offsetY;
-                    const s = Math.min(this.dragState.startYPos, offsetY), eY = Math.max(this.dragState.startYPos, offsetY);
-                    this.dragState.startTime = this.yToTime(s); this.dragState.endTime = this.yToTime(eY);
-                    this.dragState.timeLabel = `${this.dragState.startTime} - ${this.dragState.endTime}`;
-                },
-                endDrag() {
-                    if (!this.dragState.active) return;
-                    this.targetDateStr = this.dragState.dateKey; 
-                    this.isEditMode = false;
-                    this.newShift = { empId: this.employees.length ? this.employees[0].id : '', startTime: this.dragState.startTime, endTime: this.dragState.endTime };
-                    this.dragState.active = false; 
-                    this.showShiftModal = true;
-                },
-                getShiftStyle(s) {
-                    const sh = parseInt(s.startTime.split(':')[0]), sm = parseInt(s.startTime.split(':')[1]), eh = parseInt(s.endTime.split(':')[0]), em = parseInt(s.endTime.split(':')[1]);
-                    const sMin = (sh-5)*60+sm, eMin = (eh-5)*60+em; // 5시 시작 기준
-                    const top = (sMin/60)*48, h = ((eMin-sMin)/60)*48;
-                    return `top:${Math.max(0,top)}px;height:${Math.max(12,h)}px;`;
-                },
-                getDragStyle() {
-                    const s = Math.min(this.dragState.startYPos, this.dragState.currentY), e = Math.max(this.dragState.startYPos, this.dragState.currentY);
-                    const ss = Math.round(s/12)*12, se = Math.round(e/12)*12;
-                    return `top:${ss}px;height:${Math.max(12,se-ss)}px;`;
-                },
-
-                // --- PAYROLL ENGINE 2025 ---
-                calculatePayroll(emp) {
-                    if (!emp) return null;
-                    try {
-                        let base=0, juhyu=0; 
-                        const y=this.currentDate.getFullYear(), m=this.currentDate.getMonth(), lastDay=new Date(y,m+1,0).getDate();
-                        let dailyLogs=[], weekStats={}, remarks=[];
-                        let hourlyRate=0, monthScheduledDays=0;
-
-                        // 월급직 -> 통상 시급 역산
-                        if (emp.role !== 'parttime') {
-                            for (let d = 1; d <= lastDay; d++) {
-                                const tempDate = new Date(y, m, d);
-                                const dayName = ['일','월','화','수','목','금','토'][tempDate.getDay()];
-                                if (emp.schedule?.[dayName]?.active) monthScheduledDays++;
-                            }
-                            if (monthScheduledDays > 0) hourlyRate = ((emp.basePay / monthScheduledDays) / 8) / 1.2; // 근사치
-                        } else {
-                            hourlyRate = emp.basePay;
-                        }
-
-                        for (let d = 1; d <= lastDay; d++) {
-                            const dateObj = new Date(y, m, d), dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                            const dayName = ['일','월','화','수','목','금','토'][dateObj.getDay()];
-                            
-                            // 주차 계산 (월요일 시작 기준)
-                            const firstDayOfMonth = new Date(y, m, 1);
-                            const dayOfFirst = (firstDayOfMonth.getDay() + 6) % 7; // Mon=0
-                            const weekNum = Math.ceil((d + dayOfFirst) / 7);
-
-                            if (!weekStats[weekNum]) weekStats[weekNum] = { hours: 0, excluded: false, reasons: new Set(), weeklyBasePay: 0, juhyuEligible: false };
-                            
-                            const contract = emp.schedule?.[dayName];
-                            const isScheduled = contract && contract.active;
-                            const shift = this.shifts.find(s => s.date === dateStr && String(s.empId) === String(emp.id));
-                            
-                            if (isScheduled) {
-                                if (shift) {
-                                    let h = (new Date(`2000-01-01T${shift.endTime}`) - new Date(`2000-01-01T${shift.startTime}`)) / 3600000;
-                                    if (h < 0) h += 24;
-
-                                    // 휴게시간 차감 (4시간 30분, 8시간 1시간)
-                                    let breakDeduction = 0;
-                                    if (h >= 8) breakDeduction = 1;
-                                    else if (h >= 4) breakDeduction = 0.5;
-                                    
-                                    h -= breakDeduction;
-                                    if (h < 0) h = 0;
-                                    
-                                    const dailyPay = h * hourlyRate;
-                                    base += dailyPay;
-                                    
-                                    weekStats[weekNum].hours += h;
-                                    weekStats[weekNum].weeklyBasePay += dailyPay;
-                                    
-                                    dailyLogs.push({ 
-                                        date: dateStr, status: 'worked', timeRange: `${shift.startTime}~${shift.endTime}`, 
-                                        hours: h.toFixed(1), dailyBasePay: dailyPay, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 
-                                    });
-                                } else {
-                                    // 결근 처리
-                                    weekStats[weekNum].excluded = true; weekStats[weekNum].reasons.add(`${dateStr} 결근`);
-                                    dailyLogs.push({ date: dateStr, status: 'absent', timeRange: '-', hours: '0', dailyBasePay: 0, weekNum: weekNum, dailyJuhyu: 0, dailyTotal: 0 });
-                                }
-                            }
-                            // 입사일 이전 제외 로직
-                            if (new Date(dateStr) < new Date(emp.joinDate)) {
-                                weekStats[weekNum].excluded = true;
-                            }
-                        }
-
-                        // 주휴수당 계산
-                        Object.keys(weekStats).forEach(w => {
-                            const stat = weekStats[w];
-                            if (!stat.excluded && stat.hours >= 15) {
-                                stat.juhyuEligible = true;
-                                if (emp.role === 'parttime') {
-                                    // 비례 주휴: (주40시간 한도 / 40) * 8 * 시급
-                                    stat.totalJuhyu = (Math.min(stat.hours, 40) / 40) * 8 * emp.basePay;
-                                    juhyu += stat.totalJuhyu;
-                                } else {
-                                    stat.totalJuhyu = stat.weeklyBasePay * 0.2; // 월급제 간편 계산
-                                    juhyu += stat.totalJuhyu;
-                                }
-                            } else {
-                                stat.totalJuhyu = 0;
-                                if (stat.excluded) stat.reasons.forEach(r => remarks.push(r));
-                            }
-                        });
-
-                        // 일별 주휴 배분 (디스플레이용)
-                        dailyLogs.forEach(log => {
-                            if (log.status === 'worked') {
-                                const stat = weekStats[log.weekNum];
-                                if (stat && stat.juhyuEligible && stat.hours > 0) {
-                                    log.dailyJuhyu = Math.ceil(stat.totalJuhyu * (parseFloat(log.hours) / stat.hours));
-                                }
-                                log.dailyTotal = Math.ceil(log.dailyBasePay + log.dailyJuhyu);
-                            }
-                        });
-
-                        const gross = Math.ceil(base + juhyu);
-                        
-                        // 공제 계산 (2025 요율 반영 / 프리랜서 3.3%)
-                        let deductions = { pension:0, health:0, care:0, employ:0, tax:0, total:0 };
-                        if (emp.contractType === 'freelancer') {
-                            deductions.tax = Math.floor(gross * 0.033 / 10) * 10;
-                        } else if (emp.contractType === 'insurance2') { // 고용/산재
-                            deductions.employ = Math.floor(gross * 0.009 / 10) * 10; // 0.9%
-                            // 소득세 간이세액표 약식 (1%)
-                            const iTax = Math.floor(gross * 0.01 / 10) * 10;
-                            deductions.tax = iTax + Math.floor(iTax * 0.1 / 10) * 10;
-                        } else { // 4대보험
-                            deductions.pension = Math.floor(gross * 0.045 / 10) * 10; // 4.5%
-                            deductions.health = Math.floor(gross * 0.03545 / 10) * 10; // 3.545%
-                            deductions.care = Math.floor(deductions.health * 0.1295 / 10) * 10; // 12.95%
-                            deductions.employ = Math.floor(gross * 0.009 / 10) * 10; // 0.9%
-                            const iTax = Math.floor(gross * 0.01 / 10) * 10; // 약식 소득세
-                            deductions.tax = iTax + Math.floor(iTax * 0.1 / 10) * 10;
-                        }
-                        deductions.total = deductions.pension + deductions.health + deductions.care + deductions.employ + deductions.tax;
-
-                        return { 
-                            basePay: base, juhyuAllowance: juhyu, grossTotal: gross, deductions, netPay: gross - deductions.total, dailyLogs, 
-                            remarks: [...new Set(remarks)], details: { monthDays: monthScheduledDays, hourlyRate: hourlyRate } 
-                        };
-                    } catch (e) {
-                        console.error('Payroll Error:', e);
-                        return null;
-                    }
-                }
-            };
-        }
-    </script>
 </body>
 </html>
