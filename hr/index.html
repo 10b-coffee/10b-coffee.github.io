@@ -908,10 +908,23 @@
         function finishDrag(e){if(!dragStartEl||dragStartEl.parentElement!==e.parentElement){dragStartEl=null;return}document.querySelectorAll('.time-grid-cell.selected').forEach(el=>el.classList.remove('selected'));const ds=dragStartEl.dataset,de=e.dataset;const t1=parseInt(ds.hour)*60+parseInt(ds.min),t2=parseInt(de.hour)*60+parseInt(de.min),s=Math.min(t1,t2),end=Math.max(t1,t2)+30;openScheduleModal(parseInt(ds.day),selectedScheduleStaffId,parseInt(ds.year),parseInt(ds.month));document.getElementById('work-status').value='work';toggleTimeInputs();document.getElementById('start-time').value=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;document.getElementById('end-time').value=`${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;calculateDuration();dragStartEl=null}
         
         // --- PAYROLL CALCULATION ENGINE ---
+        function getLocalDateString(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function parseLocalDate(str) {
+            if(!str) return null;
+            const [y, m, d] = str.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
         function renderPayroll() {
             const container = document.getElementById('payroll-list');
             container.innerHTML = '';
-            payrollResults = {}; // Reset for current calculation
+            payrollResults = {}; 
 
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
@@ -919,9 +932,8 @@
                 let hourlyRate = 0;
                 let calculationNote = "";
 
-                // Calculate Hourly Rate based on new Logic
+                // Calculate Hourly Rate
                 if(staff.payType === 'monthly') {
-                    // Monthly: ((base + allowance) / workingDays / 8) / 1.2
                     let workingDays = 0;
                     for(let d=1; d<=daysInMonth; d++) {
                         const day = new Date(currentYear, currentMonth, d).getDay();
@@ -932,7 +944,6 @@
                     hourlyRate = Math.ceil(rawRate);
                     calculationNote = `통상시급: (${formatMoney(totalMonthly)} / ${workingDays}일 / 8h / 1.2) = ${formatMoney(hourlyRate)}`;
                 } else {
-                    // Hourly
                     if(staff.juhyuIncluded) {
                         const totalHourly = staff.basePay + staff.allowance; 
                         hourlyRate = Math.ceil(totalHourly / 1.2);
@@ -948,46 +959,141 @@
                 let totalHours = 0;
                 let dailyDetails = [];
                 let juhyuNotes = [];
-                let weeks = {};
                 
+                // Identify all weeks involved (Monday based, Local Time)
+                const distinctWeekKeys = new Set();
                 for(let d=1; d<=daysInMonth; d++) {
                     const date = new Date(currentYear, currentMonth, d);
-                    const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    
-                    const dayNum = date.getDay(); 
-                    const diffToMon = (dayNum + 6) % 7; 
+                    const day = date.getDay(); // 0(Sun)...6(Sat)
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
                     const mondayDate = new Date(date);
-                    mondayDate.setDate(date.getDate() - diffToMon);
-                    const weekKey = mondayDate.toISOString().split('T')[0];
-
-                    if(!weeks[weekKey]) weeks[weekKey] = { dates:[], hours:0, absences:0, hasJoin:false, hasResign:false };
+                    mondayDate.setDate(diff);
                     
+                    const weekKey = getLocalDateString(mondayDate);
+                    distinctWeekKeys.add(weekKey);
+                }
+
+                // Analyze each week fully (Mon-Sun)
+                const weekAnalysis = {};
+                
+                distinctWeekKeys.forEach(weekKey => {
+                    // weekKey is YYYY-MM-DD of Monday
+                    const monday = parseLocalDate(weekKey);
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+
+                    let weekTotalHours = 0;
+                    let weekWorkPay = 0;
+                    let hasMissedDay = false;
+                    let missedReason = "";
+                    let weekHasJoin = false;
+                    let weekHasResign = false;
+
+                    // Parse Join/Resign as Local Date to compare correctly
+                    const joinD = parseLocalDate(staff.joinDate);
+                    const resignD = staff.resignDate ? parseLocalDate(staff.resignDate) : null;
+
+                    // Normalize for safe comparison (set to 00:00:00)
+                    const mTime = monday.getTime();
+                    const sTime = sunday.getTime();
+                    
+                    // 입사일 체크: 해당 주 월요일보다 입사일이 늦으면 (화~일 입사) -> 만근 불가 간주
+                    if (joinD && joinD.getTime() > mTime) weekHasJoin = true; 
+                    
+                    // 퇴사일 체크: 해당 주 일요일보다 퇴사일이 빠르면 (월~토 퇴사) -> 만근 불가 간주
+                    // 단, 퇴사일이 일요일(sTime)과 같으면 만근 가능
+                    if (resignD && resignD.getTime() < sTime) weekHasResign = true;
+
+                    // Iterate Mon(0) to Sun(6) for this week
+                    for(let i=0; i<7; i++) {
+                        const loopDate = new Date(monday);
+                        loopDate.setDate(monday.getDate() + i);
+                        const dateStr = getLocalDateString(loopDate);
+                        
+                        const sch = schedules[`${staff.id}_${dateStr}`];
+                        
+                        // Default Schedule Check
+                        let dayIdx = loopDate.getDay();
+                        dayIdx = dayIdx === 0 ? 7 : dayIdx; // 1(Mon) ... 7(Sun)
+
+                        const isDefaultWorkDay = staff.defaultSchedule && staff.defaultSchedule[dayIdx];
+
+                        if (sch && sch.status === 'work') {
+                            weekTotalHours += sch.totalHours;
+                            weekWorkPay += Math.ceil(sch.totalHours * hourlyRate);
+                        }
+
+                        // Check Missed Attendance
+                        if (isDefaultWorkDay) {
+                            if (!sch) {
+                                hasMissedDay = true;
+                                missedReason = `기록 미입력(${dateStr})`;
+                            } else if (sch.status === 'absent') {
+                                hasMissedDay = true;
+                                missedReason = `결근(${dateStr})`;
+                            }
+                        }
+                    }
+
+                    // Determine Juhyu Eligibility
+                    let isEligible = true;
+                    let failReason = "";
+
+                    if (weekTotalHours < 15) { isEligible = false; failReason = "15시간 미만"; }
+                    else if (hasMissedDay) { isEligible = false; failReason = missedReason; }
+                    else if (weekHasJoin) { isEligible = false; failReason = "입사 주간"; }
+                    else if (weekHasResign) { isEligible = false; failReason = "퇴사 주간"; }
+
+                    weekAnalysis[weekKey] = {
+                        isEligible,
+                        failReason,
+                        hours: weekTotalHours,
+                        basePay: weekWorkPay
+                    };
+                    
+                    if (!isEligible && weekTotalHours > 0) {
+                        const mStr = `${monday.getMonth()+1}/${monday.getDate()}`;
+                        const sStr = `${sunday.getMonth()+1}/${sunday.getDate()}`;
+                        // Filter notes to only show relevant weeks for current view
+                        if(monday.getMonth() === currentMonth || sunday.getMonth() === currentMonth) {
+                            juhyuNotes.push(`${mStr}~${sStr} 주휴 제외: ${failReason}`);
+                        }
+                    }
+                });
+
+                // Generate Display Data
+                for(let d=1; d<=daysInMonth; d++) {
+                    const date = new Date(currentYear, currentMonth, d);
+                    const dateStr = getLocalDateString(date);
+                    
+                    const day = date.getDay();
+                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                    const mondayDate = new Date(date);
+                    mondayDate.setDate(diff);
+                    const weekKey = getLocalDateString(mondayDate);
+
                     const sch = schedules[`${staff.id}_${dateStr}`];
-                    const joinD = new Date(staff.joinDate);
-                    const resignD = staff.resignDate ? new Date(staff.resignDate) : null;
-                    const sundayDate = new Date(mondayDate);
-                    sundayDate.setDate(mondayDate.getDate() + 6);
-                    
-                    if(joinD >= mondayDate && joinD <= sundayDate) weeks[weekKey].hasJoin = true;
-                    if(resignD && resignD >= mondayDate && resignD <= sundayDate) weeks[weekKey].hasResign = true;
-
                     let dailyPay = 0;
                     let dailyHours = 0;
                     let statusStr = '-';
                     let timeStr = '-';
+                    let juhyuAmt = 0;
+                    let juhyuReason = null;
 
                     if(sch && sch.status === 'work') {
                         dailyHours = sch.totalHours;
                         dailyPay = Math.ceil(dailyHours * hourlyRate);
-                        
-                        weeks[weekKey].hours += dailyHours;
-                        totalHours += dailyHours;
                         statusStr = '근무';
                         timeStr = `${formatTimeSimple(sch.start)}~${formatTimeSimple(sch.end)}`;
+                        
+                        const wStats = weekAnalysis[weekKey];
+                        if(wStats && wStats.isEligible) {
+                            juhyuAmt = Math.ceil(dailyPay * 0.2);
+                        } else if(wStats) {
+                            juhyuReason = wStats.failReason;
+                        }
                     } else if(sch && sch.status === 'absent') {
-                        weeks[weekKey].absences++;
                         statusStr = '결근';
-                        timeStr = '-';
                     }
 
                     if(statusStr !== '-') {
@@ -997,35 +1103,14 @@
                             status: statusStr,
                             hours: dailyHours,
                             pay: dailyPay,
-                            weekKey: weekKey
+                            juhyu: juhyuAmt,
+                            juhyuReason: juhyuReason
                         });
                         totalWorkPay += dailyPay;
+                        totalJuhyuPay += juhyuAmt;
+                        totalHours += dailyHours;
                     }
                 }
-
-                Object.keys(weeks).forEach(weekKey => {
-                    const w = weeks[weekKey];
-                    let isEligible = true;
-                    let reason = "";
-
-                    if(w.hours < 15) { isEligible = false; reason = "15시간 미만"; }
-                    if(w.absences > 0) { isEligible = false; reason = "결근 발생"; }
-                    if(w.hasJoin) { isEligible = false; reason = "입사 주간"; }
-                    if(w.hasResign) { isEligible = false; reason = "퇴사 주간"; }
-                    
-                    if(isEligible) {
-                        let weeklyBase = 0;
-                        dailyDetails.filter(d => d.weekKey === weekKey).forEach(d => weeklyBase += d.pay);
-                        const juhyuAmt = Math.ceil(weeklyBase * 0.2);
-                        totalJuhyuPay += juhyuAmt;
-                        dailyDetails.filter(d => d.weekKey === weekKey && d.status === '근무').forEach(d => {
-                            d.juhyu = Math.ceil(d.pay * 0.2);
-                        });
-                    } else {
-                        if(w.hours > 0) juhyuNotes.push(`${weekKey}주: ${reason}`); 
-                        dailyDetails.filter(d => d.weekKey === weekKey).forEach(d => d.juhyuReason = reason);
-                    }
-                });
 
                 const totalGross = totalWorkPay + totalJuhyuPay;
                 let deductionDetails = [];
@@ -1063,7 +1148,7 @@
                     totalGross,
                     netPay,
                     juhyuNotes,
-                    weeks
+                    dailyDetails // Store for AI Report
                 };
 
                 const wrapper = document.createElement('div');
