@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 v2.1.13 (Clean)</title>
+    <title>레스토지니 v2.2.0 (Payroll Date Nav)</title>
     
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
@@ -97,7 +97,7 @@
                     <div class="text-sm font-bold text-gray-700">김점장님</div>
                 </div>
             </div>
-            <div class="text-xs text-gray-300 mt-2 pl-1">v2.1.13 (Clean)</div>
+            <div class="text-xs text-gray-300 mt-2 pl-1">v2.2.0 (Payroll Date Nav)</div>
             <button onclick="openConfig()" class="text-xs text-blue-400 underline mt-1 pl-1">API 설정</button>
         </div>
     </aside>
@@ -203,10 +203,18 @@
 
             <!-- 3. PAYROLL -->
             <section id="view-payroll" class="hidden space-y-6 max-w-4xl mx-auto px-5 md:px-0 pt-5 md:pt-0">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold">급여 정산</h2>
-                    <div class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full flex items-center gap-1">
-                        <div class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></div> 실시간 계산됨
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100">
+                         <button onclick="changeDateRange(-1)" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-500"><i class="fas fa-chevron-left"></i></button>
+                         <span id="payroll-month-display" class="text-xl font-bold text-gray-800 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors" onclick="openDatePicker()">2025년 12월</span>
+                         <button onclick="changeDateRange(1)" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-500"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-2xl font-bold hidden md:block">급여 정산</h2>
+                        <div class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full flex items-center gap-1 border border-blue-100">
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></div> 실시간 계산됨
+                        </div>
                     </div>
                 </div>
                 <div id="payroll-list" class="space-y-8">
@@ -441,6 +449,7 @@
         let currentWeekStart = null;
         let selectedScheduleStaffId = null;
         let scheduleViewMode = 'month';
+        let activeTab = 'staff'; // Track current tab
 
         // Add missing global vars
         let editingStaffId = null;
@@ -518,6 +527,7 @@
                 renderCalendar();
                 renderPayroll();
                 renderWorkDaysInputs();
+                updateDateDisplays();
                 
                 if(!API_URL) showToast("API URL 미설정: 로컬 모드로 동작합니다");
             } catch (e) {
@@ -535,6 +545,7 @@
 
         // === NAV LOGIC ===
         function switchTab(t){
+            activeTab = t;
             document.querySelectorAll('section').forEach(e=>e.classList.add('hidden'));
             const target = document.getElementById(`view-${t}`);
             target.classList.remove('hidden');
@@ -556,8 +567,28 @@
                 }
             });
             
-            if(t==='schedule') renderCalendar();
-            if(t==='payroll') renderPayroll();
+            if(t==='schedule') { renderCalendar(); updateDateDisplays(); }
+            if(t==='payroll') { renderPayroll(); updateDateDisplays(); }
+        }
+
+        function updateDateDisplays() {
+            const y = currentYear;
+            const m = currentMonth + 1;
+            const text = `${y}년 ${m}월`;
+            
+            const calDisp = document.getElementById('current-month-display');
+            if(calDisp) {
+                if(scheduleViewMode === 'month') {
+                    calDisp.innerText = text;
+                } else {
+                    const ed = new Date(currentWeekStart);
+                    ed.setDate(ed.getDate()+6);
+                    calDisp.innerText = `${currentWeekStart.getMonth()+1}월 ${currentWeekStart.getDate()}일 - ${ed.getMonth()+1}월 ${ed.getDate()}일`;
+                }
+            }
+            
+            const payDisp = document.getElementById('payroll-month-display');
+            if(payDisp) payDisp.innerText = text;
         }
 
         // === STAFF LOGIC ===
@@ -1239,7 +1270,7 @@
         function formatMoney(n){return Math.floor(n).toLocaleString()+'원'}
         function showToast(m){const t=document.getElementById('toast');t.innerText=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',3000)}
         function toggleViewMode(m){scheduleViewMode=m;const bm=document.getElementById('btn-view-month'),bw=document.getElementById('btn-view-week');if(m==='month'){bm.classList.add('bg-white','text-blue-600','shadow-sm');bm.classList.remove('text-gray-500');bw.classList.remove('bg-white','text-blue-600','shadow-sm');bw.classList.add('text-gray-500');document.getElementById('month-view-container').classList.remove('hidden');document.getElementById('week-view-container').classList.add('hidden')}else{bw.classList.add('bg-white','text-blue-600','shadow-sm');bw.classList.remove('text-gray-500');bm.classList.remove('bg-white','text-blue-600','shadow-sm');bm.classList.add('text-gray-500');document.getElementById('month-view-container').classList.add('hidden');document.getElementById('week-view-container').classList.remove('hidden')}renderCalendar()}
-        function changeDateRange(d){if(scheduleViewMode==='month'){currentMonth+=d;if(currentMonth>11){currentMonth=0;currentYear++}if(currentMonth<0){currentMonth=11;currentYear--}}else{currentWeekStart.setDate(currentWeekStart.getDate()+(d*7));currentYear=currentWeekStart.getFullYear();currentMonth=currentWeekStart.getMonth()}renderCalendar()}
+        function changeDateRange(d){if(scheduleViewMode==='month' || activeTab === 'payroll'){currentMonth+=d;if(currentMonth>11){currentMonth=0;currentYear++}if(currentMonth<0){currentMonth=11;currentYear--}}else{currentWeekStart.setDate(currentWeekStart.getDate()+(d*7));currentYear=currentWeekStart.getFullYear();currentMonth=currentWeekStart.getMonth()} if(activeTab === 'payroll') renderPayroll(); else renderCalendar(); updateDateDisplays();}
         
         // --- Modal Toggles ---
         function openScheduleModal(d,sid,y,m){
