@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 v2.1.2 (Sidebar Fix)</title>
+    <title>레스토지니 v2.1.4 (Timeout Fix)</title>
     
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
@@ -17,8 +17,6 @@
 
     <style>
         body { font-family: "Pretendard Variable", Pretendard, sans-serif; background-color: #F2F4F6; color: #191F28; -webkit-font-smoothing: antialiased; }
-        
-        /* Removed the problematic .hidden override */
         
         .toss-card { background: #FFFFFF; border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); padding: 24px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .toss-btn-primary { background-color: #3182F6; color: white; font-weight: 600; border-radius: 12px; padding: 14px 20px; transition: background-color 0.2s; }
@@ -70,7 +68,7 @@
         </button>
     </div>
 
-    <!-- Desktop Sidebar (Will show on md+ screens) -->
+    <!-- Desktop Sidebar -->
     <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex z-20 shadow-sm shrink-0">
         <div class="p-8 pb-4 flex items-center gap-3">
             <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-blue-200 shadow-lg">R</div>
@@ -99,7 +97,7 @@
                     <div class="text-sm font-bold text-gray-700">김점장님</div>
                 </div>
             </div>
-            <div class="text-xs text-gray-300 mt-2 pl-1">v2.1.2 (Sidebar Fix)</div>
+            <div class="text-xs text-gray-300 mt-2 pl-1">v2.1.4 (Timeout Fix)</div>
             <button onclick="openConfig()" class="text-xs text-blue-400 underline mt-1 pl-1">API 설정</button>
         </div>
     </aside>
@@ -193,7 +191,7 @@
                                 <div class="flex flex-col border-r border-gray-100 text-xs text-gray-400 font-medium text-center bg-gray-50">
                                     <script>
                                         for(let i=0; i<=24; i++) {
-                                            document.write(`<div class="h-[20px] border-b border-gray-100 flex items-start justify-center pt-1">${String(i).padStart(2,'0')}:00</div>`);
+                                            document.write(`<div class="h-[40px] border-b border-gray-100 flex items-start justify-center pt-1">${String(i).padStart(2,'0')}:00</div>`);
                                         }
                                     </script>
                                 </div>
@@ -395,14 +393,22 @@
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full opacity-0 pointer-events-none z-[100] transition-opacity duration-300"></div>
 
     <script>
+        // === ERROR HANDLER ===
+        window.onerror = function(msg, url, line, col, error) {
+            console.error("Global Error", msg, error);
+            showToast(`오류 발생: ${msg}`);
+            showLoading(false);
+            return false;
+        };
+
         // === GLOBAL CONFIG ===
         let API_URL = localStorage.getItem('gas_api_url') || "https://script.google.com/macros/s/AKfycbyiLXmBFoDN9dqsiiHXRH_-e-W6Eot02fe__8zEbdxHI1Dwgryd8zr4eAbtQK1OvLdftg/exec"; 
         const GEMINI_API_KEY = ""; 
 
         // === STATE ===
         let staffData = [];
-        let schedules = {}; 
-        let payrollResults = {};
+        let schedules = {};
+        let payrollResults = {}; 
         
         let currentYear = 2025;
         let currentMonth = 11; // Dec
@@ -413,10 +419,15 @@
         // === API HANDLER ===
         async function fetchAPI(action, payload = {}) {
             if(!API_URL) return null; 
+            
             showLoading(true);
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); 
+
                 if(action === 'getInitialData') {
-                    const res = await fetch(`${API_URL}?action=getInitialData`);
+                    const res = await fetch(`${API_URL}?action=getInitialData`, { signal: controller.signal });
+                    clearTimeout(timeoutId);
                     const json = await res.json();
                     return json;
                 } else {
@@ -424,13 +435,20 @@
                         method: 'POST',
                         mode: 'no-cors', 
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action, ...payload })
+                        body: JSON.stringify({ action, ...payload }),
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
                     return { success: true };
                 }
             } catch(e) {
                 console.error("API Error", e);
-                showToast("데이터 통신 오류: " + e.message);
+                if (e.name === 'AbortError') {
+                    console.warn("Timeout");
+                    showToast("연결 지연: 로컬 모드로 전환합니다");
+                } else {
+                    showToast("데이터 통신 오류: " + e.message);
+                }
                 return null;
             } finally {
                 showLoading(false);
@@ -439,33 +457,43 @@
 
         // === INIT ===
         async function init() {
-            const d = new Date(currentYear, currentMonth, 1);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            currentWeekStart = new Date(d.setDate(diff));
+            try {
+                setTimeout(() => {
+                    const btn = document.getElementById('force-close-loading');
+                    if(btn) btn.classList.remove('hidden');
+                }, 3000);
 
-            if(API_URL) {
-                const cloudData = await fetchAPI('getInitialData');
-                if(cloudData) {
-                    if(cloudData.staff) {
-                        staffData = cloudData.staff;
-                        schedules = cloudData.schedules || {};
+                const d = new Date(currentYear, currentMonth, 1);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                currentWeekStart = new Date(d.setDate(diff));
+
+                if(API_URL) {
+                    const cloudData = await fetchAPI('getInitialData');
+                    if(cloudData) {
+                        if(cloudData.staff) {
+                            staffData = cloudData.staff;
+                            schedules = cloudData.schedules || {};
+                        }
+                        if(staffData.length === 0) showToast("연동 성공! (현재 데이터 없음)");
                     }
-                    if(staffData.length === 0) showToast("연동 성공! (현재 데이터 없음)");
                 }
-            } else {
+                
                 if(staffData.length === 0) seedDemoData(); 
+
+                if(staffData.length > 0 && !selectedScheduleStaffId) selectedScheduleStaffId = staffData[0].id;
+
+                renderStaffList();
+                renderScheduleStaffList();
+                renderCalendar();
+                renderPayroll();
+                renderWorkDaysInputs();
+                
+                if(!API_URL) showToast("API URL 미설정: 로컬 모드로 동작합니다");
+            } catch (e) {
+                console.error("Init failed", e);
+                showLoading(false); 
             }
-
-            if(staffData.length > 0 && !selectedScheduleStaffId) selectedScheduleStaffId = staffData[0].id;
-
-            renderStaffList();
-            renderScheduleStaffList();
-            renderCalendar();
-            renderPayroll();
-            renderWorkDaysInputs();
-            
-            if(!API_URL) showToast("API URL 미설정: 로컬 모드로 동작합니다");
         }
 
         function seedDemoData() {
@@ -473,6 +501,33 @@
                 {id:'kim_m', name:'김매니저', role:'manager', joinDate:'2024-01-01', isWorking:true, payType:'monthly', basePay:2200000, allowance:200000, contractType:'4major', bank:'KB', account:'111', defaultSchedule:{}},
                 {id:'kim_d', name:'김도윤', role:'staff', joinDate:'2025-12-01', isWorking:true, payType:'hourly', basePay:10000, allowance:0, contractType:'freelancer', bank:'Toss', account:'222', defaultSchedule:{}}
             ];
+        }
+
+        // === NAV LOGIC (RESTORED) ===
+        function switchTab(t){
+            document.querySelectorAll('section').forEach(e=>e.classList.add('hidden'));
+            const target = document.getElementById(`view-${t}`);
+            target.classList.remove('hidden');
+            
+            if(t === 'schedule') target.classList.add('flex');
+            else document.getElementById('view-schedule').classList.remove('flex');
+            
+            document.getElementById('main-scroll').scrollTop = 0;
+            
+            ['staff','schedule','payroll'].forEach(x=>{
+                const btn = document.getElementById(`nav-${x}`);
+                const mob = document.getElementById(`mob-${x}`);
+                if(x===t){
+                    btn.className='w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-left font-bold transition-all nav-item-active';
+                    mob.className='flex-1 flex flex-col items-center gap-1 py-2 text-blue-600';
+                } else {
+                    btn.className='w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-left font-bold transition-all nav-item-inactive';
+                    mob.className='flex-1 flex flex-col items-center gap-1 py-2 text-gray-400';
+                }
+            });
+            
+            if(t==='schedule') renderCalendar();
+            if(t==='payroll') renderPayroll();
         }
 
         // === STAFF LOGIC ===
@@ -679,7 +734,13 @@
             location.reload();
         }
         function showLoading(show) {
-            document.getElementById('global-loading').classList.toggle('hidden', !show);
+            // Direct Style Manipulation for absolute safety
+            const el = document.getElementById('global-loading');
+            if(show) {
+                el.style.display = 'flex';
+            } else {
+                el.style.display = 'none';
+            }
         }
 
         // --- Render Inputs Helpers ---
@@ -742,8 +803,8 @@
             document.getElementById('schedule-modal').classList.remove('hidden');
         }
         function closeScheduleModal(){document.getElementById('schedule-modal').classList.add('hidden')}
-        function toggleTimeInputs(){const s=document.getElementById('work-status').value;document.getElementById('time-inputs').classList.toggle('hidden',s!=='work')}
-        function calculateDuration(){const s=document.getElementById('start-time').value,e=document.getElementById('end-time').value;if(!s||!e){document.getElementById('calc-hours').innerText='0';return}const d1=new Date(`2000-01-01T${s}`),d2=new Date(`2000-01-01T${e}`);if(d2<d1)d2.setDate(d2.getDate()+1);const h=(d2-d1)/36e5;let b=0;if(h>=8)b=60;else if(h>=4)b=30;document.getElementById('calc-hours').innerText=(h-b/60).toFixed(1);document.getElementById('calc-break').innerText=b}
+        function toggleViewMode(m){scheduleViewMode=m;const bm=document.getElementById('btn-view-month'),bw=document.getElementById('btn-view-week');if(m==='month'){bm.classList.add('bg-white','text-blue-600','shadow-sm');bm.classList.remove('text-gray-500');bw.classList.remove('bg-white','text-blue-600','shadow-sm');bw.classList.add('text-gray-500');document.getElementById('month-view-container').classList.remove('hidden');document.getElementById('week-view-container').classList.add('hidden')}else{bw.classList.add('bg-white','text-blue-600','shadow-sm');bw.classList.remove('text-gray-500');bm.classList.remove('bg-white','text-blue-600','shadow-sm');bm.classList.add('text-gray-500');document.getElementById('month-view-container').classList.add('hidden');document.getElementById('week-view-container').classList.remove('hidden')}renderCalendar()}
+        function changeDateRange(d){if(scheduleViewMode==='month'){currentMonth+=d;if(currentMonth>11){currentMonth=0;currentYear++}if(currentMonth<0){currentMonth=11;currentYear--}}else{currentWeekStart.setDate(currentWeekStart.getDate()+(d*7));currentYear=currentWeekStart.getFullYear();currentMonth=currentWeekStart.getMonth()}renderCalendar()}
         
         // --- PAYROLL RENDER ---
         function renderPayroll(){const c=document.getElementById('payroll-list');c.innerHTML='';const dim=new Date(currentYear,currentMonth+1,0).getDate();
