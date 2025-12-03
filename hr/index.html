@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow">
-    <title>레스토지니 v2.0.10 (Bug Fix)</title>
+    <title>레스토지니 v2.0.5 (Payslip Restore)</title>
     
     <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
@@ -20,8 +20,6 @@
         .toss-card { background: #FFFFFF; border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); padding: 24px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .toss-btn-primary { background-color: #3182F6; color: white; font-weight: 600; border-radius: 12px; padding: 14px 20px; transition: background-color 0.2s; }
         .toss-btn-primary:hover { background-color: #1B64DA; }
-        .toss-btn-danger { background-color: #FFF1F1; color: #FF4B4B; font-weight: 600; border-radius: 12px; padding: 14px 20px; transition: background-color 0.2s; }
-        .toss-btn-danger:hover { background-color: #FFE4E4; }
         .toss-btn-ai { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; font-weight: 600; border-radius: 12px; padding: 10px 16px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
         .toss-input { background-color: #F9FAFB; border: 1px solid #E5E8EB; border-radius: 12px; padding: 14px; font-size: 16px; width: 100%; transition: border-color 0.2s; }
         .toss-input:focus { outline: none; border-color: #3182F6; }
@@ -35,10 +33,10 @@
         .nav-item-inactive:hover { background-color: #F9FAFB; color: #191F28; }
         .schedule-staff-active { background-color: #3182F6; color: white; box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3); }
         .schedule-staff-inactive { background-color: white; color: #4E5968; border: 1px solid #E5E8EB; }
-        .time-grid-cell { border-bottom: 1px solid #F2F4F6; border-right: 1px solid #F2F4F6; height: 20px; position: relative; user-select: none; }
+        .time-grid-cell { border-bottom: 1px solid #F2F4F6; border-right: 1px solid #F2F4F6; height: 40px; position: relative; user-select: none; }
         .time-grid-cell:hover { background-color: #F9FAFB; }
         .time-grid-cell.selected { background-color: #E8F3FF; }
-        .schedule-block { position: absolute; left: 2px; right: 2px; background-color: #3182F6; color: white; border-radius: 4px; padding: 2px 4px; font-size: 10px; font-weight: 600; overflow: hidden; z-index: 10; pointer-events: auto; box-shadow: 0 2px 4px rgba(49, 130, 246, 0.3); cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; }
+        .schedule-block { position: absolute; left: 2px; right: 2px; background-color: #3182F6; color: white; border-radius: 6px; padding: 4px; font-size: 11px; font-weight: 600; overflow: hidden; z-index: 10; pointer-events: auto; box-shadow: 0 2px 4px rgba(49, 130, 246, 0.3); cursor: pointer; transition: transform 0.1s; }
         .schedule-block:hover { transform: scale(1.02); z-index: 20; }
         .ai-loading-dots span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8b5cf6; animation: bounce 1.4s infinite ease-in-out both; margin: 0 2px; }
         .ai-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
@@ -73,7 +71,7 @@
                     <div class="text-sm font-bold text-gray-700">김점장님</div>
                 </div>
             </div>
-            <div class="text-xs text-gray-300 mt-2 pl-1">v2.0.10 (Bug Fix)</div>
+            <div class="text-xs text-gray-300 mt-2 pl-1">v2.0.5 (Payslip Restore)</div>
             <button onclick="openConfig()" class="text-xs text-blue-400 underline mt-1 pl-1">API 설정</button>
         </div>
     </aside>
@@ -134,7 +132,7 @@
                             <div class="grid grid-cols-[60px_repeat(7,1fr)] sticky top-0 bg-white z-20 border-b border-gray-200" id="week-header-row"><div class="p-2 border-r border-gray-100 bg-gray-50 sticky left-0 z-30"></div></div>
                             <div class="grid grid-cols-[60px_repeat(7,1fr)] relative flex-1" id="week-grid-body">
                                 <div class="flex flex-col border-r border-gray-100 text-xs text-gray-400 font-medium text-center bg-gray-50">
-                                    <script>for(let i=0;i<=24;i++) document.write(`<div class="h-[20px] border-b border-gray-100 flex items-start justify-center pt-1">${String(i).padStart(2,'0')}:00</div>`);</script>
+                                    <script>for(let i=0;i<=24;i++) document.write(`<div class="h-[80px] border-b border-gray-100 flex items-start justify-center pt-1">${String(i).padStart(2,'0')}:00</div>`);</script>
                                 </div>
                             </div>
                         </div>
@@ -246,41 +244,9 @@
 
     <!-- Date Picker, Schedule Modal -->
     <div id="date-picker-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4"><div class="absolute inset-0 modal-overlay" onclick="closeDatePicker()"></div><div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative z-10"><h3 class="text-lg font-bold mb-4 text-center">날짜 이동</h3><div class="flex justify-center items-center gap-4 mb-6"><button onclick="adjustPickerYear(-1)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-minus text-xs"></i></button><span id="picker-year" class="text-2xl font-bold text-blue-600">2025</span><button onclick="adjustPickerYear(1)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-plus text-xs"></i></button></div><div class="grid grid-cols-4 gap-2"><script>for(let i=1;i<=12;i++)document.write(`<button onclick="selectPickerMonth(${i-1})" class="py-3 rounded-xl font-bold text-sm bg-gray-50 hover:bg-blue-50 hover:text-blue-600">${i}월</button>`);</script></div></div></div>
+    <div id="schedule-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4"><div class="absolute inset-0 modal-overlay" onclick="closeScheduleModal()"></div><div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10"><h3 class="text-lg font-bold mb-1" id="schedule-modal-date"></h3><p class="text-sm text-gray-500 mb-6">근무 시간 입력</p><div class="space-y-4"><div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl"><span class="font-bold text-gray-700">근무 상태</span><select id="work-status" onchange="toggleTimeInputs()" class="bg-transparent font-bold text-blue-600 outline-none text-right"><option value="work">정상 근무</option><option value="absent">결근</option><option value="off">휴무</option></select></div><div id="time-inputs" class="space-y-3"><div class="flex items-center gap-2"><input type="time" id="start-time" class="toss-input py-2 text-center font-bold" onchange="calculateDuration()"><span class="text-gray-300">~</span><input type="time" id="end-time" class="toss-input py-2 text-center font-bold" onchange="calculateDuration()"></div><div class="text-center text-sm font-medium text-gray-600 bg-gray-50 py-2 rounded-lg">총 <span id="calc-hours" class="text-blue-600 font-bold">0</span>시간 <span class="text-xs text-gray-400">(휴게 <span id="calc-break">0</span>분 자동)</span></div></div><button onclick="saveSchedule()" class="toss-btn-primary w-full mt-4">저장하기</button></div></div></div>
     
-    <div id="schedule-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
-        <div class="absolute inset-0 modal-overlay" onclick="closeScheduleModal()"></div>
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative z-10">
-            <h3 class="text-lg font-bold mb-1" id="schedule-modal-date"></h3>
-            <p class="text-sm text-gray-500 mb-6">근무 시간 입력</p>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
-                    <span class="font-bold text-gray-700">근무 상태</span>
-                    <select id="work-status" onchange="toggleTimeInputs()" class="bg-transparent font-bold text-blue-600 outline-none text-right">
-                        <option value="work">정상 근무</option>
-                        <option value="absent">결근</option>
-                        <option value="off">휴무</option>
-                    </select>
-                </div>
-                <div id="time-inputs" class="space-y-3">
-                    <div class="flex items-center gap-2">
-                        <input type="time" id="start-time" class="toss-input py-2 text-center font-bold" onchange="calculateDuration()">
-                        <span class="text-gray-300">~</span>
-                        <input type="time" id="end-time" class="toss-input py-2 text-center font-bold" onchange="calculateDuration()">
-                    </div>
-                    <div class="text-center text-sm font-medium text-gray-600 bg-gray-50 py-2 rounded-lg">
-                        총 <span id="calc-hours" class="text-blue-600 font-bold">0</span>시간 <span class="text-xs text-gray-400">(휴게 <span id="calc-break">0</span>분 자동)</span>
-                    </div>
-                </div>
-                <!-- Delete Button Added -->
-                <div class="flex gap-2 mt-4">
-                    <button type="button" onclick="deleteSchedule()" id="btn-delete-schedule" class="flex-1 toss-btn-danger hidden">삭제</button>
-                    <button onclick="saveSchedule()" class="flex-[2] toss-btn-primary">저장하기</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- AI Report Modal -->
+    <!-- AI Report Modal (Fix: Added correct ID and animation classes) -->
     <div id="ai-report-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 modal-overlay" onclick="closeAIModal()"></div>
         <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 md:w-[600px] bg-white rounded-t-3xl md:rounded-3xl p-0 shadow-2xl transform transition-transform duration-300 translate-y-full h-[80vh] md:h-auto flex flex-col" id="ai-modal-content">
@@ -307,9 +273,7 @@
 
         // === STATE ===
         let staffData = [];
-        let schedules = {};
-        // FIX: Defined globally so renderPayroll can write to it and openAIReport can read it
-        let payrollResults = {}; 
+        let schedules = {}; // Key: staffId_YYYY-MM-DD
         
         let currentYear = 2025;
         let currentMonth = 11; // Dec
@@ -320,13 +284,15 @@
         // === API HANDLER ===
         async function fetchAPI(action, payload = {}) {
             if(!API_URL) return null; 
+            
             showLoading(true);
             try {
                 if(action === 'getInitialData') {
                     const res = await fetch(`${API_URL}?action=getInitialData`);
                     const json = await res.json();
                     return json;
-                } else {
+                } 
+                else {
                     const res = await fetch(API_URL, {
                         method: 'POST',
                         mode: 'no-cors', 
@@ -434,9 +400,12 @@
         async function deleteStaff() {
             const id = document.getElementById('staff-id').value;
             if(!confirm('삭제하시겠습니까?')) return;
+            
             staffData = staffData.filter(s => s.id !== id);
             if(selectedScheduleStaffId === id) selectedScheduleStaffId = staffData[0]?.id || null;
+            
             if(API_URL) await fetchAPI('deleteStaff', { staffId: id });
+
             closeStaffModal();
             renderStaffList();
             renderScheduleStaffList();
@@ -482,24 +451,6 @@
             showToast('일정이 저장되었습니다.');
         }
 
-        async function deleteSchedule() {
-            if(!confirm('정말 삭제하시겠습니까?')) return;
-            const key = `${editingStaffId}_${editingDateStr}`;
-            const schData = {
-                id: key,
-                staffId: editingStaffId,
-                date: editingDateStr,
-                status: 'off',
-                start: '', end: '', totalHours: 0, breakMinutes: 0
-            };
-            schedules[key] = schData;
-            if(API_URL) await fetchAPI('saveSchedule', { schedule: schData });
-            closeScheduleModal();
-            renderCalendar();
-            renderPayroll();
-            showToast('삭제되었습니다.');
-        }
-
         // === CONFIG LOGIC ===
         function openConfig() {
             document.getElementById('api-url-input').value = API_URL;
@@ -517,118 +468,279 @@
             document.getElementById('global-loading').classList.toggle('hidden', !show);
         }
 
+        // ... [PRESERVED: All UI Render Functions from v1.6.0] ... 
+        
+        function renderStaffList(){const l=document.getElementById('staff-list');document.getElementById('staff-count').innerText=staffData.length;l.innerHTML='';staffData.forEach(s=>{const t=s.payType==='monthly'?`월급 ${formatMoney(s.basePay)}`:`시급 ${formatMoney(s.basePay)}`;const c=document.createElement('div');c.className='toss-card flex justify-between items-center cursor-pointer hover:translate-x-1 hover:shadow-md transition-all';c.onclick=()=>openStaffModal(s.id);c.innerHTML=`<div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">${s.name[0]}</div><div><div class="font-bold text-lg text-gray-800">${s.name}<span class="text-xs px-2 py-0.5 rounded ml-1 font-bold ${s.role==='manager'?'text-blue-600 bg-blue-50':'text-green-600 bg-green-50'}">${s.role==='manager'?'매니저':'스태프'}</span>${!s.isWorking?'<span class="text-xs bg-gray-100 text-gray-500 px-1 rounded ml-1">퇴사</span>':''}</div><div class="text-gray-500 text-sm mt-0.5 font-medium">${t} • ${s.bank}</div></div></div><i class="fas fa-chevron-right text-gray-300"></i>`;l.appendChild(c)})}
+        function renderScheduleStaffList(){const l=document.getElementById('schedule-staff-list');l.innerHTML='';staffData.forEach(s=>{const a=s.id===selectedScheduleStaffId;const c=document.createElement('div');c.className=`flex-shrink-0 md:flex-shrink w-auto md:w-full p-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${a?'schedule-staff-active ring-2 ring-blue-500 ring-offset-2':'schedule-staff-inactive'}`;c.onclick=()=>{selectedScheduleStaffId=s.id;renderScheduleStaffList();renderCalendar()};c.innerHTML=`<div class="w-10 h-10 rounded-full ${a?'bg-white/20 text-white':'bg-blue-50 text-blue-600'} flex items-center justify-center font-bold">${s.name[0]}</div><div class="hidden md:block"><div class="font-bold text-sm">${s.name}</div><div class="text-xs ${a?'text-blue-100':'text-gray-400'}">${s.role==='manager'?'매니저':'스태프'}</div></div><div class="md:hidden font-bold text-sm pr-2">${s.name}</div>`;l.appendChild(c)})}
+        function renderCalendar(){const d=document.getElementById('current-month-display');if(!selectedScheduleStaffId)return;if(scheduleViewMode==='month'){d.innerText=`${currentYear}년 ${currentMonth+1}월`;const g=document.getElementById('calendar-grid');g.innerHTML='';const fd=new Date(currentYear,currentMonth,1).getDay();const dim=new Date(currentYear,currentMonth+1,0).getDate();const off=fd===0?6:fd-1;for(let i=0;i<off;i++)g.innerHTML+=`<div></div>`;for(let i=1;i<=dim;i++)renderDayCard(g,currentYear,currentMonth,i)}else{const ed=new Date(currentWeekStart);ed.setDate(ed.getDate()+6);d.innerText=`${currentWeekStart.getMonth()+1}월 ${currentWeekStart.getDate()}일 - ${ed.getMonth()+1}월 ${ed.getDate()}일`;renderWeekGrid()}}
+        function renderDayCard(c,y,m,d){const k=`${selectedScheduleStaffId}_${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const sch=schedules[k];let h=`<span class="text-gray-300 text-xs">-</span>`,bg='bg-white hover:bg-gray-50',br='border-gray-100';if(sch){if(sch.status==='work'){h=`<span class="text-blue-600 font-bold text-xs bg-blue-50 px-1.5 py-0.5 rounded-md">${sch.totalHours}h</span>`;bg='bg-white hover:border-blue-300';br='border-blue-100 ring-1 ring-blue-50'}else if(sch.status==='absent'){h=`<span class="text-red-500 font-bold text-xs bg-red-50 px-1.5 py-0.5 rounded-md">결근</span>`;bg='bg-white hover:border-red-300';br='border-red-100 ring-1 ring-red-50'}else h=`<span class="text-gray-400 font-medium text-xs">휴무</span>`}const el=document.createElement('div');el.className=`h-24 md:h-28 border rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${bg} ${br}`;el.onclick=()=>openScheduleModal(d,selectedScheduleStaffId,y,m);el.innerHTML=`<span class="text-sm font-medium mb-2 text-gray-700">${d}</span>${h}`;c.appendChild(el)}
+        function renderWeekGrid(){const h=document.getElementById('week-header-row');h.innerHTML=`<div class="p-2 border-r border-gray-100 bg-gray-50 sticky left-0 z-30"></div>`;const b=document.getElementById('week-grid-body');while(b.children.length>1)b.removeChild(b.lastChild);const days=['월','화','수','목','금','토','일'];for(let i=0;i<7;i++){const d=new Date(currentWeekStart);d.setDate(d.getDate()+i);const dn=d.getDate(),dl=days[i],clr=i===5?'text-blue-500':(i===6?'text-red-500':'text-gray-600');h.innerHTML+=`<div class="text-center py-2 border-r border-gray-100 font-bold text-sm bg-white"><div class="${clr}">${dl}</div><div class="text-lg">${dn}</div></div>`;const col=document.createElement('div');col.className="border-r border-gray-100 relative bg-white";for(let hr=0;hr<24;hr++){createTimeSlot(col,d,hr,0);createTimeSlot(col,d,hr,30)}const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const k=`${selectedScheduleStaffId}_${ds}`;const sch=schedules[k];if(sch&&sch.status==='work'){const[sH,sM]=sch.start.split(':').map(Number);const[eH,eM]=sch.end.split(':').map(Number);const st=(sH)*60+sM,et=(eH)*60+eM;if(st>=0){const blk=document.createElement('div');blk.className='schedule-block flex flex-col justify-center items-center';blk.style.top=`${(st/30)*40}px`;blk.style.height=`${((et-st)/30)*40}px`;blk.innerHTML=`${sch.start}-${sch.end}`;blk.onclick=(e)=>{e.stopPropagation();openScheduleModal(dn,selectedScheduleStaffId,d.getFullYear(),d.getMonth())};col.appendChild(blk)}}b.appendChild(col)}}
+        let isDragging=false,dragStartEl=null;
+        function createTimeSlot(c,d,h,m){const s=document.createElement('div');s.className="time-grid-cell cursor-pointer";Object.assign(s.dataset,{year:d.getFullYear(),month:d.getMonth(),day:d.getDate(),hour:h,min:m});s.onmousedown=()=>{isDragging=true;dragStartEl=s;updateSelection(s)};s.onmouseover=()=>{if(isDragging)updateSelection(s)};s.onmouseup=()=>{if(isDragging){isDragging=false;finishDrag(s)}};c.appendChild(s)}
+        function updateSelection(c){document.querySelectorAll('.time-grid-cell.selected').forEach(e=>e.classList.remove('selected'));if(dragStartEl&&dragStartEl.parentElement===c.parentElement){const sib=[...dragStartEl.parentElement.children].filter(e=>e.classList.contains('time-grid-cell')),idx1=sib.indexOf(dragStartEl),idx2=sib.indexOf(c);for(let i=Math.min(idx1,idx2);i<=Math.max(idx1,idx2);i++)sib[i].classList.add('selected')}}
+        function finishDrag(e){if(!dragStartEl||dragStartEl.parentElement!==e.parentElement){dragStartEl=null;return}document.querySelectorAll('.time-grid-cell.selected').forEach(el=>el.classList.remove('selected'));const ds=dragStartEl.dataset,de=e.dataset;const t1=parseInt(ds.hour)*60+parseInt(ds.min),t2=parseInt(de.hour)*60+parseInt(de.min),s=Math.min(t1,t2),end=Math.max(t1,t2)+30;openScheduleModal(parseInt(ds.day),selectedScheduleStaffId,parseInt(ds.year),parseInt(ds.month));document.getElementById('work-status').value='work';toggleTimeInputs();document.getElementById('start-time').value=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;document.getElementById('end-time').value=`${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;calculateDuration();dragStartEl=null}
+        
+        // --- PAYROLL CALCULATION ENGINE ---
+        let payrollResults = {}; 
+
+        function renderPayroll() {
+            const container = document.getElementById('payroll-list');
+            container.innerHTML = '';
+            payrollResults = {}; 
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            staffData.forEach(staff => {
+                let hourlyRate = 0;
+                let calculationNote = "";
+
+                if(staff.payType === 'monthly') {
+                    let workingDays = 0;
+                    for(let d=1; d<=daysInMonth; d++) {
+                        const day = new Date(currentYear, currentMonth, d).getDay();
+                        if(day >=1 && day <=5) workingDays++;
+                    }
+                    
+                    const totalMonthly = staff.basePay + staff.allowance;
+                    const rawRate = (totalMonthly / workingDays / 8) / 1.2;
+                    hourlyRate = Math.ceil(rawRate);
+                    calculationNote = `통상시급: (${formatMoney(totalMonthly)} / ${workingDays}일 / 8h / 1.2) = ${formatMoney(hourlyRate)}`;
+                } else {
+                    hourlyRate = staff.basePay;
+                    calculationNote = `시급: ${formatMoney(hourlyRate)} ${staff.juhyuIncluded ? '(주휴포함)' : ''}`;
+                    if(staff.allowance > 0) calculationNote += ` + 수당 ${formatMoney(staff.allowance)}`;
+                }
+
+                let totalWorkPay = 0;
+                let totalJuhyuPay = 0;
+                let totalHours = 0;
+                let dailyDetails = [];
+                let juhyuNotes = [];
+                let weeks = {};
+                
+                for(let d=1; d<=daysInMonth; d++) {
+                    const date = new Date(currentYear, currentMonth, d);
+                    const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    
+                    const dayNum = date.getDay(); 
+                    const diffToMon = (dayNum + 6) % 7; 
+                    const mondayDate = new Date(date);
+                    mondayDate.setDate(date.getDate() - diffToMon);
+                    const weekKey = mondayDate.toISOString().split('T')[0];
+
+                    if(!weeks[weekKey]) weeks[weekKey] = { dates:[], hours:0, absences:0, hasJoin:false };
+                    
+                    const sch = schedules[`${staff.id}_${dateStr}`];
+                    
+                    const joinD = new Date(staff.joinDate);
+                    const sundayDate = new Date(mondayDate);
+                    sundayDate.setDate(mondayDate.getDate() + 6);
+                    
+                    if(joinD >= mondayDate && joinD <= sundayDate) weeks[weekKey].hasJoin = true;
+
+                    let dailyPay = 0;
+                    let dailyHours = 0;
+                    let statusStr = '-';
+                    let timeStr = '-';
+
+                    if(sch && sch.status === 'work') {
+                        dailyHours = sch.totalHours;
+                        dailyPay = Math.ceil(dailyHours * hourlyRate);
+                        
+                        weeks[weekKey].hours += dailyHours;
+                        totalHours += dailyHours;
+                        statusStr = '근무';
+                        timeStr = `${sch.start}~${sch.end}`;
+                    } else if(sch && sch.status === 'absent') {
+                        weeks[weekKey].absences++;
+                        statusStr = '결근';
+                        timeStr = '-';
+                    }
+
+                    if(statusStr !== '-') {
+                        dailyDetails.push({
+                            date: dateStr,
+                            time: timeStr,
+                            status: statusStr,
+                            hours: dailyHours,
+                            pay: dailyPay,
+                            weekKey: weekKey
+                        });
+                        totalWorkPay += dailyPay;
+                    }
+                }
+
+                Object.keys(weeks).forEach(weekKey => {
+                    const w = weeks[weekKey];
+                    let isEligible = true;
+                    let reason = "";
+
+                    if(w.hours < 15) { isEligible = false; reason = "15시간 미만"; }
+                    if(w.absences > 0) { isEligible = false; reason = "결근 발생"; }
+                    if(w.hasJoin) { isEligible = false; reason = "입사 주간"; }
+                    
+                    if(isEligible) {
+                        if(staff.payType === 'hourly' && staff.juhyuIncluded) {
+                            dailyDetails.filter(d => d.weekKey === weekKey && d.status === '근무').forEach(d => {
+                                d.juhyu = 0;
+                                d.juhyuReason = "시급에 포함";
+                            });
+                        } else {
+                            let weeklyBase = 0;
+                            dailyDetails.filter(d => d.weekKey === weekKey).forEach(d => weeklyBase += d.pay);
+                            
+                            const juhyuAmt = Math.ceil(weeklyBase * 0.2);
+                            totalJuhyuPay += juhyuAmt;
+                            
+                            dailyDetails.filter(d => d.weekKey === weekKey && d.status === '근무').forEach(d => {
+                                d.juhyu = Math.ceil(d.pay * 0.2);
+                            });
+                        }
+                    } else {
+                        if(w.hours > 0) juhyuNotes.push(`${weekKey}주: 제외 (${reason})`);
+                        dailyDetails.filter(d => d.weekKey === weekKey).forEach(d => {
+                            d.juhyu = 0;
+                            d.juhyuReason = reason;
+                        });
+                    }
+                });
+
+                if(staff.payType === 'hourly' && staff.allowance > 0) totalWorkPay += staff.allowance;
+
+                const totalGross = totalWorkPay + totalJuhyuPay;
+                let taxRate = 0;
+                let taxAmount = 0;
+                let insuranceName = "";
+
+                if(staff.contractType === 'freelancer') {
+                    taxRate = 0.033;
+                    insuranceName = "사업소득세(3.3%)";
+                } else if(staff.contractType === '4major') {
+                    taxRate = 0.0932;
+                    insuranceName = "4대보험(약 9.3%)";
+                } else { // 2major
+                    taxRate = 0.009;
+                    insuranceName = "고용보험(0.9%)";
+                }
+                
+                taxAmount = Math.ceil(totalGross * taxRate); 
+                const netPay = totalGross - taxAmount;
+
+                payrollResults[staff.id] = {
+                    staff,
+                    totalHours,
+                    totalWorkPay,
+                    totalJuhyuPay,
+                    totalGross,
+                    netPay,
+                    juhyuNotes,
+                    weeks
+                };
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'toss-card';
+                
+                const detailRows = dailyDetails.map(d => `
+                    <tr class="border-b border-gray-100 last:border-0 text-sm">
+                        <td class="py-3 text-gray-500">${d.date.slice(5)}</td>
+                        <td class="py-3 font-medium ${d.status==='결근'?'text-red-500':''}">${d.time}<br><span class="text-xs text-gray-400">${d.status}</span></td>
+                        <td class="py-3 text-right">${d.hours}h</td>
+                        <td class="py-3 text-right text-gray-600">${formatMoney(d.pay)}</td>
+                        <td class="py-3 text-right text-blue-500">${d.juhyu ? formatMoney(d.juhyu) : (d.juhyuReason ? '<span class="text-xs text-gray-400">'+d.juhyuReason+'</span>' : '<span class="text-xs text-gray-300">미지급</span>')}</td>
+                        <td class="py-3 text-right font-bold">${formatMoney(d.pay + (d.juhyu||0))}</td>
+                    </tr>
+                `).join('');
+
+                wrapper.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${staff.name} <span class="text-sm font-normal text-gray-500">(${staff.role === 'manager' ? '매니저' : '스태프'})</span></h3>
+                            <p class="text-xs text-gray-400 mt-1">${calculationNote}</p>
+                            <div class="text-xs text-gray-400 mt-1">${staff.bank} ${staff.account} (${staff.accountHolder})</div>
+                        </div>
+                        <div class="text-right">
+                            <button onclick="openAIReport('${staff.id}')" class="toss-btn-ai mb-2">
+                                <i class="fas fa-sparkles"></i> AI 리포트
+                            </button>
+                            <div class="text-2xl font-bold text-blue-600">${formatMoney(netPay)}</div>
+                            <div class="text-xs text-gray-400 font-medium">세후 예상 수령액</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-2 text-sm mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">지급 총액 (세전)</span>
+                            <span class="font-bold text-gray-700">${formatMoney(totalGross)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">공제 (${insuranceName})</span>
+                            <span class="text-red-500 font-medium">-${formatMoney(taxAmount)}</span>
+                        </div>
+                        ${juhyuNotes.length > 0 ? `
+                        <div class="pt-2 border-t border-gray-200 mt-2">
+                            <span class="text-xs text-orange-500 font-bold flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> 주휴 제외 알림</span>
+                            <ul class="text-xs text-gray-500 mt-1 list-disc pl-4 space-y-0.5">
+                                ${juhyuNotes.map(n => `<li>${n}</li>`).join('')}
+                            </ul>
+                        </div>` : ''}
+                    </div>
+
+                    <details class="group">
+                        <summary class="flex justify-between items-center cursor-pointer list-none py-3 border-t border-gray-100 hover:bg-gray-50 px-2 -mx-2 rounded-lg transition-colors">
+                            <span class="font-bold text-gray-600 text-sm">일별 상세 내역 보기</span>
+                            <span class="transition-transform group-open:rotate-180"><i class="fas fa-chevron-down text-gray-400"></i></span>
+                        </summary>
+                        <div class="mt-2 overflow-x-auto">
+                            <table class="w-full text-left whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-xs text-gray-400 border-b border-gray-200">
+                                        <th class="pb-2 pl-2">날짜</th>
+                                        <th class="pb-2">시간/상태</th>
+                                        <th class="pb-2 text-right">인정시간</th>
+                                        <th class="pb-2 text-right">기본급</th>
+                                        <th class="pb-2 text-right">주휴수당</th>
+                                        <th class="pb-2 text-right pr-2">총지급액</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${detailRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                `;
+                container.appendChild(wrapper);
+            });
+        }
+
+        // --- Standard UI Helpers ---
+        function formatMoney(n){return Math.floor(n).toLocaleString()+'원'}
+        function showToast(m){const t=document.getElementById('toast');t.innerText=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',3000)}
+        function toggleViewMode(m){scheduleViewMode=m;const bm=document.getElementById('btn-view-month'),bw=document.getElementById('btn-view-week');if(m==='month'){bm.classList.add('bg-white','text-blue-600','shadow-sm');bm.classList.remove('text-gray-500');bw.classList.remove('bg-white','text-blue-600','shadow-sm');bw.classList.add('text-gray-500');document.getElementById('month-view-container').classList.remove('hidden');document.getElementById('week-view-container').classList.add('hidden')}else{bw.classList.add('bg-white','text-blue-600','shadow-sm');bw.classList.remove('text-gray-500');bm.classList.remove('bg-white','text-blue-600','shadow-sm');bm.classList.add('text-gray-500');document.getElementById('month-view-container').classList.add('hidden');document.getElementById('week-view-container').classList.remove('hidden')}renderCalendar()}
+        function changeDateRange(d){if(scheduleViewMode==='month'){currentMonth+=d;if(currentMonth>11){currentMonth=0;currentYear++}if(currentMonth<0){currentMonth=11;currentYear--}}else{currentWeekStart.setDate(currentWeekStart.getDate()+(d*7));currentYear=currentWeekStart.getFullYear();currentMonth=currentWeekStart.getMonth()}renderCalendar()}
+        
+        // --- Modal Toggles ---
+        function openStaffModal(id){const m=document.getElementById('staff-modal'),f=document.getElementById('staff-form');f.reset();document.getElementById('staff-id').value='';if(id){const s=staffData.find(x=>x.id===id);document.getElementById('modal-title').innerText='직원 수정';document.getElementById('staff-id').value=s.id;document.getElementById('staff-name').value=s.name;document.querySelector(`input[name="role"][value="${s.role}"]`).checked=true;document.getElementById('staff-rrn-front').value=s.rrnFront;document.getElementById('staff-rrn-back').value=s.rrnBack;document.getElementById('staff-address').value=s.address;document.getElementById('staff-join-date').value=s.joinDate;document.getElementById('staff-is-working').checked=s.isWorking;document.getElementById('staff-resign-date').value=s.resignDate;document.querySelector(`input[name="payType"][value="${s.payType}"]`).checked=true;document.getElementById('staff-base-pay').value=s.basePay;document.getElementById('staff-allowance').value=s.allowance;document.getElementById('staff-juhyu-included').checked=s.juhyuIncluded;document.getElementById('staff-contract-type').value=s.contractType;document.getElementById('staff-bank').value=s.bank;document.getElementById('staff-account').value=s.account;document.getElementById('staff-account-holder').value=s.accountHolder;if(s.defaultSchedule)Object.keys(s.defaultSchedule).forEach(k=>{document.querySelector(`input[name="def_s_${k}"]`).value=s.defaultSchedule[k].s;document.querySelector(`input[name="def_e_${k}"]`).value=s.defaultSchedule[k].e});document.getElementById('btn-delete').classList.remove('hidden')}else{document.getElementById('modal-title').innerText='직원 등록';document.getElementById('btn-delete').classList.add('hidden')}renderWorkDaysInputs();togglePayInputs();toggleResignDate();m.classList.remove('hidden');setTimeout(()=>document.getElementById('staff-modal-content').classList.remove('translate-y-full'),10)}
+        function closeStaffModal(){document.getElementById('staff-modal-content').classList.add('translate-y-full');setTimeout(()=>document.getElementById('staff-modal').classList.add('hidden'),300)}
+        function openScheduleModal(d,sid,y,m){editingStaffId=sid;editingDateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;document.getElementById('schedule-modal-date').innerText=`${m+1}월 ${d}일`;const s=schedules[`${sid}_${editingDateStr}`];if(s){document.getElementById('work-status').value=s.status;document.getElementById('start-time').value=s.start;document.getElementById('end-time').value=s.end}else{document.getElementById('work-status').value='work';document.getElementById('start-time').value='';document.getElementById('end-time').value=''}toggleTimeInputs();calculateDuration();document.getElementById('schedule-modal').classList.remove('hidden')}
+        function closeScheduleModal(){document.getElementById('schedule-modal').classList.add('hidden')}
+        
+        // --- Nav ---
+        function switchTab(t){document.querySelectorAll('section').forEach(e=>e.classList.add('hidden'));document.getElementById(`view-${t}`).classList.remove('hidden');if(t==='schedule')document.getElementById(`view-${t}`).classList.add('flex');else document.getElementById('view-schedule').classList.remove('flex');document.getElementById('main-scroll').scrollTop=0;['staff','schedule','payroll'].forEach(x=>{const b=document.getElementById(`nav-${x}`);const mb=document.getElementById(`mob-${x}`);if(x===t){b.className='w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-left font-bold transition-all nav-item-active';mb.className='flex-1 flex flex-col items-center gap-1 py-2 text-blue-600'}else{b.className='w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-left font-bold transition-all nav-item-inactive';mb.className='flex-1 flex flex-col items-center gap-1 py-2 text-gray-400'}});if(t==='schedule')renderCalendar();if(t==='payroll')renderPayroll()}
+        
         // --- Render Inputs Helpers ---
         function renderWorkDaysInputs(){const c=document.getElementById('work-days-container');if(c.children.length>0)return;const d=['월','화','수','목','금','토','일'];d.forEach((day,i)=>c.innerHTML+=`<div class="flex items-center gap-2"><span class="w-6 text-sm font-bold text-gray-600">${day}</span><input type="time" name="def_s_${i+1}" class="toss-input py-1 text-sm"><span class="text-gray-300">~</span><input type="time" name="def_e_${i+1}" class="toss-input py-1 text-sm"></div>`)}
         function toggleResignDate(){const w=document.getElementById('staff-is-working').checked;document.getElementById('staff-resign-date').disabled=w;if(w)document.getElementById('staff-resign-date').value=''}
         function togglePayInputs(){const t=document.querySelector('input[name="payType"]:checked').value;document.getElementById('label-base-pay').innerText=t==='monthly'?'월 기본급':'시급';document.getElementById('hourly-options').classList.toggle('hidden',t==='monthly')}
         function toggleTimeInputs(){const s=document.getElementById('work-status').value;document.getElementById('time-inputs').classList.toggle('hidden',s!=='work')}
         function calculateDuration(){const s=document.getElementById('start-time').value,e=document.getElementById('end-time').value;if(!s||!e){document.getElementById('calc-hours').innerText='0';return}const d1=new Date(`2000-01-01T${s}`),d2=new Date(`2000-01-01T${e}`);if(d2<d1)d2.setDate(d2.getDate()+1);const h=(d2-d1)/36e5;let b=0;if(h>=8)b=60;else if(h>=4)b=30;document.getElementById('calc-hours').innerText=(h-b/60).toFixed(1);document.getElementById('calc-break').innerText=b}
+        
+        // Date Picker logic
         let pickerYear=2025;
         function openDatePicker(){pickerYear=currentYear;document.getElementById('picker-year').innerText=pickerYear;document.getElementById('date-picker-modal').classList.remove('hidden')}
         function closeDatePicker(){document.getElementById('date-picker-modal').classList.add('hidden')}
         function adjustPickerYear(d){pickerYear+=d;document.getElementById('picker-year').innerText=pickerYear}
         function selectPickerMonth(m){currentYear=pickerYear;currentMonth=m;const d=new Date(currentYear,currentMonth,1);const dy=d.getDay();const diff=d.getDate()-dy+(dy===0?-6:1);currentWeekStart=new Date(d.setDate(diff));closeDatePicker();renderCalendar()}
-
-        // --- UI Renders ---
-        function renderStaffList(){const l=document.getElementById('staff-list');document.getElementById('staff-count').innerText=staffData.length;l.innerHTML='';staffData.forEach(s=>{const t=s.payType==='monthly'?`월급 ${formatMoney(s.basePay)}`:`시급 ${formatMoney(s.basePay)}`;const c=document.createElement('div');c.className='toss-card flex justify-between items-center cursor-pointer hover:translate-x-1 hover:shadow-md transition-all';c.onclick=()=>openStaffModal(s.id);c.innerHTML=`<div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">${s.name[0]}</div><div><div class="font-bold text-lg text-gray-800">${s.name}<span class="text-xs px-2 py-0.5 rounded ml-1 font-bold ${s.role==='manager'?'text-blue-600 bg-blue-50':'text-green-600 bg-green-50'}">${s.role==='manager'?'매니저':'스태프'}</span>${!s.isWorking?'<span class="text-xs bg-gray-100 text-gray-500 px-1 rounded ml-1">퇴사</span>':''}</div><div class="text-gray-500 text-sm mt-0.5 font-medium">${t} • ${s.bank}</div></div></div><i class="fas fa-chevron-right text-gray-300"></i>`;l.appendChild(c)})}
-        function renderScheduleStaffList(){const l=document.getElementById('schedule-staff-list');l.innerHTML='';staffData.forEach(s=>{const a=s.id===selectedScheduleStaffId;const c=document.createElement('div');c.className=`flex-shrink-0 md:flex-shrink w-auto md:w-full p-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${a?'schedule-staff-active ring-2 ring-blue-500 ring-offset-2':'schedule-staff-inactive'}`;c.onclick=()=>{selectedScheduleStaffId=s.id;renderScheduleStaffList();renderCalendar()};c.innerHTML=`<div class="w-10 h-10 rounded-full ${a?'bg-white/20 text-white':'bg-blue-50 text-blue-600'} flex items-center justify-center font-bold">${s.name[0]}</div><div class="hidden md:block"><div class="font-bold text-sm">${s.name}</div><div class="text-xs ${a?'text-blue-100':'text-gray-400'}">${s.role==='manager'?'매니저':'스태프'}</div></div><div class="md:hidden font-bold text-sm pr-2">${s.name}</div>`;l.appendChild(c)})}
-        function renderCalendar(){const d=document.getElementById('current-month-display');if(!selectedScheduleStaffId)return;if(scheduleViewMode==='month'){d.innerText=`${currentYear}년 ${currentMonth+1}월`;const g=document.getElementById('calendar-grid');g.innerHTML='';const fd=new Date(currentYear,currentMonth,1).getDay();const dim=new Date(currentYear,currentMonth+1,0).getDate();const off=fd===0?6:fd-1;for(let i=0;i<off;i++)g.innerHTML+=`<div></div>`;for(let i=1;i<=dim;i++)renderDayCard(g,currentYear,currentMonth,i)}else{const ed=new Date(currentWeekStart);ed.setDate(ed.getDate()+6);d.innerText=`${currentWeekStart.getMonth()+1}월 ${currentWeekStart.getDate()}일 - ${ed.getMonth()+1}월 ${ed.getDate()}일`;renderWeekGrid()}}
-        function renderDayCard(c,y,m,d){const k=`${selectedScheduleStaffId}_${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const sch=schedules[k];let h=`<span class="text-gray-300 text-xs">-</span>`,bg='bg-white hover:bg-gray-50',br='border-gray-100';if(sch){if(sch.status==='work'){h=`<span class="text-blue-600 font-bold text-xs bg-blue-50 px-1.5 py-0.5 rounded-md">${sch.totalHours}h</span>`;bg='bg-white hover:border-blue-300';br='border-blue-100 ring-1 ring-blue-50'}else if(sch.status==='absent'){h=`<span class="text-red-500 font-bold text-xs bg-red-50 px-1.5 py-0.5 rounded-md">결근</span>`;bg='bg-white hover:border-red-300';br='border-red-100 ring-1 ring-red-50'}else h=`<span class="text-gray-400 font-medium text-xs">휴무</span>`}const el=document.createElement('div');el.className=`h-24 md:h-28 border rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${bg} ${br}`;el.onclick=()=>openScheduleModal(d,selectedScheduleStaffId,y,m);el.innerHTML=`<span class="text-sm font-medium mb-2 text-gray-700">${d}</span>${h}`;c.appendChild(el)}
-        function renderWeekGrid(){const h=document.getElementById('week-header-row');h.innerHTML=`<div class="p-2 border-r border-gray-100 bg-gray-50 sticky left-0 z-30"></div>`;const b=document.getElementById('week-grid-body');while(b.children.length>1)b.removeChild(b.lastChild);const days=['월','화','수','목','금','토','일'];for(let i=0;i<7;i++){const d=new Date(currentWeekStart);d.setDate(d.getDate()+i);const dn=d.getDate(),dl=days[i],clr=i===5?'text-blue-500':(i===6?'text-red-500':'text-gray-600');h.innerHTML+=`<div class="text-center py-2 border-r border-gray-100 font-bold text-sm bg-white"><div class="${clr}">${dl}</div><div class="text-lg">${dn}</div></div>`;const col=document.createElement('div');col.className="border-r border-gray-100 relative bg-white";for(let hr=0;hr<24;hr++){createTimeSlot(col,d,hr,0);createTimeSlot(col,d,hr,30)}const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const k=`${selectedScheduleStaffId}_${ds}`;const sch=schedules[k];if(sch&&sch.status==='work'){const[sH,sM]=sch.start.split(':').map(Number);const[eH,eM]=sch.end.split(':').map(Number);const st=(sH)*60+sM,et=(eH)*60+eM;if(st>=0){const blk=document.createElement('div');blk.className='schedule-block';blk.style.top=`${(st/30)*20}px`;blk.style.height=`${((et-st)/30)*20}px`;blk.innerHTML=`<span class="truncate">${sch.start}-${sch.end}</span>`;blk.onclick=(e)=>{e.stopPropagation();openScheduleModal(dn,selectedScheduleStaffId,d.getFullYear(),d.getMonth())};col.appendChild(blk)}}b.appendChild(col)}}
-        let isDragging=false,dragStartEl=null;
-        function createTimeSlot(c,d,h,m){const s=document.createElement('div');s.className="time-grid-cell cursor-pointer";Object.assign(s.dataset,{year:d.getFullYear(),month:d.getMonth(),day:d.getDate(),hour:h,min:m});s.onmousedown=()=>{isDragging=true;dragStartEl=s;updateSelection(s)};s.onmouseover=()=>{if(isDragging)updateSelection(s)};s.onmouseup=()=>{if(isDragging){isDragging=false;finishDrag(s)}};c.appendChild(s)}
-        function updateSelection(c){document.querySelectorAll('.time-grid-cell.selected').forEach(e=>e.classList.remove('selected'));if(dragStartEl&&dragStartEl.parentElement===c.parentElement){const sib=[...dragStartEl.parentElement.children].filter(e=>e.classList.contains('time-grid-cell')),idx1=sib.indexOf(dragStartEl),idx2=sib.indexOf(c);for(let i=Math.min(idx1,idx2);i<=Math.max(idx1,idx2);i++)sib[i].classList.add('selected')}}
-        function finishDrag(e){if(!dragStartEl||dragStartEl.parentElement!==e.parentElement){dragStartEl=null;return}document.querySelectorAll('.time-grid-cell.selected').forEach(el=>el.classList.remove('selected'));const ds=dragStartEl.dataset,de=e.dataset;const t1=parseInt(ds.hour)*60+parseInt(ds.min),t2=parseInt(de.hour)*60+parseInt(de.min),s=Math.min(t1,t2),end=Math.max(t1,t2)+30;openScheduleModal(parseInt(ds.day),selectedScheduleStaffId,parseInt(ds.year),parseInt(ds.month));document.getElementById('work-status').value='work';toggleTimeInputs();document.getElementById('start-time').value=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;document.getElementById('end-time').value=`${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;calculateDuration();dragStartEl=null}
-        
-        // ** UPDATED: AUTO-FILL DEFAULT SCHEDULE **
-        function openScheduleModal(d,sid,y,m){
-            editingStaffId=sid;
-            editingDateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            document.getElementById('schedule-modal-date').innerText=`${m+1}월 ${d}일`;
-            
-            const s=schedules[`${sid}_${editingDateStr}`];
-            
-            if(s){
-                document.getElementById('work-status').value=s.status;
-                document.getElementById('start-time').value=s.start;
-                document.getElementById('end-time').value=s.end;
-                document.getElementById('btn-delete-schedule').classList.remove('hidden');
-            } else {
-                document.getElementById('work-status').value='work';
-                document.getElementById('btn-delete-schedule').classList.add('hidden');
-                
-                // Auto-fill logic
-                const dateObj = new Date(y, m, d);
-                let dayKey = dateObj.getDay(); 
-                if(dayKey === 0) dayKey = 7; // Convert Sun 0 -> 7
-                
-                const staff = staffData.find(st => st.id === sid);
-                if(staff && staff.defaultSchedule && staff.defaultSchedule[dayKey]) {
-                    document.getElementById('start-time').value = staff.defaultSchedule[dayKey].s;
-                    document.getElementById('end-time').value = staff.defaultSchedule[dayKey].e;
-                } else {
-                    document.getElementById('start-time').value='';
-                    document.getElementById('end-time').value='';
-                }
-            }
-            
-            toggleTimeInputs();
-            calculateDuration();
-            document.getElementById('schedule-modal').classList.remove('hidden');
-        }
-        function closeScheduleModal(){document.getElementById('schedule-modal').classList.add('hidden')}
-        function toggleTimeInputs(){const s=document.getElementById('work-status').value;document.getElementById('time-inputs').classList.toggle('hidden',s!=='work')}
-        function calculateDuration(){const s=document.getElementById('start-time').value,e=document.getElementById('end-time').value;if(!s||!e){document.getElementById('calc-hours').innerText='0';return}const d1=new Date(`2000-01-01T${s}`),d2=new Date(`2000-01-01T${e}`);if(d2<d1)d2.setDate(d2.getDate()+1);const h=(d2-d1)/36e5;let b=0;if(h>=8)b=60;else if(h>=4)b=30;document.getElementById('calc-hours').innerText=(h-b/60).toFixed(1);document.getElementById('calc-break').innerText=b}
-        
-        // --- PAYROLL RENDER ---
-        function renderPayroll(){const c=document.getElementById('payroll-list');c.innerHTML='';const dim=new Date(currentYear,currentMonth+1,0).getDate();
-        // Reset payrollResults to ensure it is defined before use
-        payrollResults = {};
-        staffData.forEach(s=>{let hr=0,note="";if(s.payType==='monthly'){let wd=0;for(let i=1;i<=dim;i++){const dy=new Date(currentYear,currentMonth,i).getDay();if(dy>=1&&dy<=5)wd++}const tm=s.basePay+s.allowance;const r=(tm/wd/8)/1.2;hr=Math.ceil(r);note=`통상시급: (${formatMoney(tm)}/${wd}일/8h/1.2)=${formatMoney(hr)}`}else{if(s.juhyuIncluded){const th=s.basePay+s.allowance;hr=Math.ceil(th/1.2);note=`통상시급(주휴포함 역산): (${formatMoney(th)})/1.2=${formatMoney(hr)}`}else{hr=s.basePay+s.allowance;note=`시급: ${formatMoney(hr)}`}}let twp=0,tjp=0,th=0,dd=[],jn=[],wks={};for(let i=1;i<=dim;i++){const d=new Date(currentYear,currentMonth,i),ds=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`,wk=new Date(d.setDate(d.getDate()-(d.getDay()+6)%7)).toISOString().split('T')[0];if(!wks[wk])wks[wk]={h:0,a:0,j:false,r:false};const sch=schedules[`${s.id}_${ds}`];const jd=new Date(s.joinDate),rd=s.resignDate?new Date(s.resignDate):null,sd=new Date(wk);sd.setDate(sd.getDate()+6);if(jd>=new Date(wk)&&jd<=sd)wks[wk].j=true;if(rd&&rd>=new Date(wk)&&rd<=sd)wks[wk].r=true;let dp=0,dh=0,st='-',ts='-';if(sch&&sch.status==='work'){dh=sch.totalHours;dp=Math.ceil(dh*hr);wks[wk].h+=dh;th+=dh;st='근무';ts=`${sch.start}~${sch.end}`}else if(sch&&sch.status==='absent'){wks[wk].a++;st='결근'}if(st!=='-'){dd.push({d:ds,t:ts,s:st,h:dh,p:dp,w:wk});twp+=dp}}Object.keys(wks).forEach(k=>{const w=wks[k];let e=true,rs="";if(w.h<15){e=false;rs="15h미만"}if(w.a>0){e=false;rs="결근"}if(w.j){e=false;rs="입사주"}if(w.r){e=false;rs="퇴사주"}if(e){let wb=0;dd.filter(x=>x.w===k).forEach(x=>wb+=x.p);const ja=Math.ceil(wb*0.2);tjp+=ja;dd.filter(x=>x.w===k&&x.s==='근무').forEach(x=>x.j=Math.ceil(x.p*0.2));if(s.payType==='hourly'&&s.juhyuIncluded){dd.filter(x=>x.w===k&&x.s==='근무').forEach(x=>{x.j=0;x.jr="시급에 포함"})}}else{if(w.h>0)jn.push(`${k}주: ${rs}`);dd.filter(x=>x.w===k).forEach(x=>x.jr=rs)}});if(s.payType==='hourly'&&s.allowance>0)twp+=s.allowance;const tg=twp+tjp;let dds=[],td=0;if(s.contractType==='freelancer'){const i=Math.floor(tg*0.03/10)*10,l=Math.floor(i*0.1/10)*10;dds.push({n:'사업소득세(3%)',a:i},{n:'지방소득세(0.3%)',a:l});td=i+l}else if(s.contractType==='4major'){const p=Math.floor(tg*0.045/10)*10,h=Math.floor(tg*0.03545/10)*10,c=Math.floor(h*0.1295/10)*10,e=Math.floor(tg*0.009/10)*10;dds.push({n:'국민연금(4.5%)',a:p},{n:'건강보험(3.545%)',a:h},{n:'장기요양(12.95%)',a:c},{n:'고용보험(0.9%)',a:e});td=p+h+c+e}else{const e=Math.floor(tg*0.009/10)*10;dds.push({n:'고용보험(0.9%)',a:e});td=e}const np=tg-td;payrollResults[s.id]={staff:s,totalHours:th,totalWorkPay:twp,totalJuhyuPay:tjp,totalGross:tg,netPay:np,juhyuNotes:jn,weeks:wks};const el=document.createElement('div');el.className='toss-card';const dr=dd.map(d=>`<tr class="border-b border-gray-100 last:border-0 text-sm hover:bg-gray-50"><td class="py-3 pl-2 text-gray-500">${d.d.slice(5)}</td><td class="py-3 font-medium ${d.s==='결근'?'text-red-500':''}">${d.t}<br><span class="text-xs text-gray-400">${d.s}</span></td><td class="py-3 text-right">${d.h}h</td><td class="py-3 text-right text-gray-600">${formatMoney(d.p)}</td><td class="py-3 text-right ${d.j?'text-blue-500':'text-gray-400'}">${d.j?formatMoney(d.j):(d.jr?`<span class="text-[10px] text-red-400">${d.jr}</span>`:'-')}</td><td class="py-3 text-right pr-2 font-bold">${formatMoney(d.p+(d.j||0))}</td></tr>`).join('');el.innerHTML=`<div class="flex justify-between items-start mb-4"><div><h3 class="text-xl font-bold text-gray-800">${s.name} <span class="text-sm font-normal text-gray-500">(${s.role==='manager'?'매니저':'스태프'})</span></h3><p class="text-xs text-gray-400 mt-1">${note}</p><div class="text-xs text-gray-400 mt-1">${s.bank} ${s.account} (${s.accountHolder})</div></div><div class="text-right"><button onclick="openAIReport('${s.id}')" class="toss-btn-ai mb-2"><i class="fas fa-sparkles"></i> AI 리포트</button><div class="text-2xl font-bold text-blue-600">${formatMoney(np)}</div><div class="text-xs text-gray-400 font-medium">세후 예상 수령액</div></div></div><div class="bg-gray-50 rounded-xl p-4 space-y-3 text-sm mb-4"><div class="flex justify-between border-b border-gray-200 pb-2"><span class="text-gray-500">지급 총액 (세전)</span><span class="font-bold text-gray-700">${formatMoney(tg)}</span></div><details class="group/deduction"><summary class="flex justify-between items-center cursor-pointer list-none text-gray-500 hover:text-gray-700"><span class="flex items-center gap-1">공제 총액 (${s.contractType==='freelancer'?'3.3%':(s.contractType==='4major'?'4대보험':'2대보험')}) <i class="fas fa-chevron-down text-xs transition-transform group-open/deduction:rotate-180"></i></span><span class="text-red-500 font-medium">-${formatMoney(td)}</span></summary><div class="mt-2 pl-2 space-y-1 text-xs text-gray-500 bg-white p-2 rounded-lg border border-gray-100">${dds.map(d=>`<div class="flex justify-between"><span>${d.n}</span><span>-${formatMoney(d.a)}</span></div>`).join('')}</div></details>${jn.length?`<div class="pt-2 border-t border-gray-200 mt-1"><span class="text-xs text-red-500 font-bold flex items-center gap-1 mb-1"><i class="fas fa-exclamation-triangle"></i> 주휴 미지급 알림</span><ul class="text-xs text-gray-500 list-disc pl-4 space-y-0.5">${jn.map(n=>`<li>${n}</li>`).join('')}</ul></div>`:''}</div><details class="group"><summary class="flex justify-between items-center cursor-pointer list-none py-3 border-t border-gray-100 hover:bg-gray-50 px-2 -mx-2 rounded-lg transition-colors"><span class="font-bold text-gray-600 text-sm">일별 상세 내역 보기</span><span class="transition-transform group-open:rotate-180"><i class="fas fa-chevron-down text-gray-400"></i></span></summary><div class="mt-2 overflow-x-auto"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50 text-gray-500"><tr class="text-xs border-b border-gray-200"><th class="py-2 pl-2 rounded-tl-lg">날짜</th><th class="py-2">상태</th><th class="py-2 text-right">시간</th><th class="py-2 text-right">기본급</th><th class="py-2 text-right">주휴</th><th class="py-2 text-right pr-2 rounded-tr-lg">지급액</th></tr></thead><tbody>${dr}</tbody></table></div></details>`;c.appendChild(el)})}
-
-        // AI Logic
-        async function openAIReport(staffId) {
-            const modal = document.getElementById('ai-report-modal');
-            const container = document.getElementById('ai-result-container');
-            const data = payrollResults[staffId];
-            modal.classList.remove('hidden');
-            setTimeout(() => { document.getElementById('ai-modal-content').classList.remove('translate-y-full'); }, 10);
-            container.innerHTML = `<div class="flex flex-col items-center justify-center h-full space-y-4"><div class="ai-loading-dots flex gap-1"><span></span><span></span><span></span></div><p class="text-gray-500 font-medium text-center">Gemini가 ${data.staff.name}님의 급여 내역을<br>분석하고 있어요...</p></div>`;
-            const prompt = `당신은 레스토지니의 AI 노무사입니다. 직원 ${data.staff.name} (${data.staff.role === 'manager' ? '매니저' : '아르바이트'})의 이번 달 급여 분석 보고서를 작성해주세요. 총 근무시간: ${data.totalHours}시간, 세후 지급액: ${formatMoney(data.netPay)}. 특이사항: ${data.juhyuNotes.length > 0 ? data.juhyuNotes.join(', ') : '없음'}. 응답은 마크다운으로 작성하세요.`;
-            try {
-                const response = await callGeminiAPI(prompt);
-                if (response) container.innerHTML = `<div class="ai-report-content prose prose-sm">${marked.parse(response)}</div>`;
-                else throw new Error("No response");
-            } catch (error) {
-                container.innerHTML = `<div class="text-center py-10"><div class="text-4xl mb-4 text-red-400">⚠️</div><h3 class="font-bold text-gray-700">분석 실패</h3><button onclick="openAIReport('${staffId}')" class="mt-4 px-4 py-2 bg-gray-100 rounded-lg text-sm font-bold text-gray-600">다시 시도</button></div>`;
-            }
-        }
-        async function callGeminiAPI(userQuery) {
-            if (!apiKey) return new Promise(resolve => { setTimeout(() => { resolve(`### 📊 분석 완료\n\n**요약**: ${userQuery.match(/총 근무시간: (\d+)/)?.[1] || 0}시간 근무, 급여 정상 산출됨.`); }, 1500); });
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: userQuery }] }] };
-            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text;
-        }
-        function closeAIModal() { document.getElementById('ai-modal-content').classList.add('translate-y-full'); setTimeout(() => { document.getElementById('ai-report-modal').classList.add('hidden'); }, 300); }
-        function copyAIReport() { const text = document.querySelector('.ai-report-content').innerText; navigator.clipboard.writeText(text).then(() => { showToast('복사되었습니다'); }); }
-
-        // --- Added Missing Helper Functions ---
-        function formatMoney(amount) {
-            return Math.floor(amount).toLocaleString() + '원';
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translate(-50%, -20px)';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translate(-50%, 0)';
-            }, 3000);
-        }
 
         init();
     </script>
