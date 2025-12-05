@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 MacBook Pro M1 Pro 심층 가치 평가 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <style>
+        /* Chosen Palette: Professional Report Style */
+        /* Primary: #0F172A (Slate 900) */
+        /* Accent: #3B82F6 (Blue 500) */
+        /* Danger: #EF4444 (Red 500) */
+        /* Success: #10B981 (Emerald 500) */
+        
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background-color: #F1F5F9; /* Slate 100 */
+            color: #1E293B; /* Slate 800 */
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 320px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <!-- Application Structure Plan:
+         Based on the uploaded "Deep Value Evaluation Report":
+         1. Header: Official Report Title & Context (2025 Outlook).
+         2. Executive Summary: The "Unicorn" concept (32GB + 10 Core) vs. "Battle-worn" condition.
+         3. Technical Valuation: Deep dive into M1 Pro 10-core & 32GB RAM value.
+         4. Market Dynamics: Visualizing the Ceiling (105M) vs Floor (72M) vs Target.
+         5. Valuation Engine: Logic derived directly from report (Base 125M - Battery 15M - Cosmetic 20M).
+         6. Strategic Proposals: 3 Scenarios (Aggressive, Recommended, Generous).
+    -->
+    
+    <!-- Visualization & Content Choices:
+         1. Feature Cards: Highlighting "10-Core" and "32GB" as premium assets.
+         2. Price Spectrum Chart: Bar chart showing the range from "Damaged Floor" to "S-Class Ceiling".
+         3. Dynamic Calculator: Toggles specifically for "Battery Risk (<80%)" and "Cosmetic Risk".
+         4. Strategy Tabs: Interactive switching between price proposals based on relationship/negotiation style.
+         
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-2 h-8 bg-blue-500 rounded-sm"></div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">MacBook Pro 가치 평가 보고서</h1>
+                    <p class="text-[10px] text-slate-400 font-mono">2025 OUTLOOK & STRATEGY</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-300">
+                <button onclick="scrollToSection('analysis')" class="hover:text-white transition">자산 분석</button>
+                <button onclick="scrollToSection('market')" class="hover:text-white transition">시장 역학</button>
+                <button onclick="scrollToSection('calculator')" class="text-blue-400 hover:text-blue-300 transition">가치 산출</button>
+                <button onclick="scrollToSection('strategy')" class="hover:text-white transition">거래 전략</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+        <!-- 1. Executive Summary -->
+        <section class="text-center max-w-4xl mx-auto space-y-6">
+            <span class="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-800 text-xs font-bold tracking-wide mb-2">REPORT SUMMARY</span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                "성능은 현역 최상위, 상태는 은퇴 직전"<br>
+                <span class="text-blue-600">32GB 유니콘</span>을 최저가에 영입할 기회
+            </h2>
+            <p class="text-lg text-slate-600 leading-relaxed">
+                본 보고서는 의뢰인의 지인 매물을 정밀 분석했습니다. 
+                해당 기기는 시장에서 희귀한 <span class="font-semibold text-slate-900">32GB RAM / 10-Core CPU</span> CTO 사양이나, 
+                <span class="font-semibold text-red-600">배터리(83%)</span>와 <span class="font-semibold text-red-600">외관(전투형)</span>이라는 명확한 리스크를 안고 있습니다. 
+                이 상충되는 요소를 분석하여 최적의 거래 전략을 제시합니다.
+            </p>
+        </section>
+
+        <!-- 2. Technical Asset Analysis -->
+        <section id="analysis" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="col-span-full mb-4 px-2 border-l-4 border-slate-900">
+                <h3 class="text-xl font-bold text-slate-900">1. 기술적 자산 가치 (Technical Value)</h3>
+                <p class="text-slate-500 text-sm">일반 모델(Base Model) 대비 차별점 분석</p>
+            </div>
+
+            <!-- Card 1: RAM (The Unicorn) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition">
+                    <div class="text-6xl font-black text-blue-900">RAM</div>
+                </div>
+                <div class="text-xs font-bold text-blue-600 uppercase mb-2">Core Asset</div>
+                <div class="text-3xl font-black text-slate-900 mb-1">32 GB</div>
+                <div class="text-sm font-medium text-slate-600 mb-4">통합 메모리 (CTO)</div>
+                <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <strong class="block text-slate-700 mb-1">희소성: 매우 높음</strong>
+                    중고 매물의 80%는 16GB입니다. 개발/영상 작업 시 대체 불가능한 자산입니다.
+                </div>
+            </div>
+
+            <!-- Card 2: CPU -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover">
+                <div class="text-xs font-bold text-blue-600 uppercase mb-2">Performance</div>
+                <div class="text-3xl font-black text-slate-900 mb-1">10-Core</div>
+                <div class="text-sm font-medium text-slate-600 mb-4">M1 Pro (High-End)</div>
+                <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <strong class="block text-slate-700 mb-1">구조적 우위</strong>
+                    기본형(8-Core) 대비 성능 코어 2개 추가. 멀티코어 작업 효율 우수.
+                </div>
+            </div>
+
+            <!-- Card 3: Battery Risk -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 card-hover">
+                <div class="text-xs font-bold text-red-600 uppercase mb-2">Risk Factor A</div>
+                <div class="text-3xl font-black text-slate-900 mb-1">83%</div>
+                <div class="text-sm font-medium text-slate-600 mb-4">배터리 효율</div>
+                <div class="text-xs text-slate-500 bg-red-50 p-3 rounded-lg border border-red-100">
+                    <strong class="block text-red-700 mb-1">교체 임박</strong>
+                    80% 미만 진입 시 스로틀링 발생 위험. 잠재적 교체 비용(-15만) 발생.
+                </div>
+            </div>
+
+            <!-- Card 4: Cosmetic Risk -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-orange-100 card-hover">
+                <div class="text-xs font-bold text-orange-600 uppercase mb-2">Risk Factor B</div>
+                <div class="text-3xl font-black text-slate-900 mb-1">B급</div>
+                <div class="text-sm font-medium text-slate-600 mb-4">외관 상태 (전투형)</div>
+                <div class="text-xs text-slate-500 bg-orange-50 p-3 rounded-lg border border-orange-100">
+                    <strong class="block text-orange-700 mb-1">감가 핵심 요인</strong>
+                    스크래치 다수. 중고 시장 시세의 하단(Floor)을 형성하는 주원인.
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Market Dynamics -->
+        <section id="market" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-8 md:p-10">
+                <div class="md:flex md:justify-between md:items-end mb-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">2. 시장 가격 형성 (Market Dynamics)</h3>
+                        <p class="text-slate-500 text-sm max-w-xl">
+                            이미지 1~5 매물 분석 결과, 시장은 <span class="font-semibold text-slate-900">상태(Condition)</span>에 따라 냉혹하게 가격을 구분하고 있습니다.
+                            지인 매물의 포지션은 '성능은 상단, 상태는 하단'에 위치합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Chart -->
+                    <div class="lg:col-span-2 chart-container bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+
+                    <!-- Market Insights List -->
+                    <div class="space-y-4 flex flex-col justify-center">
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Ceiling (상한선)</span>
+                                <span class="text-lg font-bold text-slate-900">105만 원</span>
+                            </div>
+                            <p class="text-xs text-slate-500">S급/풀박스/배터리 90% 이상.<br>구매자가 "새것 같은 경험"을 기대하는 가격.</p>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 ring-2 ring-blue-500 ring-opacity-20">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-blue-600 uppercase">Target (목표가)</span>
+                                <span class="text-lg font-bold text-blue-700">90만 원</span>
+                            </div>
+                            <p class="text-xs text-blue-600">성능(32GB)은 챙기고 상태는 타협하는<br>합리적 교환 구간. (매물 4 가격대)</p>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Floor (하한선)</span>
+                                <span class="text-lg font-bold text-slate-900">72만 원</span>
+                            </div>
+                            <p class="text-xs text-slate-500">파손/찍힘/하자품 거래가.<br>외관 손상 시 감가폭(-30%)을 보여주는 지표.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Valuation Calculator -->
+        <section id="calculator" class="bg-slate-900 rounded-3xl shadow-2xl overflow-hidden text-white">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                
+                <!-- Controls -->
+                <div class="p-8 md:p-12 space-y-8 border-b lg:border-b-0 lg:border-r border-slate-700">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2">3. 적정 거래가 산출기</h3>
+                        <p class="text-slate-400 text-sm">보고서의 로직(Baseline - Penalties)을 적용하여 계산합니다.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Baseline -->
+                        <div class="flex justify-between items-center p-4 bg-slate-800 rounded-xl border border-slate-700">
+                            <div>
+                                <div class="text-sm font-bold text-slate-300">Baseline (기준점)</div>
+                                <div class="text-xs text-slate-500">32GB A급 모델 추정 시세</div>
+                            </div>
+                            <div class="text-xl font-mono font-bold text-blue-400">₩ 1,250,000</div>
+                        </div>
+
+                        <!-- Penalties -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label for="batteryCheck" class="flex items-center cursor-pointer group">
+                                    <div class="relative">
+                                        <input type="checkbox" id="batteryCheck" class="sr-only peer" checked onchange="calculate()">
+                                        <div class="w-10 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-slate-300 group-hover:text-white transition">
+                                        배터리 리스크 (83%)
+                                    </span>
+                                </label>
+                                <span class="text-sm font-mono text-red-400">- 150,000</span>
+                            </div>
+                            <p class="text-xs text-slate-500 ml-14">잠재적 교체 비용 및 스로틀링 리스크 반영</p>
+
+                            <div class="flex items-center justify-between pt-2">
+                                <label for="cosmeticCheck" class="flex items-center cursor-pointer group">
+                                    <div class="relative">
+                                        <input type="checkbox" id="cosmeticCheck" class="sr-only peer" checked onchange="calculate()">
+                                        <div class="w-10 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-slate-300 group-hover:text-white transition">
+                                        외관 리스크 (전투형)
+                                    </span>
+                                </label>
+                                <span class="text-sm font-mono text-orange-400">- 200,000</span>
+                            </div>
+                            <p class="text-xs text-slate-500 ml-14">스크래치 다수 및 구성품 누락 가능성 반영</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div class="p-8 md:p-12 flex flex-col justify-center items-center bg-slate-800/50 relative">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                    
+                    <div class="text-center space-y-4">
+                        <div class="text-sm text-slate-400 font-medium tracking-widest uppercase">Final Valuation</div>
+                        <div class="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400" id="finalPrice">
+                            90만원
+                        </div>
+                        <div id="penaltyText" class="inline-block px-3 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded-full border border-red-500/20">
+                            총 -350,000원 감가 적용됨
+                        </div>
+                    </div>
+
+                    <div class="mt-10 w-full bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+                        <div class="flex justify-between text-xs text-slate-400 mb-2">
+                            <span>시장 평균(16GB)</span>
+                            <span>지인 매물(32GB)</span>
+                        </div>
+                        <div class="relative w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div class="absolute top-0 left-0 h-full bg-slate-500 w-[90%]"></div> <!-- 90만원 base -->
+                            <div class="absolute top-0 left-0 h-full bg-blue-500 w-[90%]" id="barVisual"></div>
+                        </div>
+                        <p class="text-xs text-center mt-3 text-slate-300">
+                            "16GB 일반 모델 가격으로 32GB 고성능 모델을 확보하는 셈입니다."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Strategic Proposals (Tabs) -->
+        <section id="strategy" class="max-w-4xl mx-auto">
+            <div class="mb-8 border-l-4 border-slate-900 pl-4">
+                <h3 class="text-2xl font-bold text-slate-900">4. 최종 거래 제안 (Strategy Matrix)</h3>
+                <p class="text-slate-500 text-sm">관계와 상황에 따른 3가지 시나리오</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <button onclick="setStrategy(0)" id="btn0" class="p-4 rounded-xl border-2 border-slate-200 text-left hover:border-blue-500 hover:bg-blue-50 transition group focus:outline-none">
+                    <div class="text-xs font-bold text-slate-400 group-hover:text-blue-500 uppercase mb-1">Scenario A</div>
+                    <div class="text-lg font-bold text-slate-800">합리적 최적가</div>
+                    <div class="text-blue-600 font-black text-xl">90만 원</div>
+                </button>
+                <button onclick="setStrategy(1)" id="btn1" class="p-4 rounded-xl border-2 border-transparent bg-white shadow-md ring-2 ring-slate-900 text-left focus:outline-none">
+                    <div class="text-xs font-bold text-red-500 uppercase mb-1">Scenario B</div>
+                    <div class="text-lg font-bold text-slate-800">공격적 네고</div>
+                    <div class="text-slate-900 font-black text-xl">80~85만 원</div>
+                </button>
+                <button onclick="setStrategy(2)" id="btn2" class="p-4 rounded-xl border-2 border-slate-200 text-left hover:border-emerald-500 hover:bg-emerald-50 transition group focus:outline-none">
+                    <div class="text-xs font-bold text-slate-400 group-hover:text-emerald-500 uppercase mb-1">Scenario C</div>
+                    <div class="text-lg font-bold text-slate-800">배려형 거래</div>
+                    <div class="text-emerald-600 font-black text-xl">95~100만 원</div>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative min-h-[200px]">
+                <div id="strategyContent" class="space-y-4">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Action Guide -->
+        <section class="bg-slate-100 rounded-2xl p-8 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                <span class="bg-slate-900 text-white text-xs px-2 py-1 rounded mr-2">ACTION</span>
+                거래 실행 가이드 (Checklist)
+            </h3>
+            <ul class="space-y-3 text-sm text-slate-700">
+                <li class="flex items-start">
+                    <span class="text-blue-500 mr-2">✔</span>
+                    <strong>사양 재확인 (필수):</strong> 설정 > 일반 > 정보에서 메모리가 '32GB'인지 반드시 확인하십시오. 만약 16GB라면 70만 원대로 재협상해야 합니다.
+                </li>
+                <li class="flex items-start">
+                    <span class="text-blue-500 mr-2">✔</span>
+                    <strong>배터리 네고:</strong> "효율 83%면 곧 교체 메시지 뜬다. 수리비 30만 원 들어간다"는 논리로 가격 방어를 하십시오.
+                </li>
+                <li class="flex items-start">
+                    <span class="text-blue-500 mr-2">✔</span>
+                    <strong>거래 후 조치:</strong> 구매 즉시 하드쉘 케이스를 장착하여 추가 손상을 막고, 전투형으로 막 굴리며 성능을 뽑아내십시오.
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-sm font-medium text-white">Report generated based on provided text document.</p>
+            <p class="text-xs">
+                Data Sources: 중고나라, 번개장터, Back Market (2025 Market Data)<br>
+                Model Identifier: MacBookPro18,3 (M1 Pro, 2021)
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data & State ---
+        const strategies = [
+            {
+                title: "Scenario A: 합리적 최적가 (Recommended)",
+                price: "900,000원",
+                desc: "의뢰인과 지인 모두에게 가장 이득이 되는 균형점입니다.",
+                points: [
+                    "매물 4(기본형 A급)와 동일한 가격대입니다.",
+                    "의뢰인은 '외관/배터리'를 포기하고 '32GB 성능'을 얻는 교환 거래입니다.",
+                    "지인은 업자 매입가(70~80만)보다 높게 받을 수 있어 이득입니다."
+                ],
+                colorClass: "text-blue-600"
+            },
+            {
+                title: "Scenario B: 공격적 네고 (Aggressive)",
+                price: "800,000 ~ 850,000원",
+                desc: "기기 상태가 예상보다 심각하거나(찍힘 등), 철저히 경제적 이득을 추구할 때입니다.",
+                points: [
+                    "매물 2(손상된 기기 72만 원)를 근거로 제시하십시오.",
+                    "'외관이 너무 험해서 내가 쓰다가 다시 팔 때 감가가 심하다'고 어필하십시오.",
+                    "배터리 교체가 시급함을 강력하게 주장하십시오."
+                ],
+                colorClass: "text-slate-900"
+            },
+            {
+                title: "Scenario C: 배려형 거래 (Generous)",
+                price: "950,000 ~ 1,000,000원",
+                desc: "지인과의 관계를 고려하여 조금 더 쳐주는 경우입니다. 단, 100만 원 상한선은 지키십시오.",
+                points: [
+                    "100만 원을 넘어가면 매물 1(S급) 가격과 겹쳐 구매자가 손해입니다.",
+                    "구성품이 완벽하고 액정(화면)에는 기스가 없을 때만 고려하십시오.",
+                    "서로 기분 좋게 거래하고 밥 한 끼 얻어먹는 전략입니다."
+                ],
+                colorClass: "text-emerald-600"
+            }
+        ];
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initMarketChart();
+            calculate();
+            setStrategy(0); // Default to Recommended
+        });
+
+        // --- Chart Logic ---
+        function initMarketChart() {
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Floor (파손)', 'Target (지인매물)', 'Market Avg (일반)', 'Ceiling (S급)', '32GB A급 (이론가)'],
+                    datasets: [{
+                        label: '가격 (만원)',
+                        data: [72, 90, 95, 105, 125],
+                        backgroundColor: [
+                            'rgba(148, 163, 184, 0.5)', // Floor (Slate)
+                            'rgba(37, 99, 235, 0.8)',   // Target (Blue Strong)
+                            'rgba(148, 163, 184, 0.5)', // Avg (Slate)
+                            'rgba(148, 163, 184, 0.5)', // Ceiling (Slate)
+                            'rgba(16, 185, 129, 0.3)'   // 32GB Theory (Emerald Light)
+                        ],
+                        borderColor: [
+                            'transparent',
+                            'rgb(37, 99, 235)',
+                            'transparent',
+                            'transparent',
+                            'rgb(16, 185, 129)'
+                        ],
+                        borderWidth: {
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            left: 0,
+                            [1]: 2, // Highlight Target
+                            [4]: 1 // Highlight Theory
+                        },
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ctx.raw + '만원'
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 90,
+                                    yMax: 90,
+                                    borderColor: 'rgba(37, 99, 235, 0.5)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        content: '추천 거래가',
+                                        enabled: true,
+                                        position: 'start',
+                                        backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                                        color: 'white',
+                                        font: { size: 10 }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 140,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Calculator Logic ---
+        function calculate() {
+            const basePrice = 1250000;
+            let deduction = 0;
+            
+            const isBattery = document.getElementById('batteryCheck').checked;
+            const isCosmetic = document.getElementById('cosmeticCheck').checked;
+
+            if (isBattery) deduction += 150000;
+            if (isCosmetic) deduction += 200000;
+
+            const finalPrice = basePrice - deduction;
+
+            // Animate Number
+            animateValue("finalPrice", finalPrice);
+            
+            // Update Text
+            const penaltyText = document.getElementById('penaltyText');
+            penaltyText.innerText = `총 -${deduction.toLocaleString()}원 감가 적용됨`;
+            
+            // Update Visual Bar
+            // Map range: 700k (0%) to 1300k (100%)
+            const percent = Math.max(0, Math.min(100, ((finalPrice - 700000) / 600000) * 100));
+            document.getElementById('barVisual').style.width = `${percent}%`;
+        }
+
+        function animateValue(id, end) {
+            const obj = document.getElementById(id);
+            const startStr = obj.innerText.replace(/[^0-9]/g, "");
+            const start = startStr ? parseInt(startStr) : 0;
+            const range = end - start;
+            const duration = 400;
+            let startTime = null;
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                const value = Math.floor(progress * range + start);
+                
+                // Format: 90만원
+                const manwon = Math.floor(value / 10000);
+                obj.innerHTML = manwon.toLocaleString() + "만원";
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            }
+            window.requestAnimationFrame(step);
+        }
+
+        // --- Strategy Tab Logic ---
+        function setStrategy(index) {
+            // Update Buttons
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`btn${i}`);
+                if (i === index) {
+                    btn.className = "p-4 rounded-xl border-2 border-transparent bg-white shadow-md ring-2 ring-slate-900 text-left focus:outline-none transform scale-105 transition duration-200";
+                    btn.querySelector('.text-lg').className = "text-lg font-bold text-slate-900";
+                } else {
+                    btn.className = "p-4 rounded-xl border-2 border-slate-200 text-left hover:border-slate-400 hover:bg-slate-50 transition opacity-70 hover:opacity-100 focus:outline-none";
+                    btn.querySelector('.text-lg').className = "text-lg font-bold text-slate-500";
+                }
+            });
+
+            // Update Content
+            const s = strategies[index];
+            const content = document.getElementById('strategyContent');
+            
+            let listHtml = s.points.map(p => `<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-slate-400 rounded-full flex-shrink-0"></span><span>${p}</span></li>`).join('');
+
+            content.innerHTML = `
+                <div class="animate-fade-in-up">
+                    <h4 class="text-xl font-bold ${s.colorClass} mb-2">${s.title}</h4>
+                    <p class="text-slate-600 mb-6 text-sm leading-relaxed">${s.desc}</p>
+                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
+                        <ul class="space-y-3 text-sm text-slate-700">
+                            ${listHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
