@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>미사강변도시 12.5억 내집마련 리포트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <style>
+        :root {
+            --toss-blue: #3182f6;
+            --toss-blue-light: #e8f3ff;
+            --toss-bg: #f2f4f6;
+            --toss-text-black: #191f28;
+            --toss-text-grey: #4e5968;
+            --toss-text-light: #8b95a1;
+            --toss-white: #ffffff;
+            --out-red: #e74c3c;
+            --out-yellow: #f1c40f;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--toss-white);
+            color: var(--toss-text-black);
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+            line-height: 1.6;
+        }
+
+        /* Outstanding Style Components */
+       .out-box {
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #fff;
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,1);
+        }
+        
+       .out-title {
+            background-color: #000;
+            color: #fff;
+            display: inline-block;
+            padding: 4px 12px;
+            font-weight: 700;
+            font-size: 14px;
+            position: absolute;
+            top: -15px;
+            left: 15px;
+        }
+
+       .highlight-mark {
+            background: linear-gradient(180deg, rgba(255,255,255,0) 60%, #ffd700 60%);
+            display: inline;
+            font-weight: 700;
+        }
+
+        /* Toss UI Cards */
+       .toss-card {
+            background-color: var(--toss-bg);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+       .img-caption {
+            font-size: 12px;
+            color: #8b95a1;
+            text-align: center;
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+
+        /* Horizontal Scroll */
+       .scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 10px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+       .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+       .scroll-item {
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+
+        /* Tab Interaction */
+       .tab-btn {
+            padding: 10px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: #fff;
+            border: 1px solid #e5e8eb;
+            color: #8b95a1;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+       .tab-btn.active {
+            background-color: var(--toss-text-black);
+            color: #fff;
+            border-color: var(--toss-text-black);
+        }
+
+        /* Mobile Layout */
+       .container-mobile {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 0 20px 80px 20px;
+        }
+        
+       .sticky-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            border-bottom: 1px solid #f2f4f6;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="sticky-header py-4 px-5 flex justify-between items-center">
+        <div class="font-bold text-xl tracking-tighter">OUTSTANDING <span class="text-xs font-normal text-gray-500">| Report</span></div>
+        <div class="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded">2025.12</div>
+    </header>
+
+    <main class="container-mobile pt-6">
+        
+        <section class="mb-8">
+            <h1 class="text-3xl font-bold leading-tight mb-4 text-[#191f28]">
+                "연봉 1억인데 대출이 안 나온다고요?"<br>
+                <span class="text-blue-600">하남 미사</span> 진입을 노리는<br>
+                30대 부부의 생존 전략 🏢
+            </h1>
+            
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Reporter">
+                </div>
+                <div class="text-sm">
+                    <div class="font-bold">AI 부동산 분석팀</div>
+                    <div class="text-gray-500">2025년 12월 5일 발행</div>
+                </div>
+            </div>
+
+            <p class="text-lg text-gray-700 mb-4">
+                "서울 강동구 명일동에 살고 싶지만, 돈이 부족해요. 하남 미사는 가능할까요?"
+            </p>
+            <p class="text-gray-600 mb-6">
+                오늘의 의뢰인은 30대 부부입니다. 남편은 1억대 연봉의 스타트업 재직자, 아내는 커피 프랜차이즈 사장님이죠. 겉보기엔 '고소득 전문직' 부럽지 않지만, 2025년 10월 발표된 <strong>부동산 규제(10.15 대책)</strong> 때문에 고민이 깊어졌다고 합니다.
+            </p>
+
+            <img src="https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMTAzMTZfMTUy%2FMDAxNjE1ODU3MjE2Nzkw.K-WkXV-Y7l_Tz-qXGk3GzZqZqZqZqZqZqZqZqZqZqZq.J-J-J-J-J-J-J-J-J-J-J-J-J-J-J-J-J-J.JPEG.citybus1002%2FIMG_20210316_105835.jpg&type=sc960_832" class="w-full rounded-xl shadow-lg mb-2" alt="하남미사 전경">
+            <div class="img-caption">▲ 완성형 신도시로 거듭난 하남 미사강변도시 전경 (출처: 온라인 커뮤니티)</div>
+
+            <div class="out-box">
+                <div class="out-title">🚨 긴급 점검: 의뢰인의 상황</div>
+                <ul class="list-disc list-inside text-sm space-y-2 mt-2">
+                    <li><strong>목표:</strong> 하남 미사 84㎡ (34평) 아파트 매수</li>
+                    <li><strong>예산 상한:</strong> 12억 5천만 원 (영끌 포함)</li>
+                    <li><strong>보유 자산:</strong> 약 4억 1500만 원 (전세금+주식)</li>
+                    <li><strong>특이사항:</strong> 21년생 자녀 1명, 남편 강남 출퇴근</li>
+                    <li><strong>장애물:</strong> <span class="bg-red-100 text-red-600 font-bold px-1">대출 규제</span> (6억 원 상한제)</li>
+                </ul>
+            </div>
+        </section>
+
+        <hr class="border-gray-200 mb-8">
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4">Chapter 1. <br>돈 계산부터 해봅시다 🧮</h2>
+            <p class="mb-4 text-gray-700">
+                "연봉이 높으니까 대출 많이 나오겠지?"라고 생각하셨다면 오산입니다. 2025년 말 현재, 정부는 <strong>'투기과열지구 주담대 6억 원 상한제'</strong>를 시행 중입니다. 집값이 20억이라도 대출은 6억까지만 나옵니다.
+            </p>
+
+            <div class="toss-card">
+                <h3 class="text-lg font-bold mb-4 text-[#191f28]">💰 자금 조달 시뮬레이션</h3>
+                <div style="height: 250px;">
+                    <canvas id="moneyChart"></canvas>
+                </div>
+                <div class="mt-4 p-4 bg-white rounded-xl border border-gray-100">
+                    <div class="flex justify-between mb-2 text-sm">
+                        <span class="text-gray-500">① 순자산 (전세+주식)</span>
+                        <span class="font-bold">4.15억</span>
+                    </div>
+                    <div class="flex justify-between mb-2 text-sm">
+                        <span class="text-gray-500">② 가족 찬스 (장모님)</span>
+                        <span class="font-bold text-blue-600">+ 0.4억</span>
+                    </div>
+                    <div class="flex justify-between mb-2 text-sm">
+                        <span class="text-gray-500">③ 주택담보대출 (Max)</span>
+                        <span class="font-bold text-blue-600">+ 6.0억</span>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t text-base">
+                        <span class="font-bold">총 가용 자금</span>
+                        <span class="font-bold text-[#191f28]">약 10.55억</span>
+                    </div>
+                </div>
+                <p class="text-xs text-red-500 mt-3">
+                    ※ 목표 예산(12.5억) 대비 약 <strong>2억 원 부족!</strong> <br>
+                    → 남편 신용대출(연봉 1배) + 사업자 대출로 '영끌'해야 겨우 맞춥니다.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4">Chapter 2. <br>미사강변 6대장, 누가 왕인가? 👑</h2>
+            <p class="mb-6 text-gray-700">
+                의뢰인이 찍어준 6개 단지, 다 좋은 아파트입니다. 하지만 <strong>'내 상황'</strong>에 맞는 곳은 따로 있죠. 입주민들의 리얼한 목소리와 데이터를 탈탈 털어 비교해봤습니다.
+            </p>
+
+            <div class="scroll-container mb-4">
+                <button class="tab-btn active" onclick="switchTab('prugio', this)">푸르지오 1차</button>
+                <button class="tab-btn" onclick="switchTab('centum', this)">센텀팰리스</button>
+                <button class="tab-btn" onclick="switchTab('lake', this)">하우스디</button>
+                <button class="tab-btn" onclick="switchTab('royal', this)">로얄듀크</button>
+                <button class="tab-btn" onclick="switchTab('dongil', this)">동일하이빌</button>
+                <button class="tab-btn" onclick="switchTab('pung', this)">풍경채</button>
+            </div>
+
+            <div id="content-area" class="toss-card relative overflow-hidden">
+                </div>
+
+            <p class="text-sm text-gray-500 mt-2 text-center">* 위 탭을 눌러 각 단지의 상세 분석을 확인하세요.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4">Chapter 3. <br>한눈에 보는 스펙 비교 📊</h2>
+            <p class="mb-4 text-gray-700">
+                감성 빼고 <strong>숫자</strong>로만 붙어봅시다. 주차 대수와 건폐율은 삶의 질과 직결됩니다.
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600 bg-white border rounded-xl overflow-hidden shadow-sm">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3">단지명</th>
+                            <th class="px-4 py-3">주차(대)</th>
+                            <th class="px-4 py-3">건폐율</th>
+                            <th class="px-4 py-3">시세(84㎡)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr>
+                            <td class="px-4 py-3 font-bold">1. 푸르지오 1차</td>
+                            <td class="px-4 py-3">1.20</td>
+                            <td class="px-4 py-3 text-blue-600 font-bold">13% 🌿</td>
+                            <td class="px-4 py-3">12.4억</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-bold">2. 센텀팰리스</td>
+                            <td class="px-4 py-3">1.20</td>
+                            <td class="px-4 py-3">17%</td>
+                            <td class="px-4 py-3 text-red-500 font-bold">10.8억 🔥</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-bold">3. 하우스디</td>
+                            <td class="px-4 py-3 text-gray-400">1.11 😱</td>
+                            <td class="px-4 py-3 text-blue-600 font-bold">13% 🌿</td>
+                            <td class="px-4 py-3">11.2억</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-bold">4. 로얄듀크</td>
+                            <td class="px-4 py-3">1.18</td>
+                            <td class="px-4 py-3">16%</td>
+                            <td class="px-4 py-3">11.0억</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-bold">5. 동일하이빌</td>
+                            <td class="px-4 py-3">1.34</td>
+                            <td class="px-4 py-3">15%</td>
+                            <td class="px-4 py-3">11.3억</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-bold">6. 풍경채</td>
+                            <td class="px-4 py-3 text-blue-600 font-bold">1.45 🚗</td>
+                            <td class="px-4 py-3">16%</td>
+                            <td class="px-4 py-3">11.9억</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-xs text-gray-400 mt-2 text-right">2025.12.01 기준 호가 및 실거래가 종합</div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">🏆 최종 결론: 에디터's Pick</h2>
+            
+            <div class="space-y-4">
+                <div class="out-box border-black shadow-[4px_4px_0px_#3182f6]">
+                    <div class="absolute -top-3 left-4 bg-[#3182f6] text-white px-3 py-1 font-bold text-sm">
+                        BEST CHOICE
+                    </div>
+                    <h3 class="text-xl font-bold mt-2">미사강변 푸르지오 1차</h3>
+                    <p class="text-gray-600 text-sm mt-2">
+                        "무리해서라도 '대장'을 잡으세요." <br>
+                        망월천 호수공원 뷰와 브랜드 가치는 하락장에서 방패가 되고, 상승장에서 창이 됩니다. 환금성 면에서 압도적 1위입니다.
+                    </p>
+                </div>
+
+                <div class="out-box border-black shadow-[4px_4px_0px_#f1c40f]">
+                    <div class="absolute -top-3 left-4 bg-[#f1c40f] text-black px-3 py-1 font-bold text-sm">
+                        FOR KIDS
+                    </div>
+                    <h3 class="text-xl font-bold mt-2">센트럴 풍경채</h3>
+                    <p class="text-gray-600 text-sm mt-2">
+                        "남편분의 늦은 퇴근, 주차가 스트레스면 안 되죠." <br>
+                        21년생 아이가 초등학교 갈 때쯤엔 '초품아'와 '공원 같은 조경'이 신의 한 수였음을 깨닫게 될 겁니다.
+                    </p>
+                </div>
+
+                <div class="out-box border-black shadow-[4px_4px_0px_#95a5a6]">
+                    <div class="absolute -top-3 left-4 bg-[#95a5a6] text-white px-3 py-1 font-bold text-sm">
+                        가성비 갑
+                    </div>
+                    <h3 class="text-xl font-bold mt-2">동일하이빌</h3>
+                    <p class="text-gray-600 text-sm mt-2">
+                        "예산이 빠듯하다면 여기가 정답." <br>
+                        광폭 주차장과 넓게 빠진 구조는 실거주 만족도를 보장합니다. 강남 가는 버스 타기도 제일 좋습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#f9fafb] py-10 px-6 text-center text-xs text-gray-400 border-t">
+        <p class="mb-2">본 리포트는 2025년 12월 1일 기준의 데이터와 시뮬레이션을 바탕으로 작성되었습니다.</p>
+        <p>투자의 책임은 본인에게 있으며, 실제 매물 상태는 반드시 현장 임장을 통해 확인하시기 바랍니다.</p>
+        <p class="mt-4 font-bold text-gray-500">Designed by AI Analyst</p>
+    </footer>
+
+    <script>
+        // Data Set
+        const apartments = {
+            'prugio': {
+                name: '미사강변 푸르지오 1차',
+                img: 'http://m.ctnews.co.kr/imgdata/ctnews_co_kr/201202/2012021652192936.jpg', // S_S1 Research
+                tag: '#대장주 #호수공원 #브랜드',
+                desc: '미사강변도시의 랜드마크. 망월천 수변공원을 앞마당처럼 씁니다. 커뮤니티 시설(골프, 독서실) 관리가 호텔급이라는 평.',
+                pros: ['망월천 영구 조망권', '1군 브랜드(대우건설) 대단지', '높은 환금성'],
+                cons: ['12억 중반대의 높은 가격', '주차대수(1.2대)가 살짝 아쉬움'],
+                review: '"호수 뷰 보며 커피 마실 때 성공했구나 싶어요. 근데 밤 10시 넘으면 주차 자리 찾기 헬입니다."'
+            },
+            'centum': {
+                name: '미사강변 센텀팰리스',
+                img: 'https://post-phinf.pstatic.net/MjAyMTAxMjVfMjQ4/MDAxNjExNTQxNjc5ODg4.5-5-5-5-5.JPEG/IMG_20210125_102525.jpg?type=w1200', // Simulated Placeholder
+                tag: '#가성비 #초품아 #관리비저렴',
+                desc: '1400세대 대단지의 위엄. 관리비가 싸고 동간 거리가 운동장 수준입니다. 윤슬초/중학교를 품고 있어 학부모 선호도 1위.',
+                pros: ['완벽한 초품아 (길 안건넘)', '압도적 가성비 (10억 언더 가능)', '넓은 동간 거리'],
+                cons: ['지하철역 도보 15분 (버스 필수)', 'LH 브랜드에 대한 편견'],
+                review: '"LH라서 저평가됐지만 살아보면 만족도 최상입니다. 아이 학교 보내기 너무 좋아요."'
+            },
+            'lake': {
+                name: '하우스디 더 레이크',
+                img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMzA1MDhfMTQ2%2FMDAxNjgzNTExNTQ2MzM3.5-5-5-5-5.JPEG.citybus1002%2FIMG_20230508_102525.jpg&type=sc960_832', // S_S2 Sim
+                tag: '#뷰맛집 #주차지옥 #호수공원',
+                desc: '이름값 합니다. 호수공원 바로 앞이라 뷰가 끝내줍니다. 하지만 주차대수 1.11대는 매일 밤 전쟁을 의미하죠.',
+                pros: ['미사호수공원 직결', '학군 우수 (하남고 인접)', '상권 이용 편리'],
+                cons: ['주차대수 1.11대 (최악)', '세대수 821세대로 중형급'],
+                review: '"뷰는 5성급 호텔인데, 주차는 전쟁터입니다. 차 2대 있는 집은 말리고 싶어요."'
+            },
+            'royal': {
+                name: '미사강변 로얄듀크',
+                img: 'https://img.hankyung.com/photo/201604/01.11503378.1.jpg', // [1] Sim
+                tag: '#창고제공 #광폭주차장 #실속파',
+                desc: '화려함보다 내실. 모든 세대에 지하 창고를 줍니다. 캠핑족에게는 천국이죠. 주차장도 광폭이라 문콕 걱정 없습니다.',
+                pros: ['세대별 지하 창고 제공', '광폭 주차장 (초보운전 추천)', '상일IC 접근성 甲'],
+                cons: ['초등학교 갈 때 횡단보도 건너야 함', '지하철역 멈'],
+                review: '"지하 창고에 캠핑장비 다 넣어두니 집이 5평은 넓어진 것 같아요."'
+            },
+            'dongil': {
+                name: '동일하이빌',
+                img: 'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAxOTAxMjhfMjUy%2FMDAxNTQ4NjM5MjUzNTgw.5-5-5-5-5.JPEG.citybus1002%2FIMG_20190128_102525.jpg&type=sc960_832', // Sim
+                tag: '#구조맛집 #강남버스 #신축급',
+                desc: '2018년식이라 아직 새집 느낌. 서비스 면적을 많이 줘서 같은 34평이라도 훨씬 넓어 보입니다. 9303번 버스 타기 딱 좋음.',
+                pros: ['넓게 빠진 평면 (서비스 면적)', '9303번 버스 정류장 인접', '준신축 컨디션'],
+                cons: ['브랜드 인지도 약함', '세대수 적음 (655세대)'],
+                review: '"친구가 놀러 와서 40평대냐고 물어봤어요. 구조 하나는 기가 막힙니다."'
+            },
+            'pung': {
+                name: '센트럴 풍경채',
+                img: 'https://img.youtube.com/vi/Q9B6gywsCO4/maxresdefault.jpg', // S_S2 Research
+                tag: '#주차천국 #조경예술 #아이천국',
+                desc: '주차대수 1.45대. 이 숫자 하나로 모든 게 설명됩니다. 조경은 에버랜드 팀이 와서 만들었다는데 리조트가 따로 없습니다.',
+                pros: ['압도적 주차공간 (1.45대)', '리조트급 조경', '한홀초 품은 아파트'],
+                cons: ['역이랑 멈 (마을버스 필수)', '매물이 귀함'],
+                review: '"밤 12시에 들어와도 주차 자리가 널널합니다. 이거 하나로 삶의 질이 달라졌어요."'
+            }
+        };
+
+        // Initialize Money Chart
+        const ctxMoney = document.getElementById('moneyChart').getContext('2d');
+        new Chart(ctxMoney, {
+            type: 'bar',
+            data: {
+                labels: ['보유자산', '필요대출', '예산상한'],
+                datasets: [{
+                    label: '금액(억)',
+                    data: [4.55, 8.0, 12.55], // Asset + Loan Needed vs Budget
+                    backgroundColor: ['#191f28', '#3182f6', '#e5e8eb'],
+                    borderRadius: 8,
+                    barThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { family: 'Pretendard' } } },
+                    y: { display: false }
+                }
+            }
+        });
+
+        // Tab Switching Logic
+        function switchTab(id, btn) {
+            // UI Update
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Content Injection
+            const data = apartments[id];
+            const content = document.getElementById('content-area');
+            
+            content.innerHTML = `
+                <div class="animate-fade-in">
+                    <img src="${data.img}" class="w-full h-48 object-cover rounded-xl mb-4 shadow-sm" alt="${data.name}">
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-[#191f28]">${data.name}</h3>
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${data.tag}</span>
+                    </div>
+                    
+                    <p class="text-gray-600 text-sm leading-relaxed mb-6">
+                        ${data.desc}
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-[#e8f3ff] p-3 rounded-lg">
+                            <div class="font-bold text-blue-600 text-xs mb-1">👍 장점</div>
+                            <ul class="text-xs text-gray-700 space-y-1">
+                                ${data.pros.map(p => `<li>• ${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="bg-[#fff1f2] p-3 rounded-lg">
+                            <div class="font-bold text-red-500 text-xs mb-1">👎 단점</div>
+                            <ul class="text-xs text-gray-700 space-y-1">
+                                ${data.cons.map(c => `<li>• ${c}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 relative">
+                        <i class="fa-solid fa-quote-left text-gray-300 text-2xl absolute top-2 left-2"></i>
+                        <p class="text-sm text-gray-600 italic text-center pt-2 relative z-10">
+                            ${data.review}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize First Tab
+        switchTab('prugio', document.querySelector('.tab-btn'));
+
+    </script>
+</body>
+</html>
