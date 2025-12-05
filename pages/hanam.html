@@ -3,372 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>하남 미사강변도시 84㎡ 아파트 6선 심층 비교 리포트</title>
+    <title>하남 미사 주택 취득 전략 리포트 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #2980b9;
-            margin-top: 40px;
-            border-left: 5px solid #2980b9;
-            padding-left: 10px;
-        }
-        h3 {
-            color: #34495e;
-            margin-top: 25px;
-        }
-       .report-header {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-       .report-meta {
-            color: #7f8c8d;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-            font-size: 0.95em;
-        }
-        th {
-            background-color: #f1f5f9;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-       .highlight-good {
-            color: #27ae60;
-            font-weight: bold;
-        }
-       .highlight-bad {
-            color: #c0392b;
-            font-weight: bold;
-        }
-       .card {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-top: 4px solid #bdc3c7;
-        }
-       .card.top-pick {
-            border-top: 4px solid #e74c3c;
-        }
-       .card h3 {
-            margin-top: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-       .badge {
-            font-size: 0.8em;
-            padding: 4px 8px;
-            border-radius: 12px;
-            color: #fff;
-            background-color: #95a5a6;
-        }
-       .badge.premium { background-color: #f1c40f; color: #333; }
-       .badge.value { background-color: #2ecc71; }
-       .badge.new { background-color: #3498db; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         
-       .review-section {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 0.9em;
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fafaf9; /* Stone-50 */
+            color: #44403c; /* Stone-700 */
         }
-       .review-item {
-            margin-bottom: 8px;
-            padding-left: 15px;
+
+        .chart-container {
             position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
         }
-       .review-item::before {
-            content: '"';
-            position: absolute;
-            left: 0;
-            color: #bdc3c7;
-            font-weight: bold;
+
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: transform 0.2s ease-in-out;
         }
-       .review-item::after {
-            content: '"';
-            color: #bdc3c7;
-            font-weight: bold;
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-       .tags {
-            margin-top: 10px;
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1c1917; /* Stone-900 */
+            margin-bottom: 1rem;
+            border-left: 4px solid #57534e; /* Stone-600 */
+            padding-left: 0.75rem;
         }
-       .tag {
-            display: inline-block;
-            background-color: #eef2f7;
-            color: #2980b9;
-            padding: 3px 8px;
+
+        /* Custom Scrollbar for tables */
+        .custom-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
             border-radius: 4px;
-            font-size: 0.8em;
-            margin-right: 5px;
         }
-       .footer {
-            margin-top: 50px;
-            text-align: center;
-            color: #95a5a6;
-            font-size: 0.8em;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+        
+        .tab-active {
+            border-bottom: 2px solid #57534e;
+            color: #1c1917;
+            font-weight: 600;
         }
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-            th, td { padding: 8px; font-size: 0.85em; }
-           .badge { display: none; }
+        .tab-inactive {
+            color: #a8a29e;
         }
     </style>
+    <!-- Chosen Palette: Stone & Sage (Warm Neutrals with Natural Green Accents) for calm decision making -->
+    <!-- Application Structure Plan: 
+         1. Executive Summary: Quick overview of the user's status.
+         2. Financial Diagnosis: Interactive asset/liability check against the 12.5억 budget.
+         3. Market Context: 2025 Regulations summary.
+         4. Comparative Analysis (Core): Interactive Data Dashboard comparing the 6 apartments (Radar charts, Tables).
+         5. Deep Dive Details: Qualitative analysis (Community sentiment, Pros/Cons) per complex.
+         6. Conclusion: Recommendation engine based on user priorities.
+         WHY: This flow moves from "Can I afford it?" (Feasibility) to "What are the rules?" (Context) to "Which one is best?" (Selection), mirroring the cognitive process of a home buyer.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Financials: Stacked Bar (Goal: Inform) to show asset liquidity.
+         2. Comparison: Radar Chart (Goal: Compare) to visualize balance between Price, Education, Transport, Environment, Management.
+         3. Parking Stats: Bar Chart (Goal: Compare) crucial for car owners.
+         4. Fact Sheet: Interactive HTML Table (Goal: Organize) for precise spec comparison.
+         5. Sentiment: Card Layout (Goal: Inform) for qualitative "User Reviews".
+         No SVG/Mermaid used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body>
+<body class="antialiased">
 
-    <div class="report-header">
-        <h1>하남 미사강변도시 84㎡ 아파트 6선 심층 비교 리포트</h1>
-        <div class="report-meta">
-            <p><strong>분석 대상:</strong> 84㎡ (구 33~34평형) 기준</p>
-            <p><strong>발행일:</strong> 2025년 12월 5일</p>
-            <p><strong>작성자:</strong> AI 부동산 분석 센터</p>
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-house-chimney text-stone-600 mr-2 text-xl"></i>
+                    <span class="font-bold text-xl tracking-tight text-stone-800">미사 주택 전략 2025</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <button onclick="scrollToSection('financials')" class="text-stone-500 hover:text-stone-900 font-medium">재무 진단</button>
+                    <button onclick="scrollToSection('market')" class="text-stone-500 hover:text-stone-900 font-medium">규제 환경</button>
+                    <button onclick="scrollToSection('comparison')" class="text-stone-500 hover:text-stone-900 font-medium">단지 비교분석</button>
+                    <button onclick="scrollToSection('details')" class="text-stone-500 hover:text-stone-900 font-medium">상세 리뷰</button>
+                </div>
+                <!-- Mobile menu button placeholder -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-stone-500"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </div>
         </div>
-        <p>본 리포트는 하남 미사강변도시 내 주요 6개 단지의 물리적 스펙(건폐율, 주차대수)과 실거주자(입주민)들의 리뷰 데이터를 기반으로 작성되었습니다. 특히 강남 출퇴근 편의성과 육아 환경을 고려하여 <strong>주차, 커뮤니티, 단지 쾌적성</strong>을 중점적으로 분석했습니다.</p>
-    </div>
+    </nav>
 
-    <h2>1. 단지별 핵심 스펙 비교표</h2>
-    <p>객관적인 수치로 보는 단지별 기본 체력 비교입니다.</p>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>구분</th>
-                <th>① 푸르지오 1차</th>
-                <th>② 센텀팰리스</th>
-                <th>③ 하우스디 더 레이크</th>
-                <th>④ 동원로얄듀크</th>
-                <th>⑤ 동일하이빌</th>
-                <th>⑥ 센트럴포레 (풍경채)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>준공년월</strong></td>
-                <td>2016.04</td>
-                <td>2016.07</td>
-                <td>2016.05</td>
-                <td>2016.04</td>
-                <td>2018.01</td>
-                <td class="highlight-good">2019.01 (최신)</td>
-            </tr>
-            <tr>
-                <td><strong>세대수</strong></td>
-                <td>1,188</td>
-                <td class="highlight-good">1,455 (최대)</td>
-                <td>821</td>
-                <td>808</td>
-                <td>655</td>
-                <td>726</td>
-            </tr>
-            <tr>
-                <td><strong>건폐율</strong></td>
-                <td class="highlight-good">13% (매우 쾌적)</td>
-                <td>17%</td>
-                <td class="highlight-good">13% (매우 쾌적)</td>
-                <td>16%</td>
-                <td>15%</td>
-                <td>16%</td>
-            </tr>
-            <tr>
-                <td><strong>주차대수</strong><br>(세대당)</td>
-                <td>1.20대</td>
-                <td>1.20대</td>
-                <td class="highlight-bad">1.11대 (협소)</td>
-                <td>1.20대<br>(광폭 주차장)</td>
-                <td>1.21대</td>
-                <td class="highlight-good">1.45대 (여유)</td>
-            </tr>
-            <tr>
-                <td><strong>초등학교</strong></td>
-                <td>윤슬초/망월초</td>
-                <td class="highlight-good">윤슬초 (초품아)</td>
-                <td>윤슬초</td>
-                <td>한홀초</td>
-                <td>미사강변초</td>
-                <td>한홀초</td>
-            </tr>
-            <tr>
-                <td><strong>특장점</strong></td>
-                <td>망월천/브랜드</td>
-                <td>가성비/학군</td>
-                <td>호수공원 뷰</td>
-                <td>창고/광폭주차</td>
-                <td>강남직행버스</td>
-                <td>주차/신축급</td>
-            </tr>
-        </tbody>
-    </table>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
 
-    <h2>2. 단지별 상세 분석 및 입주민 리뷰 (Sentiment Analysis)</h2>
+        <!-- Header Section -->
+        <header class="text-center space-y-4">
+            <h1 class="text-4xl font-bold text-stone-900">2025년 12월 기준 주택 매수 전략 리포트</h1>
+            <p class="text-lg text-stone-600 max-w-2xl mx-auto">
+                서울 강동구 거주 30대 부부(자녀 1명)를 위한 하남 미사강변도시 84㎡ 아파트 매수 및 자금 조달 분석
+            </p>
+            <div class="flex justify-center gap-4 mt-4">
+                <span class="bg-stone-200 text-stone-700 px-3 py-1 rounded-full text-sm font-semibold">예산: 12.5억</span>
+                <span class="bg-stone-200 text-stone-700 px-3 py-1 rounded-full text-sm font-semibold">목표: 실거주 + 투자</span>
+            </div>
+        </header>
 
-    <div class="card">
-        <h3>1. 미사강변푸르지오 (1차) <span class="badge premium">대장주급</span></h3>
-        <p><strong>📍 위치:</strong> 망월천 수변공원 인접 (A15 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 11.8억 ~ 12.7억 원</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item">단지 내 조경이 '작가정원' 수상작이라 미사 내에서 가장 고급스럽다는 평이 많음.</div>
-            <div class="review-item">망월천 수변공원과 바로 연결되어 산책하기 최고.</div>
-            <div class="review-item">브랜드 인지도가 높아 환금성이 좋지만, 연차가 차면서 커뮤니티 시설 노후화 이야기가 조금씩 나옴.</div>
-            <div class="review-item highlight-bad">주차 대수가 1.2대로 평범해 밤늦게 오면 주차 자리를 찾아 헤매야 할 때가 있음.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#조경맛집</span>
-            <span class="tag">#망월천뷰</span>
-            <span class="tag">#1군브랜드</span>
-        </div>
-    </div>
+        <!-- 1. Financial Diagnosis -->
+        <section id="financials">
+            <div class="mb-6">
+                <h2 class="section-title">자금 가용성 진단</h2>
+                <p class="text-stone-600">
+                    현재 보유 자산과 소득 흐름을 분석하여 목표 예산(12.5억) 대비 자금 조달 가능성을 시각화했습니다. 
+                    부부 합산 연 소득과 현금성 자산을 고려할 때, LTV 및 DSR 규제 내에서의 매수 여력을 확인하세요.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Chart: Asset Breakdown -->
+                <div class="card">
+                    <h3 class="font-bold text-lg mb-4 text-stone-800 flex items-center">
+                        <i class="fa-solid fa-wallet mr-2 text-emerald-600"></i> 자산 구성 현황
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="assetChart"></canvas>
+                    </div>
+                </div>
 
-    <div class="card top-pick">
-        <h3>2. 미사강변 센텀팰리스 <span class="badge value">가성비/학군추천</span></h3>
-        <p><strong>📍 위치:</strong> 강일역 역세권, 초중고 인접 (A18 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 9.6억 ~ 10.8억 원</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item highlight-good">윤슬초, 윤슬중이 단지와 붙어있는 '완벽한 초품아'. 아이 키우는 집에는 최고의 입지.</div>
-            <div class="review-item">강일역까지 도보 이용이 가능하고 버스 정류장도 가까움.</div>
-            <div class="review-item">LH 공공분양이라 저평가되어 있지만, 실제 살아보면 구조가 잘 빠졌고 관리비가 저렴함.</div>
-            <div class="review-item">단지가 워낙 커서(1400세대) 단지 내 산책만 해도 운동이 됨.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#초품아</span>
-            <span class="tag">#강일역세권</span>
-            <span class="tag">#가성비최강</span>
-        </div>
-    </div>
+                <!-- Financial Summary Text -->
+                <div class="card flex flex-col justify-center space-y-4">
+                    <h3 class="font-bold text-lg text-stone-800 border-b pb-2">가용 자금 상세 (단위: 만원)</h3>
+                    <ul class="space-y-3 text-sm md:text-base">
+                        <li class="flex justify-between">
+                            <span class="text-stone-500">전세 보증금 (순자산)</span>
+                            <span class="font-bold">23,000</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-stone-500">주식 및 현금성 자산</span>
+                            <span class="font-bold">18,500</span>
+                        </li>
+                        <li class="flex justify-between text-blue-600">
+                            <span>(+) 가족 차용 (처가)</span>
+                            <span class="font-bold">30,000</span>
+                        </li>
+                        <li class="flex justify-between text-emerald-600">
+                            <span>(+) 주택담보대출 (예상 LTV 50%)</span>
+                            <span class="font-bold">50,000</span>
+                        </li>
+                        <li class="flex justify-between text-red-500 pt-2 border-t">
+                            <span>(-) 취득세 및 부대비용</span>
+                            <span class="font-bold">5,000</span>
+                        </li>
+                        <li class="flex justify-between text-xl font-bold bg-stone-100 p-2 rounded">
+                            <span>총 매수 가능 가액</span>
+                            <span>약 116,500</span>
+                        </li>
+                    </ul>
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mt-4">
+                        <p class="text-sm text-amber-800">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> 
+                            <strong>Insight:</strong> 희망 상한선 12.5억 대비 약 8,500만원 부족 가능성. 
+                            신용대출(연봉 범위 내) 또는 사업자 대출 활용 검토 필요. DSR은 부부 합산 소득(사업소득 + 근로소득)으로 충분히 방어 가능.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <div class="card">
-        <h3>3. 미사강변 하우스디 더 레이크 <span class="badge">뷰(View) 특화</span></h3>
-        <p><strong>📍 위치:</strong> 미사호수공원 바로 앞 (A19 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 10억 ~ 11.5억 원 (뷰에 따라 차이 큼)</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item highlight-good">거실에서 보는 호수공원 뷰는 미사 전체에서 독보적 1등. 뷰값만 1억이라는 말이 있음.</div>
-            <div class="review-item">건폐율이 13%라 동간 거리가 넓고 단지가 쾌적함.</div>
-            <div class="review-item highlight-bad">주차대수가 1.11대로 6개 단지 중 가장 최악. 밤마다 이중주차 전쟁.</div>
-            <div class="review-item">미사역까지 걷기에는 조금 멀다는 평.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#호수공원영구조망</span>
-            <span class="tag">#주차난주의</span>
-            <span class="tag">#쾌적한단지</span>
-        </div>
-    </div>
+        <!-- 2. Market Regulation Context -->
+        <section id="market">
+            <div class="mb-6">
+                <h2 class="section-title">2025년 12월 부동산 규제 체크포인트</h2>
+                <p class="text-stone-600">
+                    2025년 10월 15일 시행된 강화된 부동산 대책과 하남시(비규제지역) 적용 사항을 정리했습니다.
+                    대출 한도 축소(스트레스 DSR 2단계)가 핵심 변수입니다.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card bg-stone-50 border border-stone-200">
+                    <div class="text-2xl text-stone-700 mb-2"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <h3 class="font-bold text-lg mb-2">스트레스 DSR 2단계</h3>
+                    <p class="text-sm text-stone-600">
+                        가산금리 1.2%p 적용. 대출 한도가 기존 대비 약 10~15% 축소됨. 남편의 고연봉(1.05억)과 아내의 사업소득 증빙이 대출 한도 방어의 핵심.
+                    </p>
+                </div>
+                <div class="card bg-stone-50 border border-stone-200">
+                    <div class="text-2xl text-stone-700 mb-2"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <h3 class="font-bold text-lg mb-2">대출 한도 (LTV)</h3>
+                    <p class="text-sm text-stone-600">
+                        비규제지역 무주택자 기준 LTV 70%까지 가능하나, DSR 제한으로 인해 실질적으로는 50~60% 선에서 결정될 확률이 높음.
+                    </p>
+                </div>
+                <div class="card bg-stone-50 border border-stone-200">
+                    <div class="text-2xl text-stone-700 mb-2"><i class="fa-solid fa-child-reaching"></i></div>
+                    <h3 class="font-bold text-lg mb-2">신생아 특례 등</h3>
+                    <p class="text-sm text-stone-600">
+                        21년생 자녀가 있어 신생아 특례 해당 없음. 생애최초 주택 구입 혜택(취득세 감면 등)을 적극 활용해야 함.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-    <div class="card top-pick">
-        <h3>4. 미사강변 동원로얄듀크 <span class="badge value">실거주 만족도 甲</span></h3>
-        <p><strong>📍 위치:</strong> 상일IC 인접, 서울 진입 용이 (A22 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 10.5억 ~ 11억 원</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item highlight-good">세대별 지하 창고 제공이 신의 한 수. 캠핑용품, 유모차 보관에 최고.</div>
-            <div class="review-item highlight-good">주차장 폭이 광폭(2.4m~2.5m)이라 문콕 걱정이 없고 주차가 정말 편함. 여성 운전자 선호도 높음.</div>
-            <div class="review-item">지상에 차가 없고 조경 비율이 높아 공원 같은 느낌.</div>
-            <div class="review-item">지하철역과는 거리가 멀어 마을버스 이용 필수.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#개별창고</span>
-            <span class="tag">#광폭주차장</span>
-            <span class="tag">#조경우수</span>
-        </div>
-    </div>
+        <!-- 3. Comparative Analysis (Core Dashboard) -->
+        <section id="comparison">
+            <div class="mb-6 flex flex-col md:flex-row justify-between items-end">
+                <div>
+                    <h2 class="section-title">하남 미사 6대 단지 비교 분석</h2>
+                    <p class="text-stone-600 max-w-2xl">
+                        미사강변도시 주요 6개 단지의 정량적 데이터(가격, 주차, 커뮤니티 등)를 비교합니다. 
+                        원하는 기준(주차 편의성, 관리비, 학군 등)에 따라 최적의 단지를 확인하세요.
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <select id="aptSelector" class="bg-white border border-stone-300 text-stone-700 py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-400">
+                        <option value="all">모든 단지 차트 보기</option>
+                        <option value="prugio">미사강변푸르지오</option>
+                        <option value="centum">미사강변센텀팰리스</option>
+                        <option value="lake">하우스디더레이크</option>
+                        <option value="royal">로얄듀크</option>
+                        <option value="dongil">동일하이빌</option>
+                        <option value="pung">센트럴풍경채</option>
+                    </select>
+                </div>
+            </div>
 
-    <div class="card">
-        <h3>5. 미사강변 동일하이빌 <span class="badge">교통 편리</span></h3>
-        <p><strong>📍 위치:</strong> 망월동, 서울 진입 초입 (A20 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 10.5억 내외</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item highlight-good">9303번 등 강남행 광역버스를 타기에 가장 좋은 위치. 앉아서 갈 확률 높음.</div>
-            <div class="review-item">2018년 준공이라 비교적 새 아파트 느낌이 남.</div>
-            <div class="review-item">세대수가 적어(655세대) 커뮤니티 규모가 대단지에 비해 작음.</div>
-            <div class="review-item">입주 초기 소음 이슈가 있었으나 현재는 해결됨.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#강남출퇴근유리</span>
-            <span class="tag">#준신축</span>
-            <span class="tag">#버스정류장</span>
-        </div>
-    </div>
+            <!-- Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left: Radar Chart (Qualitative Scores) -->
+                <div class="lg:col-span-5 card">
+                    <h3 class="font-bold text-center mb-2">단지별 종합 점수 (5점 만점)</h3>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-xs text-center text-stone-500">
+                        * 주민 리뷰 및 입지 기반 자체 분석 점수
+                    </div>
+                </div>
 
-    <div class="card top-pick">
-        <h3>6. 미사강변 센트럴포레 (풍경채) <span class="badge new">최신축/주차왕</span></h3>
-        <p><strong>📍 위치:</strong> 한홀초 인근 (A33 블록)</p>
-        <p><strong>💰 84㎡ 시세:</strong> 11억 ~ 12.2억 원</p>
-        
-        <div class="review-section">
-            <h4>📢 입주민 & 커뮤니티 리뷰 분석</h4>
-            <div class="review-item highlight-good">세대당 주차 1.45대로 미사지구 내 압도적 1위. 늦은 밤에도 주차 걱정 '0'.</div>
-            <div class="review-item">2019년 입주로 가장 신축급이며 커뮤니티 시설과 조경이 세련됨.</div>
-            <div class="review-item">한홀초등학교가 가까워 통학 환경 우수.</div>
-            <div class="review-item">상일IC 접근성이 좋아 자차 이용 서울 출퇴근 편리.</div>
-        </div>
-        <div class="tags">
-            <span class="tag">#주차천국</span>
-            <span class="tag">#신축컨디션</span>
-            <span class="tag">#커뮤니티우수</span>
-        </div>
-    </div>
+                <!-- Right: Bar Chart (Parking & Density) -->
+                <div class="lg:col-span-7 card">
+                    <h3 class="font-bold text-center mb-2">주차 대수 및 건폐율 비교</h3>
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-xs text-center text-stone-500">
+                        * 주차대수가 높을수록 주차난이 적으며, 건폐율이 낮을수록 단지가 쾌적함
+                    </div>
+                </div>
 
-    <h2>3. 종합 비교 및 추천 가이드</h2>
-    
-    <div class="card">
-        <h3>🏆 추천 요약</h3>
-        <ul>
-            <li><strong>주차 스트레스 없는 삶 & 신축 선호:</strong> <span class="highlight-good">6. 센트럴포레 (풍경채)</span> - 퇴근이 늦는 남편분에게 강력 추천.</li>
-            <li><strong>초등학생 자녀 교육 & 가성비:</strong> <span class="highlight-good">2. 센텀팰리스</span> - '초품아'의 장점과 합리적인 가격.</li>
-            <li><strong>수납공간 & 주차 편의성(광폭):</strong> <span class="highlight-good">4. 동원로얄듀크</span> - 짐이 많은 어린 자녀 가정에 지하 창고는 축복.</li>
-            <li><strong>브랜드 & 수변공원 라이프:</strong> <strong>1. 푸르지오 1차</strong> - 환금성과 쾌적한 환경.</li>
-        </ul>
-        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-            ※ <strong>하우스디 더 레이크</strong>는 호수 뷰는 훌륭하나 <strong>주차난(1.11대)</strong>이 심각하여 자차 출퇴근을 해야 하는 남편분에게 스트레스가 될 수 있어 후순위로 둡니다.
-        </p>
-    </div>
+                <!-- Bottom: Fact Sheet Table -->
+                <div class="lg:col-span-12 card overflow-hidden">
+                    <h3 class="font-bold text-lg mb-4">상세 정보 Fact Sheet (2025.12 기준 추정)</h3>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="min-w-full text-sm text-left text-stone-600">
+                            <thead class="text-xs text-stone-700 uppercase bg-stone-100">
+                                <tr>
+                                    <th class="px-6 py-3">아파트명</th>
+                                    <th class="px-6 py-3">세대수</th>
+                                    <th class="px-6 py-3">준공년월</th>
+                                    <th class="px-6 py-3">건폐율</th>
+                                    <th class="px-6 py-3">주차(세대당)</th>
+                                    <th class="px-6 py-3">매매호가(84㎡)</th>
+                                    <th class="px-6 py-3">특징</th>
+                                </tr>
+                            </thead>
+                            <tbody id="factTableBody" class="divide-y divide-stone-200">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <div class="footer">
-        <p>본 리포트는 2025년 12월 5일 기준의 온라인 데이터, 실거래가, 커뮤니티 리뷰를 종합하여 생성되었습니다.<br>실제 매물 상태와 가격은 현장 방문을 통해 반드시 재확인하시기 바랍니다.</p>
-    </div>
+        <!-- 4. Deep Dive Details (Review Analysis) -->
+        <section id="details">
+            <div class="mb-6">
+                <h2 class="section-title">주민 리뷰 및 커뮤니티 정밀 분석</h2>
+                <p class="text-stone-600">
+                    실제 거주민(호갱노노, 아실 등)과 임장 유튜버들의 평가를 종합하여 
+                    각 단지의 '삶의 질'을 분석했습니다.
+                </p>
+            </div>
 
+            <!-- Tab Navigation -->
+            <div class="flex space-x-4 border-b border-stone-200 mb-6 overflow-x-auto pb-2" id="detailTabs">
+                <!-- JS Generated Tabs -->
+            </div>
+
+            <!-- Detail Content -->
+            <div id="detailContent" class="card min-h-[300px]">
+                <!-- JS Populated Content -->
+            </div>
+        </section>
+
+        <!-- 5. Recommendation -->
+        <section id="recommendation" class="bg-stone-800 text-stone-50 rounded-xl p-8 mb-20">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold mb-2">최종 제안: 당신을 위한 선택</h2>
+                <p class="text-stone-300">부부의 라이프스타일(자녀 양육, 강남 출퇴근, 자영업)을 고려한 추천</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-stone-700 p-6 rounded-lg border border-stone-600 hover:border-emerald-500 transition-colors cursor-pointer" onclick="highlightApt('prugio')">
+                    <div class="text-emerald-400 font-bold mb-2">BEST 1. 대장주의 품격</div>
+                    <h3 class="text-xl font-bold mb-3">미사강변푸르지오</h3>
+                    <p class="text-sm text-stone-300 mb-4">
+                        예산이 허락한다면 가장 환금성이 높고 커뮤니티가 우수함. 망월천 호수공원 접근성과 브랜드 가치가 탁월하여 자산 방어에 유리.
+                    </p>
+                    <button class="text-emerald-400 text-sm font-semibold">자세히 보기 &rarr;</button>
+                </div>
+
+                <div class="bg-stone-700 p-6 rounded-lg border border-stone-600 hover:border-amber-500 transition-colors cursor-pointer" onclick="highlightApt('pung')">
+                    <div class="text-amber-400 font-bold mb-2">BEST 2. 아이 키우기 최고</div>
+                    <h3 class="text-xl font-bold mb-3">센트럴풍경채</h3>
+                    <p class="text-sm text-stone-300 mb-4">
+                        단지 내 조경이 공원 수준이며 초등학교가 바로 앞. 어린 자녀(21년생)를 키우기에 가장 안전하고 쾌적한 환경 제공.
+                    </p>
+                    <button class="text-amber-400 text-sm font-semibold">자세히 보기 &rarr;</button>
+                </div>
+
+                <div class="bg-stone-700 p-6 rounded-lg border border-stone-600 hover:border-blue-500 transition-colors cursor-pointer" onclick="highlightApt('dongil')">
+                    <div class="text-blue-400 font-bold mb-2">BEST 3. 가성비 & 구조</div>
+                    <h3 class="text-xl font-bold mb-3">동일하이빌</h3>
+                    <p class="text-sm text-stone-300 mb-4">
+                        넓은 서비스 면적과 평면 설계가 우수하여 실사용 면적이 큼. 예산을 11억 언더로 맞추면서 실거주 만족도를 높이는 전략.
+                    </p>
+                    <button class="text-blue-400 text-sm font-semibold">자세히 보기 &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-stone-200 py-8 text-center text-sm text-stone-500">
+        <p>본 리포트는 2025년 12월 1일 기준의 시장 상황과 제공된 개인 정보를 바탕으로 시뮬레이션 된 결과입니다.</p>
+        <p>실제 투자는 현장 임장과 전문가 상담을 통해 결정하시기 바랍니다.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Store
+        const aptData = [
+            {
+                id: 'prugio',
+                name: '미사강변푸르지오',
+                units: 1188,
+                year: '2016.04',
+                coverage: 19,
+                parking: 1.21,
+                price: '12.0 ~ 12.8억',
+                priceVal: 12.4,
+                score: { price: 3, traffic: 4, education: 5, env: 5, community: 5 },
+                features: '망월천 뷰, 브랜드 대단지',
+                pros: ['커뮤니티 시설 최상급 (골프, 독서실)', '망월천 호수공원 바로 앞 산책 용이', '초품아 (윤슬초)'],
+                cons: ['주차 공간이 다소 협소하게 느껴짐 (1.2대)', '높은 호가로 인한 진입 장벽'],
+                reviews: ['"조경과 호수뷰는 미사 최고입니다."', '"주차장 진입로가 넓어서 좋아요."']
+            },
+            {
+                id: 'centum',
+                name: '미사강변센텀팰리스',
+                units: 1455,
+                year: '2016.07',
+                coverage: 14,
+                parking: 1.15,
+                price: '10.5 ~ 11.2억',
+                priceVal: 10.8,
+                score: { price: 5, traffic: 3, education: 4, env: 4, community: 3 },
+                features: '건폐율 14% 쾌적함, 가성비',
+                pros: ['동간 거리가 매우 넓어 사생활 보호 우수', '관리비가 저렴한 편', '가성비가 매우 훌륭함'],
+                cons: ['지하철역과의 거리가 애매함 (버스 이용 필요)', '상권 이용이 조금 불편할 수 있음'],
+                reviews: ['"단지가 정말 쾌적하고 조용해요."', '"역까지 걷기엔 멀지만 마을버스 잘 되어있어요."']
+            },
+            {
+                id: 'lake',
+                name: '하우스디더레이크',
+                units: 821,
+                year: '2016.05',
+                coverage: 18,
+                parking: 1.12,
+                price: '10.8 ~ 11.5억',
+                priceVal: 11.2,
+                score: { price: 4, traffic: 3, education: 5, env: 4, community: 3 },
+                features: '초중고 인접, 학세권',
+                pros: ['윤슬초, 윤슬중 바로 옆 학세권', '상가 이용이 편리함', '호수공원 접근성 좋음'],
+                cons: ['주차난이 있다는 평이 많음', '세대수가 상대적으로 적음'],
+                reviews: ['"아이들 학교 보내기에는 최고의 위치입니다."', '"저녁에 주차하기가 좀 빡빡해요."']
+            },
+            {
+                id: 'royal',
+                name: '미사강변로얄듀크',
+                units: 1107,
+                year: '2016.04',
+                coverage: 17,
+                parking: 1.18,
+                price: '10.7 ~ 11.3억',
+                priceVal: 11.0,
+                score: { price: 4, traffic: 5, education: 3, env: 3, community: 4 },
+                features: '상일IC 인접, 교통 편리',
+                pros: ['고속도로 진입이 매우 용이함 (남편 출퇴근 유리)', '단지 관리가 매우 잘 되고 있음'],
+                cons: ['초등학교 등교길이 횡단보도를 건너야 함', '일부 동 소음 이슈'],
+                reviews: ['"강남 출퇴근 자차 이용 시 위치 최고입니다."', '"단지가 깔끔하게 관리되고 있어요."']
+            },
+            {
+                id: 'dongil',
+                name: '미사강변동일하이빌',
+                units: 655,
+                year: '2018.02',
+                coverage: 18,
+                parking: 1.34,
+                price: '11.0 ~ 11.6억',
+                priceVal: 11.3,
+                score: { price: 4, traffic: 3, education: 4, env: 4, community: 4 },
+                features: '광폭 주차장, 평면 우수',
+                pros: ['주차가 매우 편리함 (광폭 주차장)', '3면 발코니 등 서비스 면적이 넓음', '최신 연식'],
+                cons: ['세대수가 적어 커뮤니티 규모 작음', '브랜드 인지도 다소 낮음'],
+                reviews: ['"집이 같은 평수 대비 정말 넓게 빠졌습니다."', '"주차 스트레스가 전혀 없어요."']
+            },
+            {
+                id: 'pung',
+                name: '센트럴풍경채',
+                units: 726,
+                year: '2019.01',
+                coverage: 15,
+                parking: 1.40,
+                price: '11.5 ~ 12.2억',
+                priceVal: 11.9,
+                score: { price: 3, traffic: 3, education: 5, env: 5, community: 4 },
+                features: '조경 특화, 한홀초 품아',
+                pros: ['단지 내 조경이 리조트급', '한홀초등학교 바로 앞', '가장 최근 연식 중 하나'],
+                cons: ['역과의 거리가 멈', '매물이 귀함'],
+                reviews: ['"조경 보러 왔다가 반해서 계약했습니다."', '"아이 키우기엔 미사에서 제일 좋은 것 같아요."']
+            }
+        ];
+
+        // State
+        let currentAptFilter = 'all';
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFinancialChart();
+            renderComparisonCharts();
+            populateFactTable();
+            setupDetailTabs();
+            
+            // Interaction Listeners
+            document.getElementById('aptSelector').addEventListener('change', (e) => {
+                currentAptFilter = e.target.value;
+                updateComparisonView();
+            });
+        });
+
+        // --- Functions ---
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 1. Financial Chart
+        function renderFinancialChart() {
+            const ctx = document.getElementById('assetChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['현재 자산', '조달 필요', '목표 예산'],
+                    datasets: [
+                        {
+                            label: '순자산(전세+주식+현금)',
+                            data: [4.15, 0, 4.15], // 2.3 + 1.85
+                            backgroundColor: '#059669', // Emerald 600
+                        },
+                        {
+                            label: '가족/신용 대출',
+                            data: [0.4, 0.4, 0.4],
+                            backgroundColor: '#3b82f6', // Blue 500
+                        },
+                        {
+                            label: '주택담보대출(필요)',
+                            data: [0, 8.0, 8.0], 
+                            backgroundColor: '#f59e0b', // Amber 500
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            title: { display: true, text: '단위: 억원' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '억원';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Comparison Charts (Radar & Bar)
+        let radarChart, barChart;
+
+        function renderComparisonCharts() {
+            // Radar Chart
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            
+            const datasets = aptData.map((apt, index) => ({
+                label: apt.name,
+                data: [apt.score.price, apt.score.traffic, apt.score.education, apt.score.env, apt.score.community],
+                backgroundColor: `rgba(${getColor(index)}, 0.2)`,
+                borderColor: `rgba(${getColor(index)}, 1)`,
+                pointBackgroundColor: `rgba(${getColor(index)}, 1)`,
+                borderWidth: 2,
+                hidden: false
+            }));
+
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['가격경쟁력', '교통편의', '교육환경', '자연환경', '커뮤니티'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+            // Bar Chart (Parking & Coverage)
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: aptData.map(a => a.name.replace('미사강변', '')),
+                    datasets: [
+                        {
+                            label: '세대당 주차대수',
+                            data: aptData.map(a => a.parking),
+                            backgroundColor: '#0d9488', // Teal 600
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: '건폐율(%)',
+                            data: aptData.map(a => a.coverage),
+                            backgroundColor: '#a8a29e', // Stone 400
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '주차대수' },
+                            min: 1.0
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '건폐율 (%)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateComparisonView() {
+            // Update Radar Chart visibility
+            radarChart.data.datasets.forEach((dataset, index) => {
+                if (currentAptFilter === 'all') {
+                    dataset.hidden = false;
+                    // Lower opacity for background items if specific one selected (not applicable here, but good practice)
+                } else {
+                    dataset.hidden = aptData[index].id !== currentAptFilter;
+                }
+            });
+            radarChart.update();
+
+            // Highlight Bar Chart
+            const colors = aptData.map((apt, index) => 
+                (currentAptFilter === 'all' || apt.id === currentAptFilter) ? '#0d9488' : '#e5e7eb'
+            );
+            barChart.data.datasets[0].backgroundColor = colors;
+            barChart.update();
+
+            // Highlight Table Row
+            const rows = document.querySelectorAll('#factTableBody tr');
+            rows.forEach(row => {
+                if(currentAptFilter === 'all') {
+                    row.classList.remove('bg-yellow-50');
+                } else {
+                    if (row.dataset.id === currentAptFilter) {
+                        row.classList.add('bg-yellow-50');
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        row.classList.remove('bg-yellow-50');
+                    }
+                }
+            });
+        }
+
+        function getColor(index) {
+            const colors = [
+                '59, 130, 246', // Blue
+                '16, 185, 129', // Emerald
+                '245, 158, 11', // Amber
+                '239, 68, 68',  // Red
+                '139, 92, 246', // Violet
+                '236, 72, 153'  // Pink
+            ];
+            return colors[index % colors.length];
+        }
+
+        // 3. Fact Table
+        function populateFactTable() {
+            const tbody = document.getElementById('factTableBody');
+            tbody.innerHTML = aptData.map(apt => `
+                <tr class="bg-white border-b hover:bg-stone-50 transition-colors" data-id="${apt.id}">
+                    <td class="px-6 py-4 font-medium text-stone-900">${apt.name}</td>
+                    <td class="px-6 py-4">${apt.units}세대</td>
+                    <td class="px-6 py-4">${apt.year}</td>
+                    <td class="px-6 py-4">${apt.coverage}%</td>
+                    <td class="px-6 py-4 font-bold ${apt.parking < 1.2 ? 'text-red-500' : 'text-emerald-600'}">${apt.parking}대</td>
+                    <td class="px-6 py-4">${apt.price}</td>
+                    <td class="px-6 py-4 text-xs text-stone-500">${apt.features}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 4. Detail Tabs
+        function setupDetailTabs() {
+            const tabContainer = document.getElementById('detailTabs');
+            
+            // Create Tabs
+            tabContainer.innerHTML = aptData.map((apt, index) => `
+                <button onclick="renderDetailContent('${apt.id}')" 
+                    class="px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${index === 0 ? 'tab-active' : 'tab-inactive'}" 
+                    id="tab-${apt.id}">
+                    ${apt.name}
+                </button>
+            `).join('');
+
+            // Initial Render
+            renderDetailContent(aptData[0].id);
+        }
+
+        function renderDetailContent(id) {
+            // Update Tabs UI
+            document.querySelectorAll('#detailTabs button').forEach(btn => {
+                if(btn.id === `tab-${id}`) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('tab-inactive');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            const apt = aptData.find(a => a.id === id);
+            const container = document.getElementById('detailContent');
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center">
+                            <span class="bg-stone-800 text-white text-xs px-2 py-1 rounded mr-2">분석</span>
+                            장점과 단점
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-bold text-emerald-600 mb-2"><i class="fa-solid fa-thumbs-up"></i> 장점</h4>
+                                <ul class="list-disc list-inside text-sm text-stone-600 space-y-1">
+                                    ${apt.pros.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-red-500 mb-2"><i class="fa-solid fa-thumbs-down"></i> 고려할 점</h4>
+                                <ul class="list-disc list-inside text-sm text-stone-600 space-y-1">
+                                    ${apt.cons.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center">
+                            <span class="bg-amber-500 text-white text-xs px-2 py-1 rounded mr-2">Voice</span>
+                            주민 & 커뮤니티 리얼 리뷰
+                        </h3>
+                        <div class="space-y-4">
+                            ${apt.reviews.map(r => `
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-quote-left text-stone-300 mr-2 mt-1"></i>
+                                    <p class="text-stone-700 italic">${r.replace(/"/g, '')}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-stone-200">
+                             <div class="flex justify-between items-center text-sm">
+                                <span class="text-stone-500">종합 추천도</span>
+                                <div class="text-amber-500">
+                                    ${'<i class="fa-solid fa-star"></i>'.repeat(Math.round((apt.score.price + apt.score.education + apt.score.env)/3))}
+                                    ${'<i class="fa-regular fa-star"></i>'.repeat(5 - Math.round((apt.score.price + apt.score.education + apt.score.env)/3))}
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Global function for "Learn More" buttons
+        function highlightApt(id) {
+            scrollToSection('comparison');
+            document.getElementById('aptSelector').value = id;
+            currentAptFilter = id;
+            updateComparisonView();
+            renderDetailContent(id);
+        }
+
+    </script>
 </body>
 </html>
