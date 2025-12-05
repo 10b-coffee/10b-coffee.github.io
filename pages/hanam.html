@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주택 취득 전략 리포트</title>
+    <title>하남 미사 주택 취득 전략 리포트 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     
     <style>
-        /* Toss UI Style Foundation */
+        /* Toss UI Foundations */
         :root {
             --toss-blue: #3182f6;
+            --toss-blue-light: #e8f3ff;
             --toss-bg: #f2f4f6;
             --toss-text-black: #191f28;
             --toss-text-grey: #4e5968;
             --toss-text-light: #8b95a1;
             --toss-white: #ffffff;
+            --toss-red: #f04452;
+            --toss-red-light: #fff1f2;
         }
 
         body {
@@ -25,61 +28,76 @@
             background-color: var(--toss-bg);
             color: var(--toss-text-black);
             -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.02em; /* Tight tracking for Korean */
+            letter-spacing: -0.02em;
             line-height: 1.5;
         }
 
-        /* Mobile Optimization: Compressed margins/padding */
-        .container-responsive {
-            max-width: 768px; /* Mobile-first approach, max width limited like an app */
+        /* Layout Container - Mobile Optimized */
+        .app-container {
+            max-width: 768px;
             margin: 0 auto;
-            padding: 0 16px 80px 16px; /* Bottom padding for scroll */
+            padding: 0 16px 80px 16px;
         }
 
+        /* Card Component */
         .card {
             background-color: var(--toss-white);
             border-radius: 24px;
             padding: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             margin-bottom: 16px;
         }
-
-        /* Mobile Compact Adjustments */
+        
         @media (max-width: 640px) {
             .card {
-                padding: 20px 16px;
+                padding: 20px 16px; /* Compact padding for mobile */
                 border-radius: 20px;
             }
-            h1 { font-size: 22px !important; }
-            h2 { font-size: 19px !important; }
-            h3 { font-size: 17px !important; }
-            p, li { font-size: 15px !important; line-height: 1.4 !important; }
         }
 
-        .chart-container {
+        /* Typography Utilities */
+        .txt-h1 { font-size: 22px; font-weight: 700; color: var(--toss-text-black); line-height: 1.3; }
+        .txt-h2 { font-size: 18px; font-weight: 700; color: var(--toss-text-black); margin-bottom: 12px; }
+        .txt-h3 { font-size: 16px; font-weight: 600; color: var(--toss-text-black); }
+        .txt-body { font-size: 15px; color: var(--toss-text-grey); line-height: 1.5; }
+        .txt-caption { font-size: 13px; color: var(--toss-text-light); }
+        .txt-blue { color: var(--toss-blue); }
+        .txt-red { color: var(--toss-red); }
+
+        /* Chart Containers */
+        .chart-wrapper {
             position: relative;
             width: 100%;
-            height: 280px; /* More compact height */
+            height: 240px; /* Compact height */
         }
 
         /* Custom Scrollbar */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Horizontal Scroll Snap Areas */
+        .scroll-snap-x {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 12px;
+            padding-bottom: 4px;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .scroll-item {
+            scroll-snap-align: start;
+            flex-shrink: 0;
         }
 
-        /* Toss Style Tab (Segmented Control) */
-        .tab-container {
+        /* Segmented Control / Tabs */
+        .segment-nav {
             background-color: #f2f4f6;
             border-radius: 12px;
             padding: 4px;
             display: flex;
             overflow-x: auto;
+            margin-bottom: 16px;
         }
-        .tab-btn {
+        .segment-btn {
             flex: 1;
             text-align: center;
             padding: 8px 12px;
@@ -87,293 +105,386 @@
             border-radius: 8px;
             color: var(--toss-text-grey);
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             font-weight: 500;
         }
-        .tab-active {
+        .segment-btn.active {
             background-color: white;
             color: var(--toss-text-black);
             font-weight: 700;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        .highlight-text {
-            color: var(--toss-blue);
-            font-weight: 700;
+        /* Table Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
         }
+        .data-table th {
+            text-align: left;
+            padding: 8px 4px;
+            color: var(--toss-text-light);
+            font-weight: 500;
+            font-size: 12px;
+            border-bottom: 1px solid #f2f4f6;
+            white-space: nowrap;
+        }
+        .data-table td {
+            padding: 12px 4px;
+            color: var(--toss-text-grey);
+            border-bottom: 1px solid #f2f4f6;
+            white-space: nowrap;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
 
+        /* Sticky Header */
         .nav-sticky {
             position: sticky;
             top: 0;
             z-index: 50;
             background-color: rgba(242, 244, 246, 0.9);
             backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
+        
+        .badge-blue { background: var(--toss-blue-light); color: var(--toss-blue); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .badge-red { background: var(--toss-red-light); color: var(--toss-red); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
     </style>
-    <!-- Chosen Palette: Toss Blue & Clean White -->
-    <!-- Application Structure: Mobile-first SPA. 
-         1. App Header: Simple title.
-         2. Summary Card: Key stats at a glance.
-         3. Financials: Compact bar chart & list.
-         4. Regulation: Horizontal scroll cards.
-         5. Comparison: Radar chart + Tabbed interaction for density.
-         6. Conclusion: Actionable cards.
+    <!-- Chosen Palette: Toss Blue (#3182f6) + Warm Grey Scale -->
+    <!-- Structure Plan: 
+         1. Header: Simple & Sticky.
+         2. Summary: Personal Context & Goal.
+         3. Financials: Full Asset breakdown + Logic for shortfall.
+         4. Regulations: Detailed cards in horizontal scroll.
+         5. Comparison Dashboard: Radar + Parking Bar + Full Table (Tabbed or Scrolled).
+         6. Deep Dive: Segmented Control for 6 Apartments with full Pros/Cons/Reviews.
+         7. Recommendation: 3 Best Options with logic.
     -->
-    <!-- CONFIRMATION: NO SVG graphics used (FontAwesome only). NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body>
 
-    <!-- App Header -->
-    <header class="nav-sticky px-4 py-3 flex justify-between items-center border-b border-[#e5e8eb] mb-4">
-        <div class="font-bold text-lg text-[#191f28]">주택 취득 리포트</div>
-        <div class="text-xs text-[#8b95a1] font-medium bg-[#e5e8eb] px-2 py-1 rounded-md">2025.12 기준</div>
+    <!-- Sticky Header -->
+    <header class="nav-sticky px-4 py-3 flex justify-between items-center">
+        <div class="font-bold text-lg tracking-tight">주택 전략 리포트</div>
+        <div class="text-xs font-semibold bg-white px-2 py-1 rounded text-[#8b95a1] border border-[#e5e8eb]">2025.12 기준</div>
     </header>
 
-    <main class="container-responsive">
+    <main class="app-container pt-4">
 
         <!-- Executive Summary -->
         <section class="mb-6">
-            <h1 class="text-2xl font-bold mb-2 text-[#191f28]">강동구 30대 부부를 위한<br>하남 미사 내집마련 전략</h1>
-            <p class="text-[#4e5968] text-base mb-4">예산 12.5억 원으로 실현 가능한<br>최적의 플랜을 분석했습니다.</p>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-2xl shadow-sm">
-                    <div class="text-[#8b95a1] text-xs font-semibold mb-1">목표 예산</div>
-                    <div class="text-[#3182f6] text-lg font-bold">12.5억</div>
+            <h1 class="txt-h1 mb-2">강동구 30대 부부를 위한<br>하남 미사 <span class="txt-blue">12.5억 플랜</span></h1>
+            <p class="txt-body mb-4">
+                30대 부부(자녀 1명)의 소득과 자산을 분석하여,<br>
+                실거주와 투자를 모두 만족하는 최적의 단지를 제안합니다.
+            </p>
+            <div class="flex gap-2">
+                <div class="bg-white px-3 py-2 rounded-xl shadow-sm border border-[#e5e8eb] flex-1">
+                    <div class="txt-caption mb-1">가용 예산 상한</div>
+                    <div class="txt-h3 txt-blue">12억 5천만 원</div>
                 </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm">
-                    <div class="text-[#8b95a1] text-xs font-semibold mb-1">분석 단지</div>
-                    <div class="text-[#191f28] text-lg font-bold">6개 대장주</div>
+                <div class="bg-white px-3 py-2 rounded-xl shadow-sm border border-[#e5e8eb] flex-1">
+                    <div class="txt-caption mb-1">분석 대상</div>
+                    <div class="txt-h3">6개 주요 단지</div>
                 </div>
             </div>
         </section>
 
         <!-- 1. Financial Diagnosis -->
         <section class="card">
-            <h2 class="text-xl font-bold mb-4 flex items-center justify-between">
-                자금 여력 진단
-                <span class="text-xs text-[#8b95a1] font-normal">단위: 억 원</span>
-            </h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="txt-h2 mb-0">자금 여력 상세 진단</h2>
+                <i class="fa-solid fa-calculator text-[#d1d6db]"></i>
+            </div>
             
-            <!-- Chart -->
-            <div class="chart-container mb-4" style="height: 200px;">
-                <canvas id="moneyChart"></canvas>
+            <!-- Asset Chart -->
+            <div class="chart-wrapper mb-5" style="height: 200px;">
+                <canvas id="financialChart"></canvas>
             </div>
 
-            <!-- Compact List -->
+            <!-- Detailed Breakdown List -->
             <div class="space-y-3">
                 <div class="flex justify-between items-center py-2 border-b border-[#f2f4f6]">
-                    <span class="text-[#4e5968] text-sm">가용 현금 (전세+주식)</span>
-                    <span class="font-bold text-[#191f28]">4.15억</span>
+                    <span class="txt-body">전세 보증금 (순자산)</span>
+                    <span class="font-bold">2.3억</span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-[#f2f4f6]">
-                    <span class="text-[#4e5968] text-sm">가족 차용 (처가)</span>
-                    <span class="font-bold text-[#3182f6]">+ 0.4억</span>
+                    <span class="txt-body">주식 및 현금성 자산</span>
+                    <span class="font-bold">1.85억</span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-[#f2f4f6]">
-                    <span class="text-[#4e5968] text-sm">주담대 (LTV 50% 가정)</span>
-                    <span class="font-bold text-[#3182f6]">+ 7~8억</span>
+                    <span class="txt-body text-[#3182f6]">가족 차용 (처가)</span>
+                    <span class="font-bold txt-blue">+ 3.0억 ~ 0.4억</span>
                 </div>
-                <div class="bg-[#f2f4f6] p-3 rounded-xl mt-2">
-                    <p class="text-xs text-[#4e5968] leading-snug">
-                        <i class="fa-solid fa-circle-info text-[#3182f6] mr-1"></i>
-                        <strong>Insight:</strong> 취득세 포함 12.5억 매수 시 약 <span class="text-[#f04452] font-bold">0.8억 부족</span> 가능성. 남편 연봉 기반 신용대출로 커버 가능합니다.
+                <div class="flex justify-between items-center py-2 border-b border-[#f2f4f6]">
+                    <span class="txt-body text-[#3182f6]">주택담보대출 (LTV 50%)</span>
+                    <span class="font-bold txt-blue">+ 약 6.0 ~ 7.0억</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-[#f2f4f6]">
+                    <span class="txt-body text-[#f04452]">취득세 및 부대비용</span>
+                    <span class="font-bold txt-red">- 0.5억</span>
+                </div>
+                
+                <div class="bg-[#f2f4f6] p-4 rounded-xl mt-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="txt-caption font-bold">최종 매수 가능 가액</span>
+                        <span class="txt-h3">약 11.6억 ~ 12.0억</span>
+                    </div>
+                    <p class="txt-caption leading-snug">
+                        <i class="fa-solid fa-triangle-exclamation mr-1 text-orange-400"></i>
+                        목표 예산(12.5억) 대비 <strong>약 5천~9천만 원 부족</strong> 예상. 
+                        남편 연봉(1.05억) 기반 신용대출 또는 사업자 대출로 충당 가능하며, DSR은 충분히 방어됩니다.
                     </p>
                 </div>
             </div>
         </section>
 
-        <!-- 2. Regulations (Horizontal Scroll) -->
+        <!-- 2. Market Regulation Context -->
         <section class="mb-6">
-            <h2 class="text-lg font-bold mb-3 px-1 text-[#191f28]">2025 규제 체크</h2>
-            <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2" style="scroll-padding-left: 0;">
-                <div class="min-w-[240px] bg-white p-4 rounded-2xl shadow-sm border border-[#f2f4f6]">
-                    <div class="text-[#3182f6] mb-2"><i class="fa-solid fa-chart-simple text-xl"></i></div>
-                    <div class="font-bold text-base mb-1">스트레스 DSR 2단계</div>
-                    <p class="text-xs text-[#4e5968] leading-normal">가산금리 1.2%p 적용으로 대출 한도 약 10% 축소. 사업소득 증빙 필수.</p>
+            <h2 class="txt-h2 px-1">2025년 12월 규제 환경</h2>
+            <div class="scroll-snap-x hide-scroll">
+                <!-- Card 1 -->
+                <div class="scroll-item w-[260px] bg-white p-4 rounded-2xl shadow-sm border border-[#e5e8eb]">
+                    <div class="text-[#3182f6] text-xl mb-2"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <h3 class="txt-h3 mb-1">스트레스 DSR 2단계</h3>
+                    <p class="txt-caption leading-relaxed">
+                        가산금리 1.2%p 적용으로 대출 한도 약 10~15% 축소. 
+                        남편의 고연봉과 아내의 사업소득 합산 증빙이 대출 한도 확보의 핵심 열쇠입니다.
+                    </p>
                 </div>
-                <div class="min-w-[240px] bg-white p-4 rounded-2xl shadow-sm border border-[#f2f4f6]">
-                    <div class="text-[#3182f6] mb-2"><i class="fa-solid fa-building-columns text-xl"></i></div>
-                    <div class="font-bold text-base mb-1">비규제지역 LTV</div>
-                    <p class="text-xs text-[#4e5968] leading-normal">하남시는 비규제지역. 무주택자 LTV 70% 가능하나 DSR이 관건.</p>
+                <!-- Card 2 -->
+                <div class="scroll-item w-[260px] bg-white p-4 rounded-2xl shadow-sm border border-[#e5e8eb]">
+                    <div class="text-[#3182f6] text-xl mb-2"><i class="fa-solid fa-house-lock"></i></div>
+                    <h3 class="txt-h3 mb-1">비규제지역 LTV</h3>
+                    <p class="txt-caption leading-relaxed">
+                        하남시는 비규제지역으로 무주택자 LTV 70%까지 가능하나, 
+                        DSR 규제로 인해 실질 한도는 50~60% 선에서 결정될 것입니다.
+                    </p>
+                </div>
+                <!-- Card 3 -->
+                <div class="scroll-item w-[260px] bg-white p-4 rounded-2xl shadow-sm border border-[#e5e8eb]">
+                    <div class="text-[#3182f6] text-xl mb-2"><i class="fa-solid fa-child"></i></div>
+                    <h3 class="txt-h3 mb-1">특례 대출 여부</h3>
+                    <p class="txt-caption leading-relaxed">
+                        자녀가 21년생이라 신생아 특례는 적용 불가. 
+                        생애최초 주택 구입에 따른 취득세 감면 혜택(최대 200만원)은 챙겨야 합니다.
+                    </p>
                 </div>
             </div>
         </section>
 
-        <!-- 3. Comparative Analysis -->
+        <!-- 3. Comparative Analysis (Core) -->
         <section class="card">
-            <div class="flex justify-between items-end mb-4">
-                <h2 class="text-xl font-bold">단지 비교 분석</h2>
-            </div>
-            
-            <!-- Custom Select -->
-            <div class="relative mb-6">
-                <select id="aptSelector" class="w-full appearance-none bg-[#f2f4f6] text-[#191f28] font-semibold py-3 px-4 rounded-xl focus:outline-none text-sm">
-                    <option value="all">전체 비교 모드</option>
-                    <option value="prugio">미사강변푸르지오</option>
-                    <option value="centum">센텀팰리스</option>
-                    <option value="lake">하우스디더레이크</option>
-                    <option value="royal">로얄듀크</option>
-                    <option value="dongil">동일하이빌</option>
-                    <option value="pung">센트럴풍경채</option>
-                </select>
-                <div class="absolute right-4 top-3.5 text-[#8b95a1] pointer-events-none">
-                    <i class="fa-solid fa-chevron-down text-xs"></i>
-                </div>
+            <h2 class="txt-h2">6대 단지 정밀 비교</h2>
+            <p class="txt-body mb-4">가격, 주차, 커뮤니티 등 핵심 지표 분석</p>
+
+            <!-- Control Tabs for Chart View -->
+            <div class="flex space-x-2 mb-4">
+                <button onclick="switchChart('radar')" id="btn-radar" class="flex-1 py-2 bg-[#f2f4f6] rounded-lg text-xs font-bold text-[#191f28] active-chart-btn">종합 점수</button>
+                <button onclick="switchChart('bar')" id="btn-bar" class="flex-1 py-2 bg-white border border-[#e5e8eb] rounded-lg text-xs font-medium text-[#8b95a1]">주차 & 건폐율</button>
             </div>
 
-            <!-- Radar Chart -->
-            <div class="chart-container mb-6">
-                <canvas id="radarChart"></canvas>
+            <!-- Charts Area -->
+            <div class="chart-wrapper mb-6 relative">
+                <canvas id="radarChart" class="absolute inset-0 transition-opacity duration-300"></canvas>
+                <canvas id="barChart" class="absolute inset-0 opacity-0 transition-opacity duration-300" style="pointer-events: none;"></canvas>
             </div>
 
-            <!-- Data Table (Compact) -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left whitespace-nowrap">
+            <!-- Detailed Fact Sheet Table -->
+            <h3 class="txt-h3 mb-2">상세 스펙 (스크롤하여 확인)</h3>
+            <div class="overflow-x-auto hide-scroll -mx-4 px-4">
+                <table class="data-table min-w-[600px]">
                     <thead>
-                        <tr class="text-[#8b95a1] text-xs border-b border-[#f2f4f6]">
-                            <th class="pb-2 pl-1">아파트</th>
-                            <th class="pb-2 text-center">주차</th>
-                            <th class="pb-2 text-right pr-1">매매호가</th>
+                        <tr>
+                            <th class="w-[120px]">아파트명</th>
+                            <th class="w-[80px]">세대수</th>
+                            <th class="w-[80px]">주차</th>
+                            <th class="w-[100px]">매매호가</th>
+                            <th>핵심 특징</th>
                         </tr>
                     </thead>
-                    <tbody id="compareTable" class="text-[#4e5968]">
-                        <!-- JS populated -->
+                    <tbody id="factSheetBody">
+                        <!-- JS Generated -->
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 4. Deep Dive (Tabs) -->
+        <!-- 4. Deep Dive Details (Reviews & Analysis) -->
         <section class="card">
-            <h2 class="text-xl font-bold mb-4">입주민 리얼 리뷰</h2>
+            <h2 class="txt-h2 mb-4">입주민 리얼 리뷰 & 분석</h2>
             
-            <!-- Segmented Control -->
-            <div class="tab-container mb-5 no-scrollbar">
-                <button class="tab-btn tab-active" onclick="showDetail('prugio', this)">푸르지오</button>
-                <button class="tab-btn" onclick="showDetail('pung', this)">풍경채</button>
-                <button class="tab-btn" onclick="showDetail('dongil', this)">동일</button>
-                <button class="tab-btn" onclick="showDetail('others', this)">기타</button>
+            <!-- Horizontal Scroll Segmented Control -->
+            <div class="segment-nav hide-scroll">
+                <button class="segment-btn active" onclick="renderDetail('prugio', this)">푸르지오</button>
+                <button class="segment-btn" onclick="renderDetail('centum', this)">센텀</button>
+                <button class="segment-btn" onclick="renderDetail('lake', this)">하우스디</button>
+                <button class="segment-btn" onclick="renderDetail('royal', this)">로얄</button>
+                <button class="segment-btn" onclick="renderDetail('dongil', this)">동일</button>
+                <button class="segment-btn" onclick="renderDetail('pung', this)">풍경채</button>
             </div>
 
             <!-- Content Area -->
-            <div id="detailContent" class="space-y-4 min-h-[180px]">
-                <!-- Default Content -->
-                <div class="bg-[#f9fafb] p-4 rounded-2xl">
-                    <div class="flex items-center mb-2">
-                        <span class="bg-[#e8f3ff] text-[#3182f6] text-xs font-bold px-2 py-1 rounded-md mr-2">장점</span>
-                        <span class="font-bold text-sm">망월천 호수공원 뷰 & 브랜드</span>
-                    </div>
-                    <p class="text-sm text-[#4e5968] leading-snug">"커뮤니티 시설이 미사 최고 수준입니다. 골프, 독서실 관리가 매우 잘 돼요."</p>
-                </div>
-                <div class="bg-[#f9fafb] p-4 rounded-2xl">
-                    <div class="flex items-center mb-2">
-                        <span class="bg-[#fff1f2] text-[#f04452] text-xs font-bold px-2 py-1 rounded-md mr-2">단점</span>
-                        <span class="font-bold text-sm">주차 공간의 아쉬움</span>
-                    </div>
-                    <p class="text-sm text-[#4e5968] leading-snug">"세대당 1.2대로 늦은 밤에는 이중주차가 종종 발생합니다."</p>
-                </div>
+            <div id="detailContent" class="animate-fade-in min-h-[300px]">
+                <!-- Populated via JS -->
             </div>
         </section>
 
         <!-- 5. Final Recommendation -->
-        <section class="mb-8">
-            <h2 class="text-xl font-bold mb-4 px-1 text-[#191f28]">최종 추천</h2>
+        <section class="mb-10">
+            <h2 class="txt-h2 px-1 mb-4">최종 제안: 당신을 위한 선택</h2>
             
-            <div class="space-y-3">
-                <!-- Option 1 -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-[#e5e8eb] relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-[#3182f6] text-white text-[10px] px-3 py-1 rounded-bl-xl font-bold">1순위</div>
-                    <h3 class="font-bold text-lg mb-1">미사강변푸르지오</h3>
-                    <p class="text-xs text-[#8b95a1] mb-3">#환금성 #호수공원 #대장주</p>
-                    <p class="text-sm text-[#4e5968] leading-snug">
-                        예산 상한선에 근접하지만, 자산 방어력과 향후 상승 여력이 가장 높습니다.
+            <div class="space-y-4">
+                <!-- Recommendation 1 -->
+                <div class="bg-white p-5 rounded-2xl border border-[#e5e8eb] shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-[#3182f6] text-white text-[11px] px-3 py-1 rounded-bl-xl font-bold">1순위</div>
+                    <div class="mb-2">
+                        <span class="text-[#3182f6] font-bold text-sm">자산가치 & 환금성</span>
+                    </div>
+                    <h3 class="txt-h1 mb-2">미사강변푸르지오</h3>
+                    <p class="txt-body text-sm mb-3">
+                        예산 상한선에 근접하지만, <strong>망월천 호수공원 뷰와 브랜드 가치</strong>로 인해 하락장 방어력과 상승장 탄력성이 가장 좋습니다. 장기적 자산 증식을 목표로 한다면 최고의 선택입니다.
                     </p>
+                    <div class="flex gap-2">
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#대장주</span>
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#호수공원</span>
+                    </div>
                 </div>
 
-                <!-- Option 2 -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-[#e5e8eb]">
-                    <h3 class="font-bold text-lg mb-1">센트럴풍경채</h3>
-                    <p class="text-xs text-[#8b95a1] mb-3">#초품아 #조경특화 #육아최적</p>
-                    <p class="text-sm text-[#4e5968] leading-snug">
-                        21년생 자녀 양육에 최적화된 환경입니다. 학교 접근성과 단지 내 안전이 보장됩니다.
+                <!-- Recommendation 2 -->
+                <div class="bg-white p-5 rounded-2xl border border-[#e5e8eb] shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-[#333] text-white text-[11px] px-3 py-1 rounded-bl-xl font-bold">2순위</div>
+                    <div class="mb-2">
+                        <span class="text-[#333] font-bold text-sm">육아 & 환경</span>
+                    </div>
+                    <h3 class="txt-h1 mb-2">센트럴풍경채</h3>
+                    <p class="txt-body text-sm mb-3">
+                        <strong>한홀초품아</strong>와 리조트급 조경은 21년생 자녀를 키우기에 압도적으로 유리합니다. 단지 내에서 안전하게 아이를 키우며 쾌적한 삶을 원하신다면 가장 만족도가 높을 것입니다.
                     </p>
+                    <div class="flex gap-2">
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#초품아</span>
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#조경특화</span>
+                    </div>
+                </div>
+
+                <!-- Recommendation 3 -->
+                <div class="bg-white p-5 rounded-2xl border border-[#e5e8eb] shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-[#8b95a1] text-white text-[11px] px-3 py-1 rounded-bl-xl font-bold">3순위</div>
+                    <div class="mb-2">
+                        <span class="text-[#4e5968] font-bold text-sm">실속 & 구조</span>
+                    </div>
+                    <h3 class="txt-h1 mb-2">동일하이빌</h3>
+                    <p class="txt-body text-sm mb-3">
+                        <strong>광폭 주차장과 넓은 서비스 면적</strong>은 실거주 만족도와 직결됩니다. 예산을 11억 원대로 낮추면서도 삶의 질을 챙기는 '가성비 전략'으로 적합합니다.
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#광폭주차</span>
+                        <span class="bg-[#f2f4f6] text-[#4e5968] text-xs px-2 py-1 rounded">#평면우수</span>
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="text-center py-6 text-xs text-[#8b95a1] bg-[#f2f4f6]">
-        &copy; 2025 Housing Strategy Report<br>
-        개인 맞춤형 분석 자료입니다.
+    <footer class="text-center py-8 text-xs text-[#8b95a1] bg-[#f9fafb] border-t border-[#f2f4f6]">
+        <p class="mb-2">본 리포트는 2025년 12월 1일 기준 데이터를 기반으로 작성되었습니다.</p>
+        <p>&copy; 2025 Housing Strategy Report</p>
     </footer>
 
+    <!-- JavaScript for Interactions -->
     <script>
         // Data Configuration
-        const apts = {
-            'prugio': { name: '푸르지오', parking: '1.21대', price: '12.4억', score: [4, 5, 5, 5, 3], pros: '망월천 뷰, 커뮤니티 우수', cons: '주차공간 다소 협소' },
-            'centum': { name: '센텀팰리스', parking: '1.15대', price: '10.8억', score: [5, 3, 4, 3, 5], pros: '가성비, 넓은 동간거리', cons: '역과의 거리' },
-            'lake': { name: '하우스디', parking: '1.12대', price: '11.2억', score: [4, 5, 4, 3, 4], pros: '초중고 학세권', cons: '세대수 적음' },
-            'royal': { name: '로얄듀크', parking: '1.18대', price: '11.0억', score: [4, 3, 3, 4, 5], pros: '상일IC 접근성(교통)', cons: '초등 통학 횡단보도' },
-            'dongil': { name: '동일하이빌', parking: '1.34대', price: '11.3억', score: [4, 4, 4, 4, 3], pros: '광폭주차장, 넓은 평면', cons: '브랜드 인지도' },
-            'pung': { name: '풍경채', parking: '1.40대', price: '11.9억', score: [3, 5, 5, 4, 3], pros: '한홀초 품아, 조경 특화', cons: '매물 부족' }
-        };
+        const aptData = [
+            {
+                id: 'prugio', name: '미사강변푸르지오', units: 1188, park: 1.21, price: '12.4억',
+                scores: [3, 5, 5, 5, 4], // Price, Edu, Env, Comm, Traffic
+                pros: ['망월천 호수공원 바로 앞, 영구 조망권 확보', '커뮤니티 시설 최상급 (골프, 독서실 등 관리 우수)', '브랜드 대단지로서의 환금성 우수'],
+                cons: ['세대당 1.21대로 야간 주차 시 다소 혼잡', '매매가가 높아 초기 자금 부담 큼'],
+                review: '"호수 뷰 하나만 보고 왔는데, 살다보니 커뮤니티 관리가 너무 잘 돼서 만족합니다. 다만 밤늦게 오면 주차 자리가 좀 빡빡해요."'
+            },
+            {
+                id: 'centum', name: '미사강변센텀팰리스', units: 1455, park: 1.15, price: '10.8억',
+                scores: [5, 4, 4, 3, 3],
+                pros: ['건폐율 14%로 동간 거리가 매우 넓고 쾌적함', '1400세대 대단지로 관리비가 저렴함', '가성비가 좋아 예산 절감 가능'],
+                cons: ['지하철역과 거리가 있어 버스 이용 필수', '상권 이용이 도보로는 조금 멀게 느껴짐'],
+                review: '"단지 안이 정말 공원 같아요. 동간 거리가 넓어서 프라이버시 침해가 없습니다. 역까지 걷기는 좀 멀어요."'
+            },
+            {
+                id: 'lake', name: '하우스디더레이크', units: 821, park: 1.12, price: '11.2억',
+                scores: [4, 5, 4, 3, 3],
+                pros: ['윤슬초, 윤슬중 바로 옆 진정한 학세권', '호수공원 접근성과 상권 이용이 편리함', '학부모 선호도가 꾸준히 높음'],
+                cons: ['주차 공간이 협소하다는 평이 많음 (1.12대)', '세대수가 상대적으로 적음'],
+                review: '"아이 학교 보내기는 미사에서 제일 좋은 위치입니다. 학원가도 가깝고요. 주차만 좀 더 편했으면 완벽했을 텐데 아쉽습니다."'
+            },
+            {
+                id: 'royal', name: '미사강변로얄듀크', units: 1107, park: 1.18, price: '11.0억',
+                scores: [4, 3, 3, 4, 5],
+                pros: ['상일IC가 바로 옆이라 강남 자차 출퇴근 최적', '단지 내외부 관리가 매우 깔끔함', '서울 진입이 가장 빠른 단지 중 하나'],
+                cons: ['초등학교 통학 시 횡단보도를 건너야 함', '고속도로 인접 동은 소음 이슈 존재'],
+                review: '"남편이 강남으로 차 가지고 출퇴근하는데 여기만큼 편한 곳이 없어요. 단지도 조용하고 깨끗합니다."'
+            },
+            {
+                id: 'dongil', name: '미사강변동일하이빌', units: 655, park: 1.34, price: '11.3억',
+                scores: [4, 4, 4, 4, 3],
+                pros: ['광폭 주차장 적용으로 주차가 매우 편리함 (문콕 걱정 없음)', '3면 발코니 등 서비스 면적이 넓어 실평수가 큼', '최신 연식(2018년) 컨디션'],
+                cons: ['브랜드 인지도가 상대적으로 약함', '세대수가 적어 커뮤니티 규모가 작음'],
+                review: '"집 구조가 정말 잘 빠졌어요. 같은 34평인데 훨씬 넓어 보입니다. 주차 스트레스 없는 게 제일 큰 장점이에요."'
+            },
+            {
+                id: 'pung', name: '센트럴풍경채', units: 726, park: 1.40, price: '11.9억',
+                scores: [3, 5, 5, 4, 3],
+                pros: ['한홀초등학교를 품은 초품아', '단지 내 조경이 에버랜드 조경팀 시공으로 리조트급', '가장 최근 연식 중 하나로 내외부 컨디션 우수'],
+                cons: ['미사역과는 거리가 꽤 멈', '매물이 귀해서 호가가 높게 형성됨'],
+                review: '"조경이 예술입니다. 아이들이 단지 안에서만 놀아도 충분해요. 초등학교도 바로 앞이라 안심됩니다."'
+            }
+        ];
 
-        // 1. Render Financial Chart
-        const ctxMoney = document.getElementById('moneyChart').getContext('2d');
-        new Chart(ctxMoney, {
+        // 1. Render Asset Chart (Stacked)
+        const ctxFinancial = document.getElementById('financialChart').getContext('2d');
+        new Chart(ctxFinancial, {
             type: 'bar',
             data: {
                 labels: ['보유자산', '필요대출', '예산상한'],
                 datasets: [{
-                    label: '금액',
-                    data: [4.55, 8.0, 12.55], //보유(4.15+0.4), 대출, 총액
+                    label: '금액(억)',
+                    data: [4.55, 8.0, 12.55], 
                     backgroundColor: ['#191f28', '#3182f6', '#e5e8eb'],
-                    borderRadius: 8,
-                    barThickness: 24
+                    borderRadius: 6,
+                    barThickness: 40
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { 
-                        backgroundColor: '#191f28',
-                        padding: 12,
-                        cornerRadius: 8,
-                        titleFont: { family: 'Pretendard' },
-                        bodyFont: { family: 'Pretendard' }
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: { display: false, grid: { display: false } },
-                    x: { 
-                        grid: { display: false },
-                        ticks: { font: { family: 'Pretendard', size: 12 }, color: '#8b95a1' }
-                    }
-                },
-                layout: { padding: 0 }
+                    x: { grid: { display: false }, ticks: { font: { family: 'Pretendard' } } },
+                    y: { display: false }
+                }
             }
         });
 
-        // 2. Render Radar Chart
-        let radarChart;
-        function initRadar() {
-            const ctxRadar = document.getElementById('radarChart').getContext('2d');
-            radarChart = new Chart(ctxRadar, {
+        // 2. Render Charts (Radar & Bar)
+        let radarChart, barChart;
+
+        function initCharts() {
+            // Radar Chart
+            radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
                 type: 'radar',
                 data: {
                     labels: ['가격', '교육', '환경', '커뮤니티', '교통'],
-                    datasets: [{
-                        label: '푸르지오',
-                        data: [3, 5, 5, 5, 4],
-                        backgroundColor: 'rgba(49, 130, 246, 0.2)',
-                        borderColor: '#3182f6',
+                    datasets: aptData.map((apt, idx) => ({
+                        label: apt.name,
+                        data: apt.scores,
+                        backgroundColor: idx === 0 ? 'rgba(49, 130, 246, 0.2)' : 'transparent',
+                        borderColor: idx === 0 ? '#3182f6' : 'transparent',
                         borderWidth: 2,
-                        pointBackgroundColor: '#3182f6'
-                    }]
+                        pointRadius: 0
+                    }))
                 },
                 options: {
                     responsive: true,
@@ -384,94 +495,147 @@
                             pointLabels: { font: { family: 'Pretendard', size: 11 }, color: '#4e5968' },
                             grid: { color: '#e5e8eb' },
                             angleLines: { color: '#e5e8eb' },
-                            suggestedMin: 0,
-                            suggestedMax: 5
+                            suggestedMin: 0, suggestedMax: 5
                         }
                     },
                     plugins: { legend: { display: false } }
                 }
             });
-        }
-        initRadar();
 
-        // 3. Populate Table
-        const tableBody = document.getElementById('compareTable');
-        Object.keys(apts).forEach(key => {
-            const item = apts[key];
+            // Bar Chart (Hidden initially)
+            barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: aptData.map(a => a.name.replace('미사강변', '')),
+                    datasets: [
+                        {
+                            label: '주차대수',
+                            data: aptData.map(a => a.park),
+                            backgroundColor: '#3182f6',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: '세대수/100',
+                            data: aptData.map(a => a.units/100),
+                            backgroundColor: '#e5e8eb',
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { position: 'left', min: 1.0, grid: {display:false} },
+                        y1: { position: 'right', grid: {display:false}, display: false },
+                        x: { grid: {display:false}, ticks: { font: {size: 10} } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        initCharts();
+
+        // 3. Populate Fact Sheet Table
+        const factBody = document.getElementById('factSheetBody');
+        aptData.forEach(apt => {
             const row = `
-                <tr class="border-b border-[#f2f4f6] last:border-0 hover:bg-[#f9fafb] transition-colors" onclick="selectApt('${key}')">
-                    <td class="py-3 pl-1 font-medium text-[#191f28]">${item.name}</td>
-                    <td class="py-3 text-center text-xs ${parseFloat(item.parking) >= 1.3 ? 'text-[#3182f6] font-bold' : ''}">${item.parking}</td>
-                    <td class="py-3 text-right pr-1 font-bold text-[#191f28]">${item.price}</td>
+                <tr>
+                    <td class="font-medium text-[#191f28]">${apt.name.replace('미사강변', '')}</td>
+                    <td>${apt.units}</td>
+                    <td class="${apt.park >= 1.3 ? 'text-[#3182f6] font-bold' : ''}">${apt.park}</td>
+                    <td class="font-bold">${apt.price}</td>
+                    <td class="text-xs text-[#4e5968]">${apt.pros[0].substring(0, 15)}...</td>
                 </tr>
             `;
-            tableBody.innerHTML += row;
+            factBody.innerHTML += row;
         });
 
-        // 4. Interaction Logic
-        document.getElementById('aptSelector').addEventListener('change', (e) => {
-            updateRadar(e.target.value);
-        });
+        // 4. Detail View Logic
+        function renderDetail(id, btn) {
+            // Update Tab UI
+            document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
 
-        function selectApt(key) {
-            document.getElementById('aptSelector').value = key;
-            updateRadar(key);
-        }
+            const data = aptData.find(a => a.id === id);
+            const container = document.getElementById('detailContent');
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <!-- Pros -->
+                    <div class="bg-[#f9fafb] p-4 rounded-2xl">
+                        <div class="flex items-center mb-3">
+                            <span class="badge-blue mr-2">장점</span>
+                            <span class="txt-h3">${data.name}의 매력</span>
+                        </div>
+                        <ul class="list-disc list-inside text-sm text-[#4e5968] space-y-1 pl-1">
+                            ${data.pros.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
 
-        function updateRadar(key) {
-            if (key === 'all') return; // Simplified for demo
+                    <!-- Cons -->
+                    <div class="bg-[#f9fafb] p-4 rounded-2xl">
+                        <div class="flex items-center mb-3">
+                            <span class="badge-red mr-2">단점</span>
+                            <span class="txt-h3">고려할 점</span>
+                        </div>
+                        <ul class="list-disc list-inside text-sm text-[#4e5968] space-y-1 pl-1">
+                            ${data.cons.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <!-- Review -->
+                    <div class="bg-white border border-[#e5e8eb] p-4 rounded-2xl shadow-sm">
+                        <div class="flex items-center mb-2 text-[#8b95a1] text-xs font-bold">
+                            <i class="fa-solid fa-comment-dots mr-1"></i> 입주민 한마디
+                        </div>
+                        <p class="txt-body italic text-[#191f28] leading-relaxed">
+                            ${data.review}
+                        </p>
+                    </div>
+                </div>
+            `;
             
-            const data = apts[key];
-            radarChart.data.datasets[0].label = data.name;
-            
-            // Map scores: Price, Education, Env, Comm, Traffic
-            // Data mapping needs to align with radar labels order
-            // Labels: ['가격', '교육', '환경', '커뮤니티', '교통']
-            // Data stored as: Price, Traffic, Edu, Env, Comm (needs reordering)
-            // Stored: [Price, Traffic, Edu, Env, Comm] -> [0, 2, 3, 4, 1]
-            
-            // Re-mapping for correct visual (Simulated for this context)
-            // Let's just use the stored array directly for visual variance in this demo
-            radarChart.data.datasets[0].data = data.score;
+            // Update Radar Chart Highlight
+            radarChart.data.datasets.forEach((ds, idx) => {
+                if (ds.label === data.name) {
+                    ds.backgroundColor = 'rgba(49, 130, 246, 0.2)';
+                    ds.borderColor = '#3182f6';
+                } else {
+                    ds.backgroundColor = 'transparent';
+                    ds.borderColor = 'rgba(200, 200, 200, 0.3)';
+                }
+            });
             radarChart.update();
         }
 
-        // 5. Detail Tab Logic
-        function showDetail(key, btn) {
-            // Update Buttons
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            btn.classList.add('tab-active');
+        // Initialize First Detail
+        renderDetail('prugio', document.querySelector('.segment-btn'));
 
-            const content = document.getElementById('detailContent');
-            let html = '';
+        // Chart Switching Logic
+        function switchChart(type) {
+            const radarCanvas = document.getElementById('radarChart');
+            const barCanvas = document.getElementById('barChart');
+            const btnRadar = document.getElementById('btn-radar');
+            const btnBar = document.getElementById('btn-bar');
 
-            if (key === 'others') {
-                html = `
-                    <div class="bg-[#f9fafb] p-4 rounded-2xl">
-                        <div class="font-bold text-sm mb-1 text-[#191f28]">로얄듀크 & 하우스디</div>
-                        <p class="text-sm text-[#4e5968] leading-snug">"로얄듀크는 IC접근성이 좋아 강남 출퇴근에 유리하고, 하우스디는 학교가 가까워 학부모 선호도가 높습니다."</p>
-                    </div>
-                `;
+            if (type === 'radar') {
+                radarCanvas.style.opacity = '1';
+                radarCanvas.style.pointerEvents = 'auto';
+                barCanvas.style.opacity = '0';
+                barCanvas.style.pointerEvents = 'none';
+                
+                btnRadar.className = 'flex-1 py-2 bg-[#f2f4f6] rounded-lg text-xs font-bold text-[#191f28]';
+                btnBar.className = 'flex-1 py-2 bg-white border border-[#e5e8eb] rounded-lg text-xs font-medium text-[#8b95a1]';
             } else {
-                const data = apts[key];
-                html = `
-                    <div class="bg-[#f9fafb] p-4 rounded-2xl animate-fade-in">
-                        <div class="flex items-center mb-2">
-                            <span class="bg-[#e8f3ff] text-[#3182f6] text-xs font-bold px-2 py-1 rounded-md mr-2">장점</span>
-                            <span class="font-bold text-sm text-[#191f28]">${data.pros}</span>
-                        </div>
-                        <p class="text-sm text-[#4e5968] leading-snug">"주민 만족도가 상당히 높으며, 특히 ${data.pros.split(',')[0]} 부분에서 강점을 보입니다."</p>
-                    </div>
-                    <div class="bg-[#f9fafb] p-4 rounded-2xl animate-fade-in">
-                        <div class="flex items-center mb-2">
-                            <span class="bg-[#fff1f2] text-[#f04452] text-xs font-bold px-2 py-1 rounded-md mr-2">단점</span>
-                            <span class="font-bold text-sm text-[#191f28]">${data.cons}</span>
-                        </div>
-                        <p class="text-sm text-[#4e5968] leading-snug">"다만, ${data.cons} 부분은 실거주 시 고려해야 할 요소입니다."</p>
-                    </div>
-                `;
+                radarCanvas.style.opacity = '0';
+                radarCanvas.style.pointerEvents = 'none';
+                barCanvas.style.opacity = '1';
+                barCanvas.style.pointerEvents = 'auto';
+
+                btnBar.className = 'flex-1 py-2 bg-[#f2f4f6] rounded-lg text-xs font-bold text-[#191f28]';
+                btnRadar.className = 'flex-1 py-2 bg-white border border-[#e5e8eb] rounded-lg text-xs font-medium text-[#8b95a1]';
             }
-            content.innerHTML = html;
         }
     </script>
 </body>
