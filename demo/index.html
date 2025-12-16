@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>백억커피 구리점 매니저</title>
+    
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    },
+                    colors: {
+                        toss: {
+                            bg: '#F2F4F6',
+                            blue: '#3182F6',
+                            bluePress: '#1B64DA',
+                            text: '#191F28',
+                            textGray: '#8B95A1',
+                            card: '#FFFFFF',
+                            red: '#FF3B30'
+                        }
+                    },
+                    animation: {
+                        'spring-up': 'springUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        springUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F2F4F6;
+            color: #191F28;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* iOS-like Smooth Scroll & Touch */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Card Hover Effect (PC only) */
+        @media (min-width: 1024px) {
+            .interactive-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+        }
+        
+        /* Mobile Touch Feedback */
+        .interactive-card:active {
+            transform: scale(0.98);
+            transition: transform 0.1s;
+        }
+
+        .transition-spring {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Hide pages by default */
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- GNB (Global Navigation Bar) -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 transition-all duration-300">
+        <div class="max-w-screen-xl mx-auto px-4 h-14 lg:h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+                <div class="w-8 h-8 bg-toss-blue rounded-full flex items-center justify-center text-white font-bold">B</div>
+                <span class="font-bold text-lg lg:text-xl text-toss-text">백억커피 구리점</span>
+            </div>
+
+            <!-- Desktop Menu -->
+            <nav class="hidden lg:flex gap-8">
+                <a href="#" onclick="navigateTo('home')" class="text-toss-text font-medium hover:text-toss-blue transition-colors">홈</a>
+                <a href="#" onclick="navigateTo('manual')" class="text-toss-textGray hover:text-toss-text transition-colors">매뉴얼</a>
+                <a href="#" onclick="navigateTo('inventory')" class="text-toss-textGray hover:text-toss-text transition-colors">재고 관리</a>
+                <a href="#" onclick="navigateTo('staff')" class="text-toss-textGray hover:text-toss-text transition-colors">스태프</a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button class="lg:hidden text-2xl text-toss-text p-2" onclick="toggleMobileMenu()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-black/50 hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute right-0 top-0 bottom-0 w-64 bg-white p-6 shadow-xl transform translate-x-full transition-transform duration-300 ease-out" id="mobile-drawer">
+            <div class="flex justify-end mb-8">
+                <button onclick="toggleMobileMenu()" class="text-2xl text-toss-text"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="flex flex-col gap-6 text-lg font-medium">
+                <a href="#" onclick="navigateTo('home'); toggleMobileMenu()" class="flex items-center gap-3"><i class="fa-solid fa-house w-6 text-toss-blue"></i> 홈</a>
+                <a href="#" onclick="navigateTo('manual'); toggleMobileMenu()" class="flex items-center gap-3"><i class="fa-solid fa-book w-6 text-toss-blue"></i> 매뉴얼</a>
+                <a href="#" onclick="navigateTo('inventory'); toggleMobileMenu()" class="flex items-center gap-3"><i class="fa-solid fa-boxes-stacked w-6 text-toss-blue"></i> 재고 관리</a>
+                <a href="#" onclick="navigateTo('staff'); toggleMobileMenu()" class="flex items-center gap-3"><i class="fa-solid fa-users w-6 text-toss-blue"></i> 스태프</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 pt-20 lg:pt-24 pb-10 px-4 max-w-screen-xl mx-auto w-full">
+
+        <!-- 1. HOME SECTION -->
+        <section id="home" class="page-section active">
+            <div class="mb-6 lg:mb-8 animate-spring-up">
+                <h1 class="text-2xl lg:text-3xl font-bold text-toss-text mb-2">안녕하세요,<br>오늘도 화이팅해볼까요? ☕️</h1>
+                <p class="text-sm lg:text-base text-toss-textGray">2025년 12월 16일 (화) • 현재 영업 중</p>
+            </div>
+
+            <!-- Urgent Notice -->
+            <div class="bg-red-50 border border-red-100 rounded-3xl p-5 mb-8 flex items-start gap-4 shadow-sm animate-spring-up" style="animation-delay: 0.1s;">
+                <div class="bg-red-100 text-toss-red rounded-full p-2 mt-1 min-w-[40px] flex justify-center">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-toss-red text-base lg:text-lg mb-1">배달 앱 설정 필독</h3>
+                    <p class="text-sm lg:text-base text-gray-700 leading-relaxed">
+                        배달의민족은 중단 시간 지정이 되지만, <span class="font-bold">다른 플랫폼(쿠팡, 요기요 등)은 자동 해제가 안 됩니다.</span><br>
+                        배달 재개 시 반드시 수동으로 중단을 해제해주세요!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm interactive-card transition-spring cursor-pointer animate-spring-up" style="animation-delay: 0.2s;" onclick="navigateTo('inventory')">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-lg font-bold text-toss-text">부족한 재고</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <span class="text-3xl font-bold text-toss-red">2</span>
+                        <span class="text-lg text-toss-textGray mb-1">건</span>
+                    </div>
+                    <p class="text-sm text-toss-textGray mt-2">나초, 쌍화차 베이스</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm interactive-card transition-spring cursor-pointer animate-spring-up" style="animation-delay: 0.3s;" onclick="navigateTo('manual')">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-lg font-bold text-toss-text">필수 매뉴얼</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                    </div>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-2 text-sm text-toss-text">
+                            <span class="w-1.5 h-1.5 bg-toss-blue rounded-full"></span>
+                            땡겨요 가게배달 중단법
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-toss-text">
+                            <span class="w-1.5 h-1.5 bg-toss-blue rounded-full"></span>
+                            스마트오더 관리
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recent Log -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm animate-spring-up" style="animation-delay: 0.4s;">
+                <h3 class="text-lg font-bold text-toss-text mb-4">최근 근무자 노트</h3>
+                <div class="space-y-4">
+                    <div class="flex gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs">민혁</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-bold text-sm">김민혁 (구리)</span>
+                                <span class="text-xs text-toss-textGray">12.14 23:17</span>
+                            </div>
+                            <p class="text-sm text-gray-600">나초 2개 남았습니다. 발주 확인 부탁드려요.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">와이프</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-bold text-sm">와이프 (관리자)</span>
+                                <span class="text-xs text-toss-textGray">12.14 23:22</span>
+                            </div>
+                            <p class="text-sm text-gray-600">쌍화차 베이스 소진되었습니다. 제가 섞어둔 거 다 썼어요.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MANUAL SECTION -->
+        <section id="manual" class="page-section">
+            <div class="mb-6">
+                <h2 class="text-2xl lg:text-3xl font-bold text-toss-text">업무 매뉴얼</h2>
+                <p class="text-sm lg:text-base text-toss-textGray mt-2">자주 묻는 질문과 처리 방법을 모았습니다.</p>
+            </div>
+
+            <div class="grid gap-4">
+                <!-- Item 1 -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-toss-blue/10 p-2 rounded-xl text-toss-blue">
+                            <i class="fa-solid fa-motorcycle text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">배달 플랫폼 중단/해제</h3>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 text-sm space-y-3">
+                        <div class="flex gap-2">
+                            <span class="font-bold text-toss-blue min-w-[50px]">배민</span>
+                            <span class="text-gray-600">시간 지정 가능 (자동 해제됨)</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="font-bold text-toss-red min-w-[50px]">기타</span>
+                            <span class="text-gray-600">땡겨요, 요기요, 쿠팡이츠는 <span class="underline decoration-red-200 decoration-2">반드시 수동으로 해제</span>해야 합니다.</span>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-400">
+                            * 배달 중단 처리 시 단체방에 꼭 공유해주세요.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-green-100 p-2 rounded-xl text-green-600">
+                            <i class="fa-solid fa-tablet-screen-button text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">스마트오더 & 가게배달</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">
+                        스마트오더 가게배달 중단 방법은 POS에서 동일하게 처리 가능합니다.
+                    </p>
+                    <button class="w-full py-3 bg-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-200 transition-colors">
+                        상세 매뉴얼 이미지 보기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. INVENTORY SECTION -->
+        <section id="inventory" class="page-section">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-toss-text">재고 현황</h2>
+                    <p class="text-sm lg:text-base text-toss-textGray mt-2">2025.12.14 업데이트</p>
+                </div>
+                <button class="bg-toss-blue text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-toss-bluePress transition-colors">
+                    + 상태 업데이트
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Inventory Item: Critical -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm border-2 border-red-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-bl-xl">
+                        품절(Sold Out)
+                    </div>
+                    <h3 class="text-lg font-bold mb-1">쌍화차 베이스</h3>
+                    <p class="text-sm text-gray-500 mb-4">직접 제조 필요</p>
+                    <div class="flex items-center gap-2 text-sm text-toss-red bg-red-50 p-3 rounded-xl">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>현재 재고 없음 (제조 섞어둔 것 소진)</span>
+                    </div>
+                </div>
+
+                <!-- Inventory Item: Warning -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-yellow-100">
+                     <div class="absolute top-0 right-0 bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-bl-xl">
+                        부족 임박
+                    </div>
+                    <h3 class="text-lg font-bold mb-1">나초</h3>
+                    <p class="text-sm text-gray-500 mb-4">사이드 메뉴</p>
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                        <span class="text-sm text-gray-600">남은 수량</span>
+                        <span class="text-xl font-bold text-toss-text">2개</span>
+                    </div>
+                </div>
+
+                 <!-- Inventory Item: Warning -->
+                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-yellow-100">
+                    <div class="absolute top-0 right-0 bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-bl-xl">
+                       마지막 개봉
+                   </div>
+                   <h3 class="text-lg font-bold mb-1">소세지</h3>
+                   <p class="text-sm text-gray-500 mb-4">핫도그용</p>
+                   <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                       <span class="text-sm text-gray-600">상태</span>
+                       <span class="text-sm font-bold text-toss-text">마지막 팩 개봉함</span>
+                   </div>
+               </div>
+            </div>
+        </section>
+
+        <!-- 4. STAFF SECTION -->
+        <section id="staff" class="page-section">
+             <div class="mb-6">
+                <h2 class="text-2xl lg:text-3xl font-bold text-toss-text">스태프 연락망</h2>
+                <p class="text-sm lg:text-base text-toss-textGray mt-2">터치하여 전화 연결이 가능합니다.</p>
+            </div>
+            
+            <div class="bg-white rounded-3xl overflow-hidden shadow-sm">
+                <!-- Group: Managers -->
+                <div class="p-5 border-b border-gray-100">
+                    <h3 class="text-xs font-bold text-toss-textGray uppercase tracking-wider mb-4">Management</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-toss-blue text-white flex items-center justify-center font-bold text-lg">박</div>
+                            <div class="flex-1">
+                                <div class="font-bold">박요한 (점주)</div>
+                                <div class="text-xs text-gray-500">금/토 심야 (01-07)</div>
+                            </div>
+                            <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                                <i class="fa-solid fa-phone"></i>
+                            </a>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-lg">J</div>
+                            <div class="flex-1">
+                                <div class="font-bold">JH (사장)</div>
+                                <div class="text-xs text-gray-500">목/금 미들 (15-20)</div>
+                            </div>
+                            <a href="#" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                                <i class="fa-solid fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group: Staff -->
+                <div class="p-5">
+                    <h3 class="text-xs font-bold text-toss-textGray uppercase tracking-wider mb-4">Staff</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-lg">김</div>
+                            <div class="flex-1">
+                                <div class="font-bold">김민혁 (구리)</div>
+                                <div class="text-xs text-gray-500">스태프</div>
+                            </div>
+                        </div>
+                         <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-lg">최</div>
+                            <div class="flex-1">
+                                <div class="font-bold">최예진 (미들)</div>
+                                <div class="text-xs text-gray-500">평일 미들</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Tab Navigation (Mobile Only) -->
+    <!-- Note: Toss style usually uses bottom tabs on mobile web -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe pt-2 px-6 h-[80px] flex justify-between items-start z-30">
+        <button onclick="navigateTo('home')" class="nav-btn w-12 flex flex-col items-center gap-1 text-toss-blue transition-colors">
+            <i class="fa-solid fa-house text-xl"></i>
+            <span class="text-[10px] font-medium">홈</span>
+        </button>
+        <button onclick="navigateTo('manual')" class="nav-btn w-12 flex flex-col items-center gap-1 text-toss-textGray hover:text-toss-text transition-colors">
+            <i class="fa-solid fa-book text-xl"></i>
+            <span class="text-[10px] font-medium">매뉴얼</span>
+        </button>
+        <button onclick="navigateTo('inventory')" class="nav-btn w-12 flex flex-col items-center gap-1 text-toss-textGray hover:text-toss-text transition-colors">
+            <i class="fa-solid fa-boxes-stacked text-xl"></i>
+            <span class="text-[10px] font-medium">재고</span>
+        </button>
+        <button onclick="navigateTo('staff')" class="nav-btn w-12 flex flex-col items-center gap-1 text-toss-textGray hover:text-toss-text transition-colors">
+            <i class="fa-solid fa-users text-xl"></i>
+            <span class="text-[10px] font-medium">스태프</span>
+        </button>
+    </nav>
+
+    <script>
+        // Simple Router Function
+        function navigateTo(pageId) {
+            // 1. Hide all sections
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 2. Show target section
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+
+            // 3. Update Mobile Tab UI
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const icons = {
+                'home': 0,
+                'manual': 1,
+                'inventory': 2,
+                'staff': 3
+            };
+            
+            navBtns.forEach((btn, index) => {
+                if(index === icons[pageId]) {
+                    btn.classList.remove('text-toss-textGray');
+                    btn.classList.add('text-toss-blue');
+                } else {
+                    btn.classList.add('text-toss-textGray');
+                    btn.classList.remove('text-toss-blue');
+                }
+            });
+
+            // 4. Update PC GNB Active State (Optional visual cue)
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const drawer = document.getElementById('mobile-drawer');
+            
+            if (menu.classList.contains('hidden')) {
+                // Open
+                menu.classList.remove('hidden');
+                // Allow display:block to render before changing opacity
+                setTimeout(() => {
+                    menu.classList.remove('opacity-0');
+                    drawer.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                // Close
+                menu.classList.add('opacity-0');
+                drawer.classList.add('translate-x-full');
+                setTimeout(() => {
+                    menu.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('home');
+        });
+    </script>
+</body>
+</html>
