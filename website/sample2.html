@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>법률사무소 예시 | 당신의 든든한 법률 파트너</title>
+    <meta name="description" content="10년 경력의 형사/이혼 전문 변호사가 직접 상담합니다.">
+    
+    <link rel="stylesheet" as="style" crossorigin href="[https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css](https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css)" />
+
+    <style>
+        /* --- 1. 기본 스타일 (Reset & Variables) --- */
+        :root {
+            --primary-color: #002B5B; /* Deep Navy: 신뢰 */
+            --accent-color: #C5A059;  /* Gold: 권위, 강조 */
+            --text-color: #333333;
+            --bg-light: #F8F9FA;
+            --white: #FFFFFF;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            word-break: keep-all;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        
+       .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        /* --- 2. 헤더 (Navigation) --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+       .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+       .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+       .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
+
+       .nav-menu a {
+            font-weight: 500;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+       .nav-menu a:hover {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* --- 3. 히어로 섹션 (Hero) --- */
+       .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 43, 91, 0.7), rgba(0, 43, 91, 0.7)), 
+                        url('[https://images.unsplash.com/photo-1589829085413-56de8ae18c73?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80](https://images.unsplash.com/photo-1589829085413-56de8ae18c73?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80)'); /* 법원/저울 이미지 */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+            margin-top: 0; /* 헤더가 fixed이므로 margin-top 필요없음 (design choice) */
+        }
+
+       .hero-content h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+       .hero-content p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+       .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: var(--accent-color);
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+       .cta-button:hover {
+            background-color: #b08d4b;
+            transform: translateY(-2px);
+        }
+
+        /* --- 4. 변호사 소개 (About) --- */
+       .about {
+            background-color: var(--white);
+        }
+
+       .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+       .section-title h2 {
+            font-size: 36px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+       .section-title span {
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent-color);
+            margin: 0 auto;
+        }
+
+       .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+       .profile-img-wrapper {
+            position: relative;
+        }
+
+       .profile-img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 20px 20px 0 var(--bg-light);
+        }
+
+       .about-text h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+       .career-list {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+       .career-list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+       .career-list li::before {
+            content: '•';
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* --- 5. 업무 분야 (Services) --- */
+       .services {
+            background-color: var(--bg-light);
+        }
+
+       .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+       .service-card {
+            background: var(--white);
+            padding: 40px 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+
+       .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+       .service-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+       .service-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+       .service-card p {
+            font-size: 15px;
+            color: #666;
+        }
+
+        /* --- 6. 오시는 길 (Location) --- */
+       .location {
+            background-color: var(--white);
+        }
+
+       .map-wrapper {
+            width: 100%;
+            height: 400px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+       .map-placeholder-text {
+            text-align: center;
+            z-index: 10;
+        }
+
+       .location-info {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            text-align: center;
+            gap: 20px;
+        }
+
+       .info-item h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        /* --- 7. 상담 문의 (Contact Form) --- */
+       .contact {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+       .contact.section-title h2 {
+            color: var(--white);
+        }
+
+       .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+       .form-group {
+            margin-bottom: 20px;
+        }
+
+       .form-control {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea.form-control {
+            height: 150px;
+            resize: none;
+        }
+
+       .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+       .submit-btn:hover {
+            background-color: #b08d4b;
+        }
+
+        /* --- 8. 푸터 (Footer) --- */
+        footer {
+            background-color: #1a1a1a;
+            color: #888;
+            padding: 50px 0;
+            font-size: 14px;
+        }
+
+       .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* --- 9. 모바일 플로팅 바 (Mobile Only) --- */
+       .mobile-floating-bar {
+            display: none; /* PC에서는 숨김 */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--white);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 2000;
+        }
+
+       .floating-btn {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+       .btn-kakao {
+            background-color: #FEE500;
+            color: #000000;
+        }
+
+       .btn-call {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* --- 반응형 미디어 쿼리 --- */
+        @media (max-width: 768px) {
+           .hero-content h1 { font-size: 32px; }
+           .hero-content p { font-size: 16px; }
+            
+           .about-grid { grid-template-columns: 1fr; }
+            
+           .nav-menu { display: none; } /* 간단한 예시라 메뉴 숨김 처리 (실제론 햄버거 메뉴 필요) */
+            
+           .mobile-floating-bar { display: flex; } /* 모바일에서 보임 */
+            body { padding-bottom: 60px; } /* 하단 바 가림 방지 */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-inner">
+            <div class="logo">법률사무소 예시</div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#about">변호사 소개</a></li>
+                    <li><a href="#services">업무분야</a></li>
+                    <li><a href="#location">오시는 길</a></li>
+                    <li><a href="#contact">상담문의</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>당신의 억울함,<br>법률 전문가가 끝까지 함께합니다</h1>
+            <p>10년 경력의 검사 출신 변호사가 직접 상담하고 해결해 드립니다.</p>
+            <a href="#contact" class="cta-button">무료 상담 신청하기</a>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>변호사 소개</h2>
+                <span></span>
+            </div>
+            <div class="about-grid">
+                <div class="profile-img-wrapper">
+                    <img src="[https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80](https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80)" alt="변호사 프로필 사진" class="profile-img">
+                </div>
+                <div class="about-text">
+                    <h3>"의뢰인의 이익을 최우선으로 생각합니다"</h3>
+                    <p>
+                        안녕하세요, 대표 변호사 홍길동입니다.<br>
+                        복잡하고 어려운 법률 문제, 혼자 고민하지 마세요.<br>
+                        따뜻한 경청과 냉철한 분석으로 당신의 권리를 되찾아 드리겠습니다.<br>
+                        단순한 사건 처리가 아닌, 의뢰인의 삶을 지키는 파트너가 되겠습니다.
+                    </p>
+                    <ul class="career-list">
+                        <li>서울대학교 법과대학 졸업</li>
+                        <li>제00회 사법시험 합격 / 사법연수원 00기</li>
+                        <li>前 서울중앙지방검찰청 검사</li>
+                        <li>現 대법원 국선변호인</li>
+                        <li>대한변호사협회 등록 형사법 전문 변호사</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>주요 업무 분야</h2>
+                <span></span>
+            </div>
+            <div class="service-grid">
+                <div class="service-card">
+                    <div class="service-icon">⚖️</div>
+                    <h3>형사 소송</h3>
+                    <p>경찰 조사 동석부터 재판까지,<br>초기 대응이 결과를 바꿉니다.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💔</div>
+                    <h3>이혼 / 가사</h3>
+                    <p>재산분할, 양육권 분쟁.<br>새로운 출발을 든든하게 돕습니다.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💰</div>
+                    <h3>민사 / 손해배상</h3>
+                    <p>채권추심, 부동산 분쟁 등<br>정당한 권리를 찾아드립니다.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📝</div>
+                    <h3>기업 법무</h3>
+                    <p>계약서 검토, 법률 자문.<br>비즈니스 리스크를 예방하세요.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="location" class="location">
+        <div class="container">
+            <div class="section-title">
+                <h2>오시는 길</h2>
+                <span></span>
+            </div>
+            <div class="map-wrapper">
+                <div class="map-placeholder-text">
+                    <p><strong>[네이버 지도 API 영역]</strong></p>
+                    <p>Wix나 아임웹 빌더에서 '지도 위젯'을 드래그하여<br>이 위치에 배치하시면 됩니다.</p>
+                </div>
+                <img src="[https://via.placeholder.com/1200x400/dddddd/999999?text=Naver+Map+Area](https://via.placeholder.com/1200x400/dddddd/999999?text=Naver+Map+Area)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.3;">
+            </div>
+            <div class="location-info">
+                <div class="info-item">
+                    <h4>주소</h4>
+                    <p>서울시 서초구 서초대로 000, 00빌딩 3층</p>
+                </div>
+                <div class="info-item">
+                    <h4>연락처</h4>
+                    <p>Tel. 02-1234-5678 / Fax. 02-1234-5679</p>
+                </div>
+                <div class="info-item">
+                    <h4>운영시간</h4>
+                    <p>평일 09:00 - 18:00 (야간/주말 예약 가능)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>빠른 상담 신청</h2>
+                <p style="margin-top:10px; opacity:0.8;">간단한 내용을 남겨주시면 변호사가 직접 연락드립니다.</p>
+            </div>
+            <div class="contact-form">
+                <form onsubmit="alert('상담 신청이 완료되었습니다. (데모)'); return false;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="성함" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" class="form-control" placeholder="연락처 (010-0000-0000)" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="상담 내용을 간단히 적어주세요."></textarea>
+                    </div>
+                    <div class="form-group" style="color: rgba(255,255,255,0.8); font-size: 14px;">
+                        <input type="checkbox" id="privacy" required>
+                        <label for="privacy">개인정보 수집 및 이용에 동의합니다.</label>
+                    </div>
+                    <button type="submit" class="submit-btn">상담 신청하기</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-info">
+                <p>상호명: 법률사무소 예시 | 대표: 홍길동 | 사업자등록번호: 000-00-00000</p>
+                <p>주소: 서울시 서초구 서초대로 000 | 이메일: law@example.com</p>
+                <p class="copyright">© 2025 Law Office Example. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="mobile-floating-bar">
+        <a href="tel:02-1234-5678" class="floating-btn btn-call">
+            📞 전화 상담
+        </a>
+        <a href="#" class="floating-btn btn-kakao">
+            💬 카톡 문의
+        </a>
+    </div>
+
+</body>
+</html>
